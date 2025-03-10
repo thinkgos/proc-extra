@@ -9,6 +9,7 @@ require (
 	github.com/spf13/cast v1.7.1
 	github.com/stretchr/testify v1.10.0
 	github.com/things-go/limiter v0.1.5
+	github.com/things-go/proc v0.0.0-20250308140217-2fbab6367193
 	github.com/xuri/excelize/v2 v2.9.0
 	go.opentelemetry.io/otel/sdk v1.35.0
 	go.opentelemetry.io/otel/trace v1.35.0
