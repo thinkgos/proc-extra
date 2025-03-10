@@ -10,6 +10,7 @@ require (
 	github.com/stretchr/testify v1.10.0
 	github.com/things-go/limiter v0.1.5
 	github.com/things-go/proc v0.0.0-20250308140217-2fbab6367193
+	github.com/thinkgos/tdengine-gorm v0.1.0
 	github.com/xuri/excelize/v2 v2.9.0
 	go.opentelemetry.io/otel/sdk v1.35.0
 	go.opentelemetry.io/otel/trace v1.35.0
@@ -31,6 +32,7 @@ require (
 	github.com/go-sql-driver/mysql v1.9.0 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
+	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/pgx/v5 v5.7.2 // indirect
@@ -43,6 +45,7 @@ require (
 	github.com/richardlehane/mscfb v1.0.4 // indirect
 	github.com/richardlehane/msoleps v1.0.4 // indirect
 	github.com/rogpeppe/go-internal v1.14.1 // indirect
+	github.com/taosdata/driver-go/v3 v3.6.0 // indirect
 	github.com/xuri/efp v0.0.0-20250227110027-3491fafc2b79 // indirect
 	github.com/xuri/nfp v0.0.0-20250226145837-86d5fc24b2ba // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect

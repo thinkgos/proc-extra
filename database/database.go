@@ -190,6 +190,9 @@ func newDialector(dialect string, dsn string) (gorm.Dialector, error) {
 			return nil, fmt.Errorf("database mkdir (%s), %+v", dsn, err)
 		}
 		dialector = NewSqlite3(dsn)
+	case "taosSql":
+		dialector = NewTaosSql(dsn)
+
 	default:
 		return nil, errors.New("please select database driver one of [mysql|postgres|sqlite3|custom], if use sqlite3, build tags with mysql|postgres|sqlite3!")
 	}
