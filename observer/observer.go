@@ -9,17 +9,15 @@ import (
 	"github.com/things-go/proc/topic"
 )
 
-type Message interface {
-	IntoPayload() ([]byte, error)
-}
-
 type Observer interface {
 	Name() string
-	Dispose(context.Context, Message) error
+	Dispose(context.Context, any) error
 }
 
 type AllowOptions struct {
-	spawn bool
+	spawn             bool // 使用协程并发, 默认不使用
+	ignoreError       bool // 允许忽略错误, 仅调用链有效, 默认不忽略
+	mustExistObserver bool // 必须存在观察者, 默认可以没有观察者
 }
 
 type AllowOption func(*AllowOptions)
@@ -34,9 +32,24 @@ func newAllowOption(opts ...AllowOption) AllowOptions {
 	return ao
 }
 
+// AllowSpawn 允许使用协程并发, 默认不使用
 func AllowSpawn() AllowOption {
 	return func(a *AllowOptions) {
 		a.spawn = true
+	}
+}
+
+// AllowIgnoreError 允许忽略错误, 仅调用链有效, 协程并发不生效, 默认不忽略
+func AllowIgnoreError() AllowOption {
+	return func(ao *AllowOptions) {
+		ao.ignoreError = true
+	}
+}
+
+// AllowMustExistObserver 必须存在观察者, 默认可以没有观察者
+func AllowMustExistObserver() AllowOption {
+	return func(ao *AllowOptions) {
+		ao.mustExistObserver = true
 	}
 }
 
@@ -52,6 +65,7 @@ func NewConcreteObserver() *ConcreteObserver {
 		errHandler: func(ctx context.Context, name string, err error) {},
 	}
 }
+
 func (cc *ConcreteObserver) SetErrHandler(f func(ctx context.Context, name string, err error)) *ConcreteObserver {
 	if f != nil {
 		cc.errHandler = f
@@ -68,9 +82,12 @@ func (cc *ConcreteObserver) GetObserverNames(topic string) []string {
 	return names
 }
 
-func (cc *ConcreteObserver) Notify(ctx context.Context, topic string, m Message, opts ...AllowOption) error {
+func (cc *ConcreteObserver) Notify(ctx context.Context, topic string, m any, opts ...AllowOption) error {
 	ao := newAllowOption(opts...)
 	values := cc.subs.Match(topic)
+	if ao.mustExistObserver && len(values) == 0 {
+		return fmt.Errorf("observer: must exist observer for topic '%s'", topic)
+	}
 	for _, v := range values {
 		ob := v.(Observer)
 		if ao.spawn {
@@ -84,7 +101,7 @@ func (cc *ConcreteObserver) Notify(ctx context.Context, topic string, m Message,
 			})
 		} else {
 			err := ob.Dispose(ctx, m)
-			if err != nil {
+			if err != nil && !ao.ignoreError {
 				return fmt.Errorf("observer: '%v' dispose failure, %w", ob.Name(), err)
 			}
 		}
@@ -92,14 +109,17 @@ func (cc *ConcreteObserver) Notify(ctx context.Context, topic string, m Message,
 	return nil
 }
 
-func (cc *ConcreteObserver) AddObserver(topic string, ob Observer) error {
+func (cc *ConcreteObserver) AddObserver(topic string, ob Observer) {
 	cc.subs.Add(topic, ob)
-	return nil
 }
 
-func (cc *ConcreteObserver) DeleteObserver(topic string, ob Observer) error {
+func (cc *ConcreteObserver) DeleteObserver(topic string, ob Observer) {
 	cc.subs.Remove(topic, ob)
-	return nil
+}
+
+func (cc *ConcreteObserver) AddObserverFunc(topic string, dispose func(context.Context, any) error) *ConcreteObserver {
+	cc.subs.Add(topic, &ObserverFunc{dispose: dispose})
+	return cc
 }
 
 func (cc *ConcreteObserver) Close() error {
