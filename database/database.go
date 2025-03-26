@@ -194,7 +194,7 @@ func newDialector(dialect string, dsn string) (gorm.Dialector, error) {
 		dialector = NewTaosSql(dsn)
 
 	default:
-		return nil, errors.New("please select database driver one of [mysql|postgres|sqlite3|custom], if use sqlite3, build tags with mysql|postgres|sqlite3!")
+		return nil, errors.New("please select database driver one of [mysql|postgres|sqlite3|custom], if use sqlite3, build tags with mysql|postgres|sqlite3!") // nolint: staticcheck
 	}
 	return dialector, nil
 }

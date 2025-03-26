@@ -24,7 +24,7 @@ func (e *File[T]) getSheetRows(sheet string, overrideRow bool) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	defer rows.Close()
+	defer rows.Close()// nolint: errcheck
 	totalRows := 0
 	for rows.Next() {
 		totalRows++

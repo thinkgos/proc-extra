@@ -22,8 +22,8 @@ func (e *File[T]) Decode(sheet string, opts ...Option) ([]T, error) {
 	if isPtr {
 		dataElemType = dataElemType.Elem()
 	}
-	if !(dataElemType.Kind() == reflect.Struct ||
-		dataElemType.Kind() == reflect.Slice && dataElemType.Elem().Kind() == reflect.String) {
+	if dataElemType.Kind() != reflect.Struct &&
+		(dataElemType.Kind() != reflect.Slice || dataElemType.Elem().Kind() != reflect.String) {
 		return nil, errors.New("xlsx: slice element not a struct or []string")
 	}
 
@@ -47,7 +47,7 @@ func (e *File[T]) Decode(sheet string, opts ...Option) ([]T, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer rows.Close() // nolint: errcheck
 	for totalRows := 1; rows.Next(); totalRows++ {
 		if totalRows < rowStart {
 			continue
@@ -109,7 +109,7 @@ func scanIntoStruct(values reflect.Value, line []string) (reflect.Value, error) 
 		}
 		fieldValue := vv.Field(colIdx)
 		val := line[index]
-		switch field.Type.Kind() {
+		switch field.Type.Kind() { // nolint: exhaustive
 		case reflect.String:
 			fieldValue.SetString(val)
 		case reflect.Bool:

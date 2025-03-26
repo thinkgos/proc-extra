@@ -47,7 +47,7 @@ func Test_Encode_SliceStruct(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		os.Remove(filename)
+		os.Remove(filename) // nolint: errcheck
 		return nil
 	}
 	t.Run("empty data", func(t *testing.T) {
@@ -56,7 +56,7 @@ func Test_Encode_SliceStruct(t *testing.T) {
 			WithEnableHeader(),
 		)
 		require.NoError(t, err)
-		os.Remove(filename)
+		os.Remove(filename) // nolint: errcheck
 	})
 	t.Run("empty option", func(t *testing.T) {
 		err := encodeWithOption()
@@ -147,7 +147,7 @@ func Test_Encode_SliceStruct_Append(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		defer os.Remove(filename)
+		defer os.Remove(filename) // nolint: errcheck
 
 		err = encodeToOldFile(filename, appendData, opts...)
 		if err != nil {
@@ -228,7 +228,7 @@ func Test_Encode_Matrix(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		defer os.Remove(filename)
+		defer os.Remove(filename) // nolint: errcheck
 		return nil
 	}
 
@@ -236,7 +236,7 @@ func Test_Encode_Matrix(t *testing.T) {
 		filename := randExcelFilename()
 		err := encodeToNewFile(filename, [][]string{})
 		require.NoError(t, err)
-		defer os.Remove(filename)
+		defer os.Remove(filename) // nolint: errcheck
 	})
 	t.Run("empty option", func(t *testing.T) {
 		err := encodeWithOption()
@@ -325,7 +325,7 @@ func Test_Encode_SliceStruct_TransformRowValue(t *testing.T) {
 			},
 		)
 		require.NoError(t, err)
-		os.Remove(filename)
+		os.Remove(filename) // nolint: errcheck
 	})
 }
 
@@ -343,6 +343,6 @@ func Test_Encode_Matrix_TransformRowValue(t *testing.T) {
 			},
 		)
 		require.NoError(t, err)
-		os.Remove(filename)
+		os.Remove(filename) // nolint: errcheck
 	})
 }

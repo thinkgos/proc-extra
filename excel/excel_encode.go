@@ -176,7 +176,8 @@ func (e *File[T]) encodeSliceStruct(sheet string, totalRows int, dataElemType re
 					}
 				}
 				fieldValue := vv.Field(colIdx)
-				if !(tagOpts.Contains("omitempty") && isEmptyValue(fieldValue)) {
+
+				if !tagOpts.Contains("omitempty") || !isEmptyValue(fieldValue) {
 					err = e.SetCellValue(sheet, axis, fieldValue.Interface())
 					if err != nil {
 						return err
@@ -250,7 +251,7 @@ func (e *File[T]) encodeMatrix(sheet string, totalRows int, dataElemType reflect
 }
 
 func isEmptyValue(v reflect.Value) bool {
-	switch k := v.Kind(); k {
+	switch k := v.Kind(); k { // nolint: exhaustive
 	case reflect.Bool:
 		return !v.Bool()
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:

@@ -30,7 +30,7 @@ func Test_Encode_Decode(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		defer os.Remove(filename)
+		defer os.Remove(filename) // nolint: errcheck
 
 		got, err := decodeFromFile[Line](filename, opts...)
 		if err != nil {
@@ -135,7 +135,7 @@ func Test_Encode_Decode_With_Append(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		defer os.Remove(filename)
+		defer os.Remove(filename) // nolint: errcheck
 
 		gotData1, err := decodeFromFile[*Line](filename, opts...)
 		if err != nil {
@@ -244,7 +244,7 @@ func Test_Encode_Empty_Matrix(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		defer os.Remove(filename)
+		defer os.Remove(filename) // nolint: errcheck
 
 		got, err := decodeFromFile[[]string](filename, opts...)
 		if err != nil {
@@ -273,7 +273,7 @@ func Test_Encode_Decode_Matrix(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		defer os.Remove(filename)
+		defer os.Remove(filename) // nolint: errcheck
 
 		got, err := decodeFromFile[[]string](filename, opts...)
 		if err != nil {
@@ -378,7 +378,7 @@ func Test_Matrix_Encode_Decode_With_APPEND(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		defer os.Remove(filename)
+		defer os.Remove(filename) // nolint: errcheck
 
 		gotData1, err := decodeFromFile[[]string](filename, opts...)
 		if err != nil {
@@ -498,7 +498,7 @@ func Test_Encode_Decode2(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		defer os.Remove(filename)
+		defer os.Remove(filename) // nolint: errcheck
 
 		got, err := decodeFromFile2[[]string](filename, opts...)
 		if err != nil {
