@@ -12,7 +12,7 @@ func Test_ObserverFunc_CallChain(t *testing.T) {
 
 	topic := "/observer/call-chain"
 	cc := NewConcreteObserver()
-	defer cc.Close()
+	defer cc.Close() // nolint: errcheck
 	cc1 := &c1{}
 	cc2 := &c2{}
 	cc3 := &c3{}

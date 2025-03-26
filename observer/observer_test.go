@@ -150,7 +150,7 @@ func Test_Observer_MustExistObserver(t *testing.T) {
 
 	topic := "/observer/must-exist-observer"
 	cc := NewConcreteObserver()
-	defer cc.Close()
+	defer cc.Close() // nolint: errcheck
 
 	err = cc.Notify(context.Background(),
 		topic,
