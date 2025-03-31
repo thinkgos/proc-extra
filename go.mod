@@ -9,7 +9,6 @@ require (
 	github.com/spf13/cast v1.7.1
 	github.com/stretchr/testify v1.10.0
 	github.com/things-go/limiter v0.1.5
-	github.com/thinkgos/proc v0.0.0-20250331033039-204ba0a5ce79
 	github.com/thinkgos/tdengine-gorm v0.1.0
 	github.com/xuri/excelize/v2 v2.9.0
 	go.opentelemetry.io/otel/sdk v1.35.0
