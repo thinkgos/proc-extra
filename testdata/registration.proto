@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package testdata;
+
+option go_package = "github.com/thinkgos/proc-extra/testdata";
+option java_multiple_files = true;
+option java_package = "io.grpc.things-go.proc-extra.testdata";
+option java_outer_classname = "Registration";
+
+message Registration {
+  int64 id = 1;
+  string open_id = 2;
+  int64 expired_at = 3;
+  string code = 4;
+}

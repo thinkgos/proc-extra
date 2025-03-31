@@ -90,8 +90,8 @@ github.com/taosdata/driver-go/v3 v3.6.0 h1:4dRXMl01DhIS5xBXUvtkkB+MjL8g64zN674xK
 github.com/taosdata/driver-go/v3 v3.6.0/go.mod h1:H2vo/At+rOPY1aMzUV9P49SVX7NlXb3LAbKw+MCLrmU=
 github.com/things-go/limiter v0.1.5 h1:vCVzm0897TSWFhy2G52rU27hdhJl/lgvfiRQrek53JQ=
 github.com/things-go/limiter v0.1.5/go.mod h1:C7SPsXIfiPPC44k/mb0TCwZa5DzqxXcL7Zg6g5hPL5I=
-github.com/thinkgos/proc v0.0.0-20250331033039-204ba0a5ce79 h1:W8P6DHZmmUh2SPKRL68QZH6ZQ8mPNpOKcx+YN/jt9ZE=
-github.com/thinkgos/proc v0.0.0-20250331033039-204ba0a5ce79/go.mod h1:NP/Lvi479KAzPSD11BAluaZZHNfzd3oVyUOV33+BNoQ=
+github.com/thinkgos/proc v0.0.0-20250331133707-16250817967d h1:kiRO8jqN00zwhmBcR7wYBxVXYc7vJbkvs5bcXsULRKA=
+github.com/thinkgos/proc v0.0.0-20250331133707-16250817967d/go.mod h1:ZKrNunLiSyzYk4n9zsOUTq0576aSGmQyn7zixxBXfdA=
 github.com/thinkgos/tdengine-gorm v0.1.0 h1:/36nobQH4SY3K3ceIR1rwTF1OHSeW8vlyUQxhpJHb4U=
 github.com/thinkgos/tdengine-gorm v0.1.0/go.mod h1:8Al3xQ8JjHKNYthE2xeW5uJ284sjwj2rjA5YzLyYois=
 github.com/xuri/efp v0.0.0-20250227110027-3491fafc2b79 h1:78nKszZqigiBRBVcoe/AuPzyLTWW5B+ltBaUX1rlIXA=
