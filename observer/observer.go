@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/things-go/proc-extra/gpool"
 	"github.com/things-go/proc/topic"
+	"github.com/thinkgos/proc-extra/gpool"
 )
 
 type Observer interface {

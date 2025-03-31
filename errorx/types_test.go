@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/things-go/proc-extra/errorx"
+	"github.com/thinkgos/proc-extra/errorx"
 )
 
 func Test_Types(t *testing.T) {

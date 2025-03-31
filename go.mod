@@ -1,4 +1,4 @@
-module github.com/things-go/proc-extra
+module github.com/thinkgos/proc-extra
 
 go 1.24
 
