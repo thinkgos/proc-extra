@@ -2,7 +2,7 @@ package captcha
 
 import (
 	"github.com/mojocn/base64Captcha"
-	"github.com/things-go/limiter/verified"
+	"github.com/thinkgos/limiter/verified"
 )
 
 var _ verified.CaptchaDriver = (*Captcha)(nil)
