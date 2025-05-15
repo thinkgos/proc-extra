@@ -10,7 +10,7 @@ require (
 	github.com/stretchr/testify v1.10.0
 	github.com/thinkgos/limiter v0.2.0
 	github.com/thinkgos/proc v0.0.0-20250331133707-16250817967d
-	github.com/thinkgos/tdengine-gorm v0.1.0
+	github.com/thinkgos/tdengine-gorm v0.2.0
 	github.com/xuri/excelize/v2 v2.9.0
 	go.opentelemetry.io/otel/sdk v1.35.0
 	go.opentelemetry.io/otel/trace v1.35.0
