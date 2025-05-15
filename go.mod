@@ -11,7 +11,7 @@ require (
 	github.com/thinkgos/limiter v0.2.0
 	github.com/thinkgos/proc v0.0.0-20250331133707-16250817967d
 	github.com/thinkgos/tdengine-gorm v0.1.0
-	github.com/xuri/excelize/v2 v2.9.0
+	github.com/xuri/excelize/v2 v2.9.1
 	go.opentelemetry.io/otel/sdk v1.35.0
 	go.opentelemetry.io/otel/trace v1.35.0
 	go.uber.org/zap v1.27.0
@@ -45,12 +45,12 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.28 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/richardlehane/mscfb v1.0.4 // indirect
 	github.com/richardlehane/msoleps v1.0.4 // indirect
 	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/taosdata/driver-go/v3 v3.7.0 // indirect
+	github.com/tiendc/go-deepcopy v1.6.0 // indirect
 	github.com/xuri/efp v0.0.1 // indirect
 	github.com/xuri/nfp v0.0.1 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect

@@ -59,8 +59,6 @@ github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd h1:TRLaZ9cD/w
 github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
 github.com/modern-go/reflect2 v1.0.2 h1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9Gz0M=
 github.com/modern-go/reflect2 v1.0.2/go.mod h1:yWuevngMOJpCy52FWWMvUC8ws7m/LJsjYzDa0/r8luk=
-github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 h1:RWengNIwukTxcDr9M+97sNutRR1RKhG96O6jWumTTnw=
-github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826/go.mod h1:TaXosZuwdSHYgviHp1DAtfrULt5eUgsSMsZf+YrPgl8=
 github.com/mojocn/base64Captcha v1.3.8 h1:rrN9BhCwXKS8ht1e21kvR3iTaMgf4qPC9sRoV52bqEg=
 github.com/mojocn/base64Captcha v1.3.8/go.mod h1:QFZy927L8HVP3+VV5z2b1EAEiv1KxVJKZbAucVgLUy4=
 github.com/oklog/ulid/v2 v2.1.0 h1:+9lhoxAP56we25tyYETBBY1YLA2SaoLvUFgrP2miPJU=
@@ -99,10 +97,12 @@ github.com/thinkgos/proc v0.0.0-20250331133707-16250817967d h1:kiRO8jqN00zwhmBcR
 github.com/thinkgos/proc v0.0.0-20250331133707-16250817967d/go.mod h1:ZKrNunLiSyzYk4n9zsOUTq0576aSGmQyn7zixxBXfdA=
 github.com/thinkgos/tdengine-gorm v0.1.0 h1:/36nobQH4SY3K3ceIR1rwTF1OHSeW8vlyUQxhpJHb4U=
 github.com/thinkgos/tdengine-gorm v0.1.0/go.mod h1:8Al3xQ8JjHKNYthE2xeW5uJ284sjwj2rjA5YzLyYois=
+github.com/tiendc/go-deepcopy v1.6.0 h1:0UtfV/imoCwlLxVsyfUd4hNHnB3drXsfle+wzSCA5Wo=
+github.com/tiendc/go-deepcopy v1.6.0/go.mod h1:toXoeQoUqXOOS/X4sKuiAoSk6elIdqc0pN7MTgOOo2I=
 github.com/xuri/efp v0.0.1 h1:fws5Rv3myXyYni8uwj2qKjVaRP30PdjeYe2Y6FDsCL8=
 github.com/xuri/efp v0.0.1/go.mod h1:ybY/Jr0T0GTCnYjKqmdwxyxn2BQf2RcQIIvex5QldPI=
-github.com/xuri/excelize/v2 v2.9.0 h1:1tgOaEq92IOEumR1/JfYS/eR0KHOCsRv/rYXXh6YJQE=
-github.com/xuri/excelize/v2 v2.9.0/go.mod h1:uqey4QBZ9gdMeWApPLdhm9x+9o2lq4iVmjiLfBS5hdE=
+github.com/xuri/excelize/v2 v2.9.1 h1:VdSGk+rraGmgLHGFaGG9/9IWu1nj4ufjJ7uwMDtj8Qw=
+github.com/xuri/excelize/v2 v2.9.1/go.mod h1:x7L6pKz2dvo9ejrRuD8Lnl98z4JLt0TGAwjhW+EiP8s=
 github.com/xuri/nfp v0.0.1 h1:MDamSGatIvp8uOmDP8FnmjuQpu90NzdJxo7242ANR9Q=
 github.com/xuri/nfp v0.0.1/go.mod h1:WwHg+CVyzlv/TX9xqBFXEZAuxOPxn2k1GNHwG41IIUQ=
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
