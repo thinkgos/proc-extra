@@ -4,7 +4,7 @@ go 1.24
 
 require (
 	github.com/mojocn/base64Captcha v1.3.8
-	github.com/oklog/ulid/v2 v2.1.0
+	github.com/oklog/ulid/v2 v2.1.1
 	github.com/panjf2000/ants/v2 v2.11.3
 	github.com/spf13/cast v1.8.0
 	github.com/stretchr/testify v1.10.0
