@@ -173,7 +173,7 @@ func Parse(err error) *Error {
 	if te := new(Error); errors.As(err, &te) {
 		return te
 	}
-	return NewInternalServer(WithCause(err))
+	return NewInternalServer().WithCause(err)
 }
 
 // EqualCode return true if error underlying code equal target code.
