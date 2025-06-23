@@ -116,16 +116,16 @@ func New(c *Config, config *gorm.Config) (*gorm.DB, error) {
 			Replicas: replicaDialector,
 			Policy:   nil,
 		})
-		if c.Source.MaxIdleConn > 0 {
+		if c.Replica.MaxIdleConn > 0 {
 			pluginDbResolver.SetMaxIdleConns(c.Replica.MaxIdleConn)
 		}
-		if c.Source.MaxOpenConn > 0 {
+		if c.Replica.MaxOpenConn > 0 {
 			pluginDbResolver.SetMaxOpenConns(c.Replica.MaxOpenConn)
 		}
-		if c.Source.MaxLifetime > 0 {
+		if c.Replica.MaxLifetime > 0 {
 			pluginDbResolver.SetConnMaxLifetime(c.Replica.MaxLifetime)
 		}
-		if c.Source.MaxIdleTime > 0 {
+		if c.Replica.MaxIdleTime > 0 {
 			pluginDbResolver.SetConnMaxIdleTime(c.Replica.MaxIdleTime)
 		}
 		err = db.Use(pluginDbResolver)
