@@ -24,12 +24,12 @@ var (
 	}
 )
 
-// IntoValueNumber returns the enum value as an integer.
-func (x {{$e.TypeName}}) IntoValueNumber() {{$e.Type}} {
+// IntoValue returns the enum origin type.
+func (x {{$e.TypeName}}) IntoValue() {{$e.Type}} {
     return {{$e.Type}}(x)
 }
 
-// IntoValueString returns the enum value as an integer string.
+// IntoValueString returns the enum value as a string.
 func (x {{$e.TypeName}}) IntoValueString() string {
     return strconv.FormatInt(int64(x), 10)
 }
