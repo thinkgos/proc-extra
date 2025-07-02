@@ -41,6 +41,7 @@ func NewRootCmd() *RootCmd {
 					tags = strings.Join(root.Tags, ",")
 				}
 				wg := conc.WaitGroup{}
+				dirOrFiles := strings.Join(root.Pattern, " ")
 				for _, v := range root.Type {
 					vv := v
 					wg.Go(func() {
@@ -49,6 +50,7 @@ func NewRootCmd() *RootCmd {
 						if tags != "" {
 							args = append(args, "-tags", tags)
 						}
+						args = append(args,dirOrFiles)
 						output, err := exec.Command("stringer", args...).CombinedOutput()
 						if err != nil {
 							slog.Error(strings.Join(args, " "), slog.String("error", string(output)))
