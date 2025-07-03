@@ -30,7 +30,7 @@ type File struct {
 // Value represents a declared constant.
 type Value struct {
 	OriginalName string // 常量定义的名称
-	Mapping      string // 注释名称, 如果没有, 则同常量名称
+	Label        string // 注释名称, 如果没有, 则同常量名称
 	// value相关
 	Value  uint64 // 需要时转为`int64`.
 	Signed bool   // `constant`是否是有符号类型.
@@ -160,9 +160,9 @@ func (f *File) GenDecl(node ast.Node) bool {
 					Val:          value.String(),
 				}
 				if c := vspec.Comment; c != nil && len(c.List) == 1 {
-					v.Mapping = strings.TrimSpace(c.Text())
+					v.Label = strings.TrimSpace(c.Text())
 				} else {
-					v.Mapping = v.OriginalName
+					v.Label = v.OriginalName
 				}
 				f.Values = append(f.Values, v)
 			}
