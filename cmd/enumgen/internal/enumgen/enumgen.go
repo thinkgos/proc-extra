@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"os"
 	"path"
+	"slices"
 	"sort"
 	"strings"
 
@@ -68,22 +69,24 @@ func (g *Gen) Generate() error {
 func (g *Gen) generateEnum(typeName string) error {
 	typeComment := ""
 	typeType := ""
+	typeIsString := false
 	values := make([]*enumerate.Value, 0, 128)
 	for _, file := range g.pkg.Files {
 		// Set the state for this run of the walker.
 		file.TypeName = typeName
-		file.Values = nil
 		file.TypeComment = ""
 		file.Type = ""
+		file.Values = nil
 		if file.File != nil {
 			ast.Inspect(file.File, file.GenDecl)
-			values = append(values, file.Values...)
 			if file.TypeComment != "" {
 				typeComment = file.TypeComment
 			}
 			if file.Type != "" {
 				typeType = file.Type
+				typeIsString = file.IsString
 			}
+			values = append(values, file.Values...)
 		}
 	}
 	if len(values) == 0 {
@@ -98,16 +101,19 @@ func (g *Gen) generateEnum(typeName string) error {
 		Version:      g.Version,
 		IsDeprecated: false,
 		Package:      g.pkg.Name,
+		HasAnyString: false,
 		Enums: []*Enumerate{
 			{
 				Type:        typeType,
 				TypeName:    typeName,
 				TypeComment: typeComment,
+				IsString:    typeIsString,
 				Explain:     explain,
 				Values:      values,
 			},
 		},
 	}
+	f.HasAnyString = slices.ContainsFunc(f.Enums, func(v *Enumerate) bool { return v.IsString })
 	buf := &bytes.Buffer{}
 	err := f.execute(buf)
 	if err != nil {

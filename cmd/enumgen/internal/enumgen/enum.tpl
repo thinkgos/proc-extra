@@ -8,7 +8,9 @@ package {{.Package}}
 
 import (
 	"slices"
+{{- if not .HasAnyString}}
 	"strconv"
+{{- end}}
 )
 
 {{- range $e := .Enums}}
@@ -16,9 +18,9 @@ import (
 // {{$e.TypeComment}}
 {{- end}}
 var __{{$e.TypeName}}_Enum_Validity = []{{$e.TypeName}} { 
-	{{- range $ee := .Values}}
-		{{$ee.OriginalName}}, // {{$ee.Value}}: {{$ee.Label}}
-	{{- end}}
+{{- range $ee := .Values}}
+	{{$ee.OriginalName}}, // {{$ee.RawValue}}: {{$ee.Label}}
+{{- end}}
 }
 
 // Value returns the original type value.
@@ -30,7 +32,7 @@ func (x {{$e.TypeName}}) Value() {{$e.Type}} {
 // ValueString returns the original type value as string.
 // {{$e.Explain}}
 func (x {{$e.TypeName}}) ValueString() string {
-    return strconv.FormatInt(int64(x), 10)
+    return {{if $e.IsString}} x.Value() {{else}} strconv.FormatInt(int64(x), 10) {{end}}
 }
 
 // EnumCount the number of enum values.
@@ -48,7 +50,7 @@ func (x {{$e.TypeName}}) IsValid() bool {
 func (x {{$e.TypeName}}) Label() (s string) {
 	switch x {
 	{{- range $ee := .Values}}
-		case {{$ee.OriginalName}}: // {{$ee.Value}}
+		case {{$ee.OriginalName}}: // {{$ee.RawValue}}
 			s = "{{$ee.Label}}"
 	{{- end}}
 		default:
@@ -62,7 +64,7 @@ func (x {{$e.TypeName}}) Label() (s string) {
 func (x *{{$e.TypeName}}) FromLabel(s string) {
 	switch s {
 	{{- range $ee := .Values}}
-		case "{{$ee.Label}}": // {{$ee.Value}}
+		case "{{$ee.Label}}": // {{$ee.RawValue}}
 			*x = {{$ee.OriginalName}}
 	{{- end}}
 		default:

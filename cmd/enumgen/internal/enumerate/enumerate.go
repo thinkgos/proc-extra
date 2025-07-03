@@ -9,6 +9,7 @@ import (
 	"log/slog"
 	"os"
 	"slices"
+	"strconv"
 	"strings"
 )
 
@@ -24,6 +25,7 @@ type File struct {
 	TypeName    string
 	TypeComment string
 	Type        string
+	IsString    bool
 	Values      []*Value
 }
 
@@ -32,23 +34,28 @@ type Value struct {
 	OriginalName string // 常量定义的名称
 	Label        string // 注释, 如果没有, 则同常量名称
 	// value相关
-	Value  uint64 // 需要时转为`int64`.
-	Signed bool   // `constant`是否是有符号类型.
-	Val    string // `constant`的字符串值,由"go/constant"包提供.
+	Value    uint64 // 需要时转为`int64`(integer有效).
+	Signed   bool   // `constant`是否是有符号类型(integer有效),
+	RawValue string // 纯值, 字符串不包含引号, 整型直接格式化成字符串
+	IsString bool   // 是否是string, 否则为integer
+	Val      string // `constant`的字符串值,由"go/constant"包提供.
 }
 
 func (v *Value) String() string { return v.Val }
 
-// SortValue 使我们可以将`constants`进行排序, 要谨慎地按照有符号或无符号的顺序进行恰当的处理
+// SortValue 使我们可以将`constants`进行排序, 字符串按`constants`排序, 整型要谨慎地按照有符号或无符号的顺序进行恰当的处理
 type SortValue []*Value
 
 func (b SortValue) Len() int      { return len(b) }
 func (b SortValue) Swap(i, j int) { b[i], b[j] = b[j], b[i] }
 func (b SortValue) Less(i, j int) bool {
-	if b[i].Signed {
+	if b[i].IsString {
+		return b[i].RawValue < b[j].RawValue
+	} else if b[i].Signed {
 		return int64(b[i].Value) < int64(b[j].Value)
+	} else {
+		return b[i].Value < b[j].Value
 	}
-	return b[i].Value < b[j].Value
 }
 
 // ArrayString convert to array string format [0:aaa,1:bbb,3:ccc]
@@ -63,7 +70,7 @@ func (vs SortValue) ArrayString() string {
 		if i != 0 {
 			b.WriteString(",")
 		}
-		b.WriteString(k.Val)
+		b.WriteString(k.RawValue)
 		b.WriteString(":")
 		b.WriteString(k.Label)
 	}
@@ -96,10 +103,11 @@ func (f *File) GenDecl(node ast.Node) bool {
 					os.Exit(1)
 				}
 				basic := obj.Type().Underlying().(*types.Basic)
-				if basic.Info()&types.IsInteger == 0 {
-					slog.Error(fmt.Sprintf("can't handle non-integer constant type %s", typ))
+				if (basic.Info() & (types.IsInteger | types.IsString)) == 0 {
+					slog.Error(fmt.Sprintf("can't handle non-integer or string constant type %s", typ))
 					os.Exit(1)
 				}
+				f.IsString = (basic.Info() & types.IsString) != 0
 				f.Type = basic.Name() // 拿到类型
 				if c := tsepc.Comment.Text(); c != "" {
 					f.TypeComment += strings.TrimSuffix(strings.TrimSpace(c), "\n")
@@ -155,34 +163,42 @@ func (f *File) GenDecl(node ast.Node) bool {
 					os.Exit(1)
 				}
 				info := obj.Type().Underlying().(*types.Basic).Info()
-				if info&types.IsInteger == 0 {
-					slog.Error(fmt.Sprintf("can't handle non-integer constant type %s", typ))
+				if (info & (types.IsInteger | types.IsString)) == 0 {
+					slog.Error(fmt.Sprintf("can't handle non-integer or string constant type %s", typ))
 					os.Exit(1)
 				}
 				value := obj.(*types.Const).Val() // Guaranteed to succeed as this is CONST.
-				if value.Kind() != constant.Int {
+				if value.Kind() != constant.Int && value.Kind() != constant.String {
 					slog.Error(fmt.Sprintf("can't happen: constant is not an integer %s", name))
 					os.Exit(1)
 				}
-				i64, isInt := constant.Int64Val(value)
-				u64, isUint := constant.Uint64Val(value)
-				if !isInt && !isUint {
-					slog.Error(fmt.Sprintf("internal error: value of %s is not an integer: %s", name, value.String()))
-					os.Exit(1)
-				}
-				if !isInt {
-					u64 = uint64(i64)
-				}
+				rawValue, _ := strconv.Unquote(value.String())
 				v := &Value{
 					OriginalName: name.Name,
-					Value:        u64,
-					Signed:       info&types.IsUnsigned == 0,
+					Label:        "",
+					Value:        0,
+					Signed:       false,
+					RawValue:     rawValue,
+					IsString:     (info & types.IsString) != 0,
 					Val:          value.String(),
 				}
 				if c := vspec.Comment; c != nil && len(c.List) == 1 {
 					v.Label = strings.TrimSpace(c.Text())
 				} else {
 					v.Label = v.OriginalName
+				}
+				if !v.IsString {
+					i64, isInt := constant.Int64Val(value)
+					u64, isUint := constant.Uint64Val(value)
+					if !isInt && !isUint {
+						slog.Error(fmt.Sprintf("internal error: value of %s is not an integer: %s", name, value.String()))
+						os.Exit(1)
+					}
+					if !isInt {
+						u64 = uint64(i64)
+					}
+					v.Value = u64
+					v.Signed = info&types.IsUnsigned == 0
 				}
 				f.Values = append(f.Values, v)
 			}

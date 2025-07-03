@@ -2,8 +2,8 @@ package enumgen
 
 import (
 	"embed"
-	"html/template"
 	"io"
+	"text/template"
 
 	"github.com/thinkgos/proc-extra/cmd/enumgen/internal/enumerate"
 )
@@ -19,6 +19,7 @@ type File struct {
 	Version      string
 	IsDeprecated bool
 	Package      string
+	HasAnyString bool
 	Enums        []*Enumerate
 }
 
@@ -26,6 +27,7 @@ type Enumerate struct {
 	Type        string
 	TypeName    string
 	TypeComment string
+	IsString    bool
 	Explain     string
 	Values      []*enumerate.Value
 }
