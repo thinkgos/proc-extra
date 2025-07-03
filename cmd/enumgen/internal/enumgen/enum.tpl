@@ -40,6 +40,12 @@ func ({{$e.TypeName}}) EnumCount() int {
 	return {{len .Values}}
 }
 
+// IsZeroValue returns the enum value is valid or not.
+func (x {{$e.TypeName}}) IsZeroValue() bool {
+	var zero {{$e.TypeName}}
+    return x == zero
+}
+
 // IsValid whether the enum value is valid or not.
 func (x {{$e.TypeName}}) IsValid() bool {
 	return slices.Contains(__{{$e.TypeName}}_Enum_Validity, {{$e.TypeName}}(x))
@@ -68,8 +74,8 @@ func (x *{{$e.TypeName}}) ParseLabel(s string) {
 			*x = {{$ee.OriginalName}}
 	{{- end}}
 		default:
-			var dflt {{$e.TypeName}}
-			*x = dflt
+			var zero {{$e.TypeName}}
+			*x = zero
 	}
 }
 {{- end}}

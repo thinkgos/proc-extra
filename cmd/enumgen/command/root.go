@@ -48,14 +48,15 @@ func NewRootCmd() *RootCmd {
 				srcDir = filepath.Dir(srcDir)
 			}
 			g := &enumgen.Gen{
-				Pattern:   root.Pattern,
-				OutputDir: srcDir,
-				Type:      root.Type,
-				Tags:      root.Tags,
-				Version:   version,
-				Merge:     root.Merge,
-				Filename:  root.Filename,
-				OmitZero:  root.OmitZero,
+				Pattern:      root.Pattern,
+				OutputDir:    srcDir,
+				Type:         root.Type,
+				Tags:         root.Tags,
+				Version:      version,
+				OmitZero:     root.OmitZero,
+				Merge:        root.Merge,
+				Filename:     root.Filename,
+				IsOrderValue: true,
 			}
 			err = g.Init()
 			if err != nil {

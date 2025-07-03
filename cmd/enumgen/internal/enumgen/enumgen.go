@@ -20,19 +20,20 @@ const DefaultDictTypeTpl = "INSERT INTO `sys_dict_type` (`type`, `name`, `remark
 const DefaultDictItemTpl = "INSERT INTO `sys_dict_item` (`dict_type`, `label`, `value`, `sort`, `remark`, `status`) VALUES ('%s', '%s', '%s', %d, '%s', 1);"
 
 type Gen struct {
-	Pattern     []string           // 匹配路径
-	OutputDir   string             // 输出路径
-	Type        []string           // 相关类型
-	Tags        []string           // 编译标签
-	Version     string             // 版本
-	Merge       bool               // 合并到一个文件
-	Filename    string             // 合并文件名
-	OmitZero    bool               // 忽略零值
-	SqlKeyStyle string             // 字典Key风格
-	SqlDictType string             // 字典类型模板
-	SqlDictItem string             // 字典项模板
-	pkg         *enumerate.Package // 包
-	enums       []*Enumerate       // 枚举列表
+	Pattern      []string           // 匹配路径
+	OutputDir    string             // 输出路径
+	Type         []string           // 枚举类型
+	Tags         []string           // 编译标签
+	Version      string             // 版本
+	Merge        bool               // 合并到一个文件
+	Filename     string             // 合并文件名
+	OmitZero     bool               // 忽略零值
+	SqlKeyStyle  string             // 字典Key风格
+	SqlDictType  string             // 字典类型模板
+	SqlDictItem  string             // 字典项模板
+	IsOrderValue bool               // 是否枚举值排序
+	pkg          *enumerate.Package // 包
+	enums        []*Enumerate       // 枚举列表
 }
 
 func (g *Gen) Init() error {
@@ -182,8 +183,15 @@ func (g *Gen) inspectEnum(typeName string) *Enumerate {
 	if typeType == "" {
 		return nil
 	}
-	// sort.Stable(enumerate.SortValue(values))
-	explain := enumerate.SortValues(values).ArrayString()
+	explain := ""
+	if g.IsOrderValue {
+		sort.Stable(enumerate.SortValues(values))
+		explain = enumerate.SortValues(values).ArrayString()
+	} else {
+		tmpSortValues := enumerate.SortValues(values).Clone()
+		sort.Stable(enumerate.SortValues(tmpSortValues))
+		explain = enumerate.SortValues(tmpSortValues).ArrayString()
+	}
 	if typeComment != "" {
 		explain = typeComment + ": " + explain
 	}

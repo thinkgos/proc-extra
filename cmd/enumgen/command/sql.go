@@ -20,8 +20,7 @@ type EnumSqlOption struct {
 }
 
 type SqlCmd struct {
-	cmd   *cobra.Command
-	level string
+	cmd *cobra.Command
 	EnumSqlOption
 }
 
@@ -48,17 +47,18 @@ func NewSqlCmd() *SqlCmd {
 				srcDir = filepath.Dir(srcDir)
 			}
 			g := &enumgen.Gen{
-				Pattern:     root.Pattern,
-				OutputDir:   srcDir,
-				Type:        root.Type,
-				Tags:        root.Tags,
-				Version:     version,
-				Merge:       false,
-				Filename:    "",
-				SqlKeyStyle: root.SqlKeyStyle,
-				SqlDictType: root.SqlDictType,
-				SqlDictItem: root.SqlDictItem,
-				OmitZero:    root.OmitZero,
+				Pattern:      root.Pattern,
+				OutputDir:    srcDir,
+				Type:         root.Type,
+				Tags:         root.Tags,
+				Version:      version,
+				Merge:        false,
+				Filename:     "",
+				OmitZero:     root.OmitZero,
+				SqlKeyStyle:  root.SqlKeyStyle,
+				SqlDictType:  root.SqlDictType,
+				SqlDictItem:  root.SqlDictItem,
+				IsOrderValue: false,
 			}
 			if err = g.Init(); err != nil {
 				return err
@@ -67,23 +67,14 @@ func NewSqlCmd() *SqlCmd {
 		},
 		Args: cobra.NoArgs,
 	}
-	cobra.OnInitialize(func() {
-		textHandler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-			AddSource:   false,
-			Level:       level(root.level),
-			ReplaceAttr: nil,
-		})
-		slog.SetDefault(slog.New(textHandler))
-	})
 
-	cmd.PersistentFlags().StringVarP(&root.level, "level", "l", "info", "log level(debug,info,warn,error)")
 	cmd.Flags().StringSliceVarP(&root.Pattern, "pattern", "p", []string{"."}, "the list of files or a directory.")
 	cmd.Flags().StringSliceVarP(&root.Type, "type", "t", nil, "the list type of enum names; must be set")
 	cmd.Flags().StringSliceVar(&root.Tags, "tags", nil, "comma-separated list of build tags to apply")
 	cmd.Flags().StringVar(&root.SqlKeyStyle, "sqlKeyStyle", "", "字典Key风格, 支持snakeCase,pascalCase,smallCamelCase,kebab")
 	cmd.Flags().StringVar(&root.SqlDictType, "sqlDictType", enumgen.DefaultDictTypeTpl, "字典类型模板, 按顺序为[类型, 名称, 备注(同名称)]")
 	cmd.Flags().StringVar(&root.SqlDictItem, "sqlDictItem", enumgen.DefaultDictItemTpl, "字典项模板, 按顺序为[类型, 标签, 值, 顺序, 备注(同标签)]")
-	cmd.Flags().BoolVar(&root.OmitZero, "omitZero", false, "是否忽略零值")
+	cmd.Flags().BoolVar(&root.OmitZero, "omitZero", true, "是否忽略零值")
 
 	root.cmd = cmd
 	return root
