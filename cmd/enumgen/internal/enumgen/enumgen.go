@@ -181,7 +181,7 @@ func (g *Gen) inspectEnum(typeName string) *Enumerate {
 		return nil
 	}
 	// sort.Stable(enumerate.SortValue(values))
-	explain := enumerate.SortValue(values).ArrayString()
+	explain := enumerate.SortValues(values).ArrayString()
 	if typeComment != "" {
 		explain = typeComment + ": " + explain
 	}

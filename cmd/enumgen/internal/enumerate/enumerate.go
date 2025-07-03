@@ -9,6 +9,7 @@ import (
 	"log/slog"
 	"os"
 	"slices"
+	"sort"
 	"strings"
 )
 
@@ -43,30 +44,38 @@ type Value struct {
 
 func (v *Value) String() string { return v.Val }
 
-// SortValue 使我们可以将`constants`进行排序, 字符串按`constants`排序, 整型要谨慎地按照有符号或无符号的顺序进行恰当的处理
-type SortValue []*Value
+// SortValues 使我们可以将`constants`进行排序
+// 字符串不排序, 整型谨慎地按照有符号或无符号的顺序进行恰当的排序
+type SortValues []*Value
 
-func (b SortValue) Len() int      { return len(b) }
-func (b SortValue) Swap(i, j int) { b[i], b[j] = b[j], b[i] }
-func (b SortValue) Less(i, j int) bool {
-	if b[i].IsString {
-		return b[i].RawValue < b[j].RawValue
-	} else if b[i].Signed {
-		return int64(b[i].Value) < int64(b[j].Value)
-	} else {
-		return b[i].Value < b[j].Value
+func (b SortValues) Len() int      { return len(b) }
+func (b SortValues) Swap(i, j int) { b[i], b[j] = b[j], b[i] }
+func (b SortValues) Less(i, j int) bool {
+	if !b[i].IsString {
+		if b[i].Signed {
+			return int64(b[i].Value) < int64(b[j].Value)
+		} else {
+			return b[i].Value < b[j].Value
+		}
 	}
+	return false
 }
 
 // ArrayString convert to array string format [0:aaa,1:bbb,3:ccc]
-func (vs SortValue) ArrayString() string {
+func (vs SortValues) ArrayString() string {
 	if len(vs) == 0 {
 		return "[]"
 	}
+	sortValues := make([]*Value, 0, len(vs))
+	for _, v := range vs {
+		tv := *v
+		sortValues = append(sortValues, &tv)
+	}
+	sort.Sort(SortValues(sortValues))
 
 	b := strings.Builder{}
 	b.WriteString("[")
-	for i, k := range vs {
+	for i, k := range sortValues {
 		if i != 0 {
 			b.WriteString(",")
 		}
