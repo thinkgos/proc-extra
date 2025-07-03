@@ -19,7 +19,7 @@ type File struct {
 	Version      string
 	IsDeprecated bool
 	Package      string
-	HasAnyString bool
+	HasInteger   bool
 	Enums        []*Enumerate
 }
 
@@ -30,6 +30,15 @@ type Enumerate struct {
 	IsString    bool
 	Explain     string
 	Values      []*enumerate.Value
+}
+
+// SorEnumerate 按TypeName排序
+type SorEnumerate []*Enumerate
+
+func (b SorEnumerate) Len() int      { return len(b) }
+func (b SorEnumerate) Swap(i, j int) { b[i], b[j] = b[j], b[i] }
+func (b SorEnumerate) Less(i, j int) bool {
+	return b[i].TypeName < b[j].TypeName
 }
 
 func (e *File) execute(w io.Writer) error {

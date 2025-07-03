@@ -8,7 +8,7 @@ package {{.Package}}
 
 import (
 	"slices"
-{{- if not .HasAnyString}}
+{{- if .HasInteger}}
 	"strconv"
 {{- end}}
 )

@@ -11,9 +11,11 @@ import (
 )
 
 type EnumOption struct {
-	Pattern []string
-	Type    []string
-	Tags    []string
+	Pattern  []string
+	Type     []string
+	Tags     []string
+	Merge    bool
+	Filename string
 }
 
 type RootCmd struct {
@@ -50,8 +52,10 @@ func NewRootCmd() *RootCmd {
 				Type:      root.Type,
 				Tags:      root.Tags,
 				Version:   version,
+				Merge:     root.Merge,
+				Filename:  root.Filename,
 			}
-			err = g.Generate()
+			err = g.GenEnum()
 			if err != nil {
 				slog.Error("生成失败", slog.Any("err", err))
 			}
@@ -72,6 +76,8 @@ func NewRootCmd() *RootCmd {
 	cmd.Flags().StringSliceVarP(&root.Pattern, "pattern", "p", []string{"."}, "the list of files or a directory.")
 	cmd.Flags().StringSliceVarP(&root.Type, "type", "t", nil, "the list type of enum names; must be set")
 	cmd.Flags().StringSliceVar(&root.Tags, "tags", nil, "comma-separated list of build tags to apply")
+	cmd.Flags().BoolVar(&root.Merge, "merge", false, "merge in a file")
+	cmd.Flags().StringVar(&root.Filename, "filename", "", "filename when merge enabled, default: enums")
 
 	root.cmd = cmd
 	return root

@@ -21,11 +21,14 @@ type Gen struct {
 	OutputDir string
 	Type      []string
 	Tags      []string
-	Version   string
+	Version   string // 版本
+	Merge     bool   // 合并到一个文件
+	Filename  string // 合并文件名
 	pkg       *enumerate.Package
+	enums     []*Enumerate
 }
 
-func (g *Gen) Generate() error {
+func (g *Gen) init() error {
 	cfg := &packages.Config{
 		Mode: packages.NeedName |
 			packages.NeedTypes |
@@ -57,16 +60,38 @@ func (g *Gen) Generate() error {
 			Pkg:  g.pkg,
 		}
 	}
-	for _, typeName := range g.Type {
-		err = g.generateEnum(typeName)
-		if err != nil {
-			return err
-		}
-	}
 	return nil
 }
 
-func (g *Gen) generateEnum(typeName string) error {
+func (g *Gen) GenEnum() error {
+	err := g.init()
+	if err != nil {
+		return err
+	}
+	for _, typeName := range g.Type {
+		enums := g.inspectEnum(typeName)
+		if enums == nil {
+			slog.Error("code gen enum", slog.String("err", fmt.Sprintf("no find type defined: %s", typeName)))
+			continue
+		}
+		if g.Merge {
+			g.enums = append(g.enums, enums)
+			continue
+		}
+		err := g.genEnumCode(enums)
+		if err != nil {
+			slog.Error("code gen enum", slog.Any("err", err))
+			continue
+		}
+	}
+	if g.Merge {
+		sort.Sort(SorEnumerate(g.enums))
+		err = g.genEnumCode(g.enums...)
+	}
+	return err
+}
+
+func (g *Gen) inspectEnum(typeName string) *Enumerate {
 	typeComment := ""
 	typeType := ""
 	typeIsString := false
@@ -79,50 +104,79 @@ func (g *Gen) generateEnum(typeName string) error {
 		file.Values = nil
 		if file.File != nil {
 			ast.Inspect(file.File, file.GenDecl)
-			if file.TypeComment != "" {
-				typeComment = file.TypeComment
-			}
 			if file.Type != "" {
 				typeType = file.Type
 				typeIsString = file.IsString
+				typeComment = file.TypeComment
 			}
 			values = append(values, file.Values...)
 		}
 	}
-	if len(values) == 0 {
-		return fmt.Errorf("no values defined for type %s", typeName)
+	if typeType == "" {
+		return nil
 	}
 	sort.Stable(enumerate.SortValue(values))
 	explain := enumerate.SortValue(values).ArrayString()
 	if typeComment != "" {
 		explain = typeComment + ": " + explain
 	}
-	f := &File{
-		Version:      g.Version,
-		IsDeprecated: false,
-		Package:      g.pkg.Name,
-		HasAnyString: false,
-		Enums: []*Enumerate{
-			{
-				Type:        typeType,
-				TypeName:    typeName,
-				TypeComment: typeComment,
-				IsString:    typeIsString,
-				Explain:     explain,
-				Values:      values,
-			},
-		},
+	return &Enumerate{
+		Type:        typeType,
+		TypeName:    typeName,
+		TypeComment: typeComment,
+		IsString:    typeIsString,
+		Explain:     explain,
+		Values:      values,
 	}
-	f.HasAnyString = slices.ContainsFunc(f.Enums, func(v *Enumerate) bool { return v.IsString })
-	buf := &bytes.Buffer{}
-	err := f.execute(buf)
-	if err != nil {
-		return err
+}
+
+func (g *Gen) genEnumCode(es ...*Enumerate) error {
+	genEnumFile := func(es ...*Enumerate) ([]byte, error) {
+		f := &File{
+			Version:      g.Version,
+			IsDeprecated: false,
+			Package:      g.pkg.Name,
+			HasInteger:   false,
+			Enums:        es,
+		}
+		f.HasInteger = slices.ContainsFunc(f.Enums, func(v *Enumerate) bool { return !v.IsString })
+		buf := &bytes.Buffer{}
+		err := f.execute(buf)
+		if err != nil {
+			return nil, err
+		}
+		data, err := format.Source(buf.Bytes())
+		if err != nil {
+			data = buf.Bytes()
+		}
+		return data, nil
 	}
-	data, err := format.Source(buf.Bytes())
-	if err != nil {
-		data = buf.Bytes()
+
+	if g.Merge {
+		data, err := genEnumFile(es...)
+		if err != nil {
+			return err
+		}
+		filename := g.Filename
+		if filename == "" {
+			filename = "enum"
+		}
+		filename = path.Join(g.OutputDir, strings.ToLower(filename)+".enum.gen.go")
+		return os.WriteFile(filename, data, 0644)
+	} else {
+		for _, e := range es {
+			data, err := genEnumFile(e)
+			if err != nil {
+				slog.Error("code gen enum", slog.Any("err", err))
+				continue
+			}
+			filename := path.Join(g.OutputDir, strings.ToLower(e.TypeName)+".enum.gen.go")
+			err = os.WriteFile(filename, data, 0644)
+			if err != nil {
+				slog.Error("code gen enum", slog.Any("err", err))
+				continue
+			}
+		}
 	}
-	filename := path.Join(g.OutputDir, strings.ToLower(typeName)+".enum.gen.go")
-	return os.WriteFile(filename, data, 0644)
+	return nil
 }
