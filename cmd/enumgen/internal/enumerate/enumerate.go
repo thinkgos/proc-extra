@@ -9,7 +9,6 @@ import (
 	"log/slog"
 	"os"
 	"slices"
-	"strconv"
 	"strings"
 )
 
@@ -27,6 +26,7 @@ type File struct {
 	Type        string
 	IsString    bool
 	Values      []*Value
+	OmitZero    bool
 }
 
 // Value represents a declared constant.
@@ -172,6 +172,7 @@ func (f *File) GenDecl(node ast.Node) bool {
 					slog.Error(fmt.Sprintf("can't happen: constant is not an integer %s", name))
 					os.Exit(1)
 				}
+
 				v := &Value{
 					OriginalName: name.Name,
 					Label:        "",
@@ -188,7 +189,10 @@ func (f *File) GenDecl(node ast.Node) bool {
 				}
 
 				if v.IsString {
-					v.RawValue, _ = strconv.Unquote(v.RawValue)
+					v.RawValue = constant.StringVal(value)
+					if f.OmitZero && v.RawValue == "" {
+						continue
+					}
 				} else {
 					i64, isInt := constant.Int64Val(value)
 					u64, isUint := constant.Uint64Val(value)
@@ -198,6 +202,9 @@ func (f *File) GenDecl(node ast.Node) bool {
 					}
 					if !isInt {
 						u64 = uint64(i64)
+					}
+					if f.OmitZero && u64 == 0 {
+						continue
 					}
 					v.Value = u64
 					v.Signed = info&types.IsUnsigned == 0

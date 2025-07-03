@@ -16,6 +16,7 @@ type EnumOption struct {
 	Tags     []string
 	Merge    bool   // 合并到一个文件
 	Filename string // 合并文件名
+	OmitZero bool   // 忽略零值
 }
 
 type RootCmd struct {
@@ -54,6 +55,7 @@ func NewRootCmd() *RootCmd {
 				Version:   version,
 				Merge:     root.Merge,
 				Filename:  root.Filename,
+				OmitZero:  root.OmitZero,
 			}
 			err = g.Init()
 			if err != nil {
@@ -78,6 +80,7 @@ func NewRootCmd() *RootCmd {
 	cmd.Flags().StringSliceVar(&root.Tags, "tags", nil, "comma-separated list of build tags to apply")
 	cmd.Flags().BoolVar(&root.Merge, "merge", false, "merge in a file")
 	cmd.Flags().StringVar(&root.Filename, "filename", "", "filename when merge enabled, default: enums")
+	cmd.Flags().BoolVar(&root.OmitZero, "omitZero", false, "是否忽略零值")
 
 	cmd.AddCommand(NewSqlCmd().cmd)
 	root.cmd = cmd

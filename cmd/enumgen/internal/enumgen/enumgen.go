@@ -27,6 +27,7 @@ type Gen struct {
 	Version     string             // 版本
 	Merge       bool               // 合并到一个文件
 	Filename    string             // 合并文件名
+	OmitZero    bool               // 忽略零值
 	SqlDictType string             // 字典类型模板
 	SqlDictItem string             // 字典项模板
 	pkg         *enumerate.Package // 包
@@ -61,8 +62,9 @@ func (g *Gen) Init() error {
 	}
 	for i, file := range pkg.Syntax {
 		g.pkg.Files[i] = &enumerate.File{
-			File: file,
-			Pkg:  g.pkg,
+			File:     file,
+			Pkg:      g.pkg,
+			OmitZero: g.OmitZero,
 		}
 	}
 	for _, typeName := range g.Type {

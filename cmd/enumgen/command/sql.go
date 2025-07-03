@@ -15,6 +15,7 @@ type EnumSqlOption struct {
 	Tags        []string
 	SqlDictType string // 字典类型模板
 	SqlDictItem string // 字典项模板
+	OmitZero    bool   // 忽略零值
 }
 
 type SqlCmd struct {
@@ -55,6 +56,7 @@ func NewSqlCmd() *SqlCmd {
 				Filename:    "",
 				SqlDictType: root.SqlDictType,
 				SqlDictItem: root.SqlDictItem,
+				OmitZero:    root.OmitZero,
 			}
 			if err = g.Init(); err != nil {
 				return err
@@ -78,6 +80,7 @@ func NewSqlCmd() *SqlCmd {
 	cmd.Flags().StringSliceVar(&root.Tags, "tags", nil, "comma-separated list of build tags to apply")
 	cmd.Flags().StringVar(&root.SqlDictType, "sqlDictType", enumgen.DefaultDictTypeTpl, "字典类型模板, 按顺序为[类型, 名称, 备注(同名称)]")
 	cmd.Flags().StringVar(&root.SqlDictItem, "sqlDictItem", enumgen.DefaultDictItemTpl, "字典项模板, 按顺序为[类型, 标签, 值, 顺序, 备注(同标签)]")
+	cmd.Flags().BoolVar(&root.OmitZero, "omitZero", false, "是否忽略零值")
 
 	root.cmd = cmd
 	return root
