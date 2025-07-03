@@ -59,9 +59,9 @@ func (x {{$e.TypeName}}) Label() (s string) {
 	return s
 }
 
-// FromLabel parse string to the enum value
+// ParseLabel parse label to the enum value
 // {{$e.Explain}}
-func (x *{{$e.TypeName}}) FromLabel(s string) {
+func (x *{{$e.TypeName}}) ParseLabel(s string) {
 	switch s {
 	{{- range $ee := .Values}}
 		case "{{$ee.Label}}": // {{$ee.RawValue}}
