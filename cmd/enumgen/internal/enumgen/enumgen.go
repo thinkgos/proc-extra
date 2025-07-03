@@ -75,7 +75,7 @@ func (g *Gen) Init() error {
 		}
 		g.enums = append(g.enums, enums)
 	}
-	// sort.Sort(SorEnumerate(g.enums))
+	sort.Stable(SorEnumerate(g.enums))
 	return nil
 }
 
@@ -180,7 +180,7 @@ func (g *Gen) inspectEnum(typeName string) *Enumerate {
 	if typeType == "" {
 		return nil
 	}
-	sort.Stable(enumerate.SortValue(values))
+	// sort.Stable(enumerate.SortValue(values))
 	explain := enumerate.SortValue(values).ArrayString()
 	if typeComment != "" {
 		explain = typeComment + ": " + explain
