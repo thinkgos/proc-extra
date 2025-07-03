@@ -32,12 +32,12 @@ type Enumerate struct {
 	Values      []*enumerate.Value
 }
 
-// SorEnumerate 按TypeName排序
-type SorEnumerate []*Enumerate
+// SortEnumerates 按TypeName排序
+type SortEnumerates []*Enumerate
 
-func (b SorEnumerate) Len() int      { return len(b) }
-func (b SorEnumerate) Swap(i, j int) { b[i], b[j] = b[j], b[i] }
-func (b SorEnumerate) Less(i, j int) bool {
+func (b SortEnumerates) Len() int      { return len(b) }
+func (b SortEnumerates) Swap(i, j int) { b[i], b[j] = b[j], b[i] }
+func (b SortEnumerates) Less(i, j int) bool {
 	return b[i].TypeName < b[j].TypeName
 }
 

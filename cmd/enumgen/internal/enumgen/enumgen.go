@@ -28,6 +28,7 @@ type Gen struct {
 	Merge       bool               // 合并到一个文件
 	Filename    string             // 合并文件名
 	OmitZero    bool               // 忽略零值
+	SqlKeyStyle string             // 字典Key风格
 	SqlDictType string             // 字典类型模板
 	SqlDictItem string             // 字典项模板
 	pkg         *enumerate.Package // 包
@@ -43,7 +44,7 @@ func (g *Gen) Init() error {
 			packages.NeedSyntax,
 		Tests:      false,
 		BuildFlags: []string{fmt.Sprintf("-tags=%s", strings.Join(g.Tags, " "))},
-		Logf: func(format string, args ...interface{}) {
+		Logf: func(format string, args ...any) {
 			slog.Debug(fmt.Sprintf(format, args...))
 		},
 	}
@@ -75,7 +76,7 @@ func (g *Gen) Init() error {
 		}
 		g.enums = append(g.enums, enums)
 	}
-	sort.Stable(SorEnumerate(g.enums))
+	sort.Stable(SortEnumerates(g.enums))
 	return nil
 }
 
@@ -141,11 +142,12 @@ func (g *Gen) GenSql() error {
 	buf1 := &bytes.Buffer{}
 	buf2 := &bytes.Buffer{}
 	for _, v := range g.enums {
-		fmt.Fprintf(buf1, DefaultDictTypeTpl, v.TypeName, v.TypeComment, v.Explain)
+		typeName := StyleName(g.SqlKeyStyle, v.TypeName)
+		fmt.Fprintf(buf1, DefaultDictTypeTpl, typeName, v.TypeComment, v.Explain)
 		fmt.Fprintln(buf1)
 		sort := 1
 		for _, vv := range v.Values {
-			fmt.Fprintf(buf2, DefaultDictItemTpl, v.TypeName, vv.Label, vv.RawValue, sort, vv.Label)
+			fmt.Fprintf(buf2, DefaultDictItemTpl, typeName, vv.Label, vv.RawValue, sort, vv.Label)
 			fmt.Fprintln(buf2)
 			sort++
 		}

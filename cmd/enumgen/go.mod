@@ -4,6 +4,7 @@ go 1.24
 
 require (
 	github.com/spf13/cobra v1.9.1
+	github.com/thinkgos/proc v0.0.0-20250606144108-c21be1bda40c
 	golang.org/x/tools v0.34.0
 )
 
