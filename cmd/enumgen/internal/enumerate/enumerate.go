@@ -30,7 +30,7 @@ type File struct {
 // Value represents a declared constant.
 type Value struct {
 	OriginalName string // 常量定义的名称
-	Label        string // 注释名称, 如果没有, 则同常量名称
+	Label        string // 注释, 如果没有, 则同常量名称
 	// value相关
 	Value  uint64 // 需要时转为`int64`.
 	Signed bool   // `constant`是否是有符号类型.
