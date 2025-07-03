@@ -73,7 +73,7 @@ func (g *Gen) Init() error {
 		}
 		g.enums = append(g.enums, enums)
 	}
-	sort.Sort(SorEnumerate(g.enums))
+	// sort.Sort(SorEnumerate(g.enums))
 	return nil
 }
 
