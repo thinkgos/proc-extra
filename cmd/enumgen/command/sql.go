@@ -4,32 +4,31 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/thinkgos/proc-extra/cmd/enumgen/internal/enumgen"
 )
 
-type EnumOption struct {
-	Pattern  []string
-	Type     []string
-	Tags     []string
-	Merge    bool   // 合并到一个文件
-	Filename string // 合并文件名
+type EnumSqlOption struct {
+	Pattern     []string
+	Type        []string
+	Tags        []string
+	SqlDictType string // 字典类型模板
+	SqlDictItem string // 字典项模板
 }
 
-type RootCmd struct {
+type SqlCmd struct {
 	cmd   *cobra.Command
 	level string
-	EnumOption
+	EnumSqlOption
 }
 
-func NewRootCmd() *RootCmd {
-	root := &RootCmd{}
+func NewSqlCmd() *SqlCmd {
+	root := &SqlCmd{}
 	cmd := &cobra.Command{
-		Use:           "enumgen",
-		Short:         "enumgen generate enum code from enum",
-		Long:          "enumgen generate enum code from enum",
+		Use:           "sql",
+		Short:         "sql generate enum sql from enum",
+		Long:          "sql generate enum sql from enum",
 		Version:       BuildVersion(),
 		SilenceUsage:  false,
 		SilenceErrors: false,
@@ -47,19 +46,20 @@ func NewRootCmd() *RootCmd {
 				srcDir = filepath.Dir(srcDir)
 			}
 			g := &enumgen.Gen{
-				Pattern:   root.Pattern,
-				OutputDir: srcDir,
-				Type:      root.Type,
-				Tags:      root.Tags,
-				Version:   version,
-				Merge:     root.Merge,
-				Filename:  root.Filename,
+				Pattern:     root.Pattern,
+				OutputDir:   srcDir,
+				Type:        root.Type,
+				Tags:        root.Tags,
+				Version:     version,
+				Merge:       false,
+				Filename:    "",
+				SqlDictType: root.SqlDictType,
+				SqlDictItem: root.SqlDictItem,
 			}
-			err = g.Init()
-			if err != nil {
+			if err = g.Init(); err != nil {
 				return err
 			}
-			return g.GenEnum()
+			return g.GenSql()
 		},
 		Args: cobra.NoArgs,
 	}
@@ -76,29 +76,9 @@ func NewRootCmd() *RootCmd {
 	cmd.Flags().StringSliceVarP(&root.Pattern, "pattern", "p", []string{"."}, "the list of files or a directory.")
 	cmd.Flags().StringSliceVarP(&root.Type, "type", "t", nil, "the list type of enum names; must be set")
 	cmd.Flags().StringSliceVar(&root.Tags, "tags", nil, "comma-separated list of build tags to apply")
-	cmd.Flags().BoolVar(&root.Merge, "merge", false, "merge in a file")
-	cmd.Flags().StringVar(&root.Filename, "filename", "", "filename when merge enabled, default: enums")
+	cmd.Flags().StringVar(&root.SqlDictType, "sqlDictType", enumgen.DefaultDictTypeTpl, "字典类型模板, 按顺序为[类型, 名称, 备注(同名称)]")
+	cmd.Flags().StringVar(&root.SqlDictItem, "sqlDictItem", enumgen.DefaultDictItemTpl, "字典项模板, 按顺序为[类型, 标签, 值, 顺序, 备注(同名称)]")
 
-	cmd.AddCommand(NewSqlCmd().cmd)
 	root.cmd = cmd
 	return root
-}
-
-// Execute adds all child commands to the root command and sets flags appropriately.
-func (r *RootCmd) Execute() error {
-	return r.cmd.Execute()
-}
-func level(s string) slog.Level {
-	switch strings.ToUpper(s) {
-	case "DEBUG":
-		return slog.LevelDebug
-	case "INFO":
-		return slog.LevelInfo
-	case "WARN":
-		return slog.LevelWarn
-	case "ERROR":
-		return slog.LevelError
-	default:
-		return slog.LevelInfo
-	}
 }
