@@ -100,10 +100,11 @@ func (g *Gen) generateEnum(typeName string) error {
 		Package:      g.pkg.Name,
 		Enums: []*Enumerate{
 			{
-				Type:     typeType,
-				TypeName: typeName,
-				Explain:  explain,
-				Values:   values,
+				Type:        typeType,
+				TypeName:    typeName,
+				TypeComment: typeComment,
+				Explain:     explain,
+				Values:      values,
 			},
 		},
 	}

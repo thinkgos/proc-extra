@@ -23,10 +23,11 @@ type File struct {
 }
 
 type Enumerate struct {
-	Type     string
-	TypeName string
-	Explain  string
-	Values   []*enumerate.Value
+	Type        string
+	TypeName    string
+	TypeComment string
+	Explain     string
+	Values      []*enumerate.Value
 }
 
 func (e *File) execute(w io.Writer) error {

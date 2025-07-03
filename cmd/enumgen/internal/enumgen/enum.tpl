@@ -7,30 +7,29 @@
 package {{.Package}}
 
 import (
+	"slices"
 	"strconv"
 )
 
 {{- range $e := .Enums}}
-var (
-	__{{$e.TypeName}}_Enum_Validity = map[{{$e.TypeName}}]struct{}{
+{{- if $e.TypeComment}}
+// {{$e.TypeComment}}
+{{- end}}
+var __{{$e.TypeName}}_Enum_Validity = []{{$e.TypeName}} { 
 	{{- range $ee := .Values}}
-		{{$ee.Value}}: {},
+		{{$ee.OriginalName}}, // {{$ee.Value}}: {{$ee.Label}}
 	{{- end}}
-	}
-	__{{$e.TypeName}}_Enum_Value = map[string]{{$e.TypeName}}{
-	{{- range $ee := .Values}}
-		"{{$ee.Mapping}}": {{$ee.Value}},
-	{{- end}}
-	}
-)
+}
 
-// IntoValue returns the enum origin type.
-func (x {{$e.TypeName}}) IntoValue() {{$e.Type}} {
+// Value returns the original type value.
+// {{$e.Explain}}
+func (x {{$e.TypeName}}) Value() {{$e.Type}} {
     return {{$e.Type}}(x)
 }
 
-// IntoValueString returns the enum value as a string.
-func (x {{$e.TypeName}}) IntoValueString() string {
+// ValueString returns the original type value as string.
+// {{$e.Explain}}
+func (x {{$e.TypeName}}) ValueString() string {
     return strconv.FormatInt(int64(x), 10)
 }
 
@@ -41,19 +40,34 @@ func ({{$e.TypeName}}) EnumCount() int {
 
 // IsValid whether the enum value is valid or not.
 func (x {{$e.TypeName}}) IsValid() bool {
-	_, ok := __{{$e.TypeName}}_Enum_Validity[x]
-	return ok
+	return slices.Contains(__{{$e.TypeName}}_Enum_Validity, {{$e.TypeName}}(x))
 }
 
-// IntoLabel returns the enum label.
+// Label returns the enum value's label.
 // {{.Explain}}
-func (x {{$e.TypeName}}) IntoLabel() string {
-	return x.String()
+func (x {{$e.TypeName}}) Label() (s string) {
+	switch x {
+	{{- range $ee := .Values}}
+		case {{$ee.OriginalName}}: // {{$ee.Value}}
+			s = "{{$ee.Label}}"
+	{{- end}}
+		default:
+			s = ""
+	}
+	return s
 }
 
-// FromLabel parse string to enum value
+// FromLabel parse string to the enum value
 // {{$e.Explain}}
 func (x *{{$e.TypeName}}) FromLabel(s string) {
-	*x = __{{$e.TypeName}}_Enum_Value[s]
+	switch s {
+	{{- range $ee := .Values}}
+		case "{{$ee.Label}}": // {{$ee.Value}}
+			*x = {{$ee.OriginalName}}
+	{{- end}}
+		default:
+			var dflt {{$e.TypeName}}
+			*x = dflt
+	}
 }
 {{- end}}
