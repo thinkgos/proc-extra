@@ -172,13 +172,12 @@ func (f *File) GenDecl(node ast.Node) bool {
 					slog.Error(fmt.Sprintf("can't happen: constant is not an integer %s", name))
 					os.Exit(1)
 				}
-				rawValue, _ := strconv.Unquote(value.String())
 				v := &Value{
 					OriginalName: name.Name,
 					Label:        "",
 					Value:        0,
 					Signed:       false,
-					RawValue:     rawValue,
+					RawValue:     value.String(),
 					IsString:     (info & types.IsString) != 0,
 					Val:          value.String(),
 				}
@@ -187,7 +186,10 @@ func (f *File) GenDecl(node ast.Node) bool {
 				} else {
 					v.Label = v.OriginalName
 				}
-				if !v.IsString {
+
+				if v.IsString {
+					v.RawValue, _ = strconv.Unquote(v.RawValue)
+				} else {
 					i64, isInt := constant.Int64Val(value)
 					u64, isUint := constant.Uint64Val(value)
 					if !isInt && !isUint {
