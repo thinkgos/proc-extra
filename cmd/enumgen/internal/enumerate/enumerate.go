@@ -111,6 +111,8 @@ func (f *File) GenDecl(node ast.Node) bool {
 				f.Type = basic.Name() // 拿到类型
 				if c := tsepc.Comment.Text(); c != "" {
 					f.TypeComment += strings.TrimSuffix(strings.TrimSpace(c), "\n")
+				} else {
+					f.TypeComment = f.TypeName
 				}
 			}
 		} else { // const spec
