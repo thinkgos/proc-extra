@@ -20,7 +20,11 @@ var TemplateFuncs = template.FuncMap{
 	"smallCamelCase": func(s string) string { return infra.SmallCamelCase(s) },
 	"styleName":      StyleName,
 	"trimPrefix":     strings.TrimPrefix,
-	"formatIdent": func(s string) string {
+	"formatTsEnumValue": func(v, t string) string {
+		if v == "" {
+			return v
+		}
+		s := strings.TrimPrefix(strings.TrimPrefix(v, t), "_")
 		if s == "" {
 			return s
 		}

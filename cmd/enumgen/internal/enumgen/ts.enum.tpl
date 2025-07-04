@@ -54,7 +54,7 @@ export namespace ENUMS {
     {{- range $e := .Enums}}
     export enum {{$e.TypeName}} {
     {{- range $ee := .Values}}
-        {{ formatIdent (trimPrefix (trimPrefix $ee.OriginalName $e.TypeName) "_")}} = {{if $ee.IsString}}'{{$ee.RawValue}}'{{else}}{{$ee.RawValue}}{{end}},
+        {{ formatTsEnumValue $ee.OriginalName $e.TypeName}} = {{if $ee.IsString}}'{{$ee.RawValue}}'{{else}}{{$ee.RawValue}}{{end}},
     {{- end}}
     }
     {{- end}}
