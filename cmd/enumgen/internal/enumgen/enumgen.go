@@ -174,11 +174,7 @@ func (g *Gen) GenTs() error {
 	if err != nil {
 		return err
 	}
-	err = os.WriteFile(path.Join(g.OutputDir, "dict.gen.ts"), buf.Bytes(), 0644)
-	if err != nil {
-		return err
-	}
-	err = os.WriteFile(path.Join(g.OutputDir, "dict.ts"), tsDict, 0644)
+	err = os.WriteFile(path.Join(g.OutputDir, "dict.ts"), buf.Bytes(), 0644)
 	if err != nil {
 		return err
 	}

@@ -3,6 +3,7 @@ package enumgen
 import (
 	"embed"
 	"io"
+	"strings"
 	"text/template"
 
 	"github.com/thinkgos/proc-extra/cmd/enumgen/internal/enumerate"
@@ -12,15 +13,22 @@ import (
 //go:embed enum.tpl ts.enum.tpl
 var Static embed.FS
 
-//go:embed ts.dict.tpl
-var tsDict []byte
-
 var TemplateFuncs = template.FuncMap{
 	"snakeCase":      func(s string) string { return infra.SnakeCase(s) },
 	"kebabCase":      func(s string) string { return infra.Kebab(s) },
 	"camelCase":      func(s string) string { return infra.PascalCase(s) },
 	"smallCamelCase": func(s string) string { return infra.SmallCamelCase(s) },
 	"styleName":      StyleName,
+	"trimPrefix":     strings.TrimPrefix,
+	"formatIdent": func(s string) string {
+		if s == "" {
+			return s
+		}
+		if s[0] >= '0' && s[0] <= '9' {
+			return "X" + s
+		}
+		return s
+	},
 }
 
 var (
