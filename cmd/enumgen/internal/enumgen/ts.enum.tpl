@@ -54,7 +54,7 @@ export namespace ENUMS {
     {{- range $e := .Enums}}
     export enum {{$e.TypeName}} {
     {{- range $ee := .Values}}
-        {{ formatTsEnumValue $ee.OriginalName $e.TypeName}} = {{if $ee.IsString}}'{{$ee.RawValue}}'{{else}}{{$ee.RawValue}}{{end}},
+        {{ formatTsEnumValue $ee.OriginalName $e.TypeName}} = {{if $ee.IsString}}'{{$ee.RawValue}}'{{else}}{{$ee.RawValue}}{{end}}, // {{$ee.Label}}
     {{- end}}
     }
     {{- end}}
@@ -62,12 +62,12 @@ export namespace ENUMS {
 
 export default {
 {{- range $e := .Enums}}
-{{- if $e.Explain}}
-    // {{$e.Explain}}
+{{- if $e.TypeComment}}
+    // {{$e.TypeComment}}
 {{- end}}
     {{$e.TypeName}}: new Dict('{{styleName $.TypeStyle $e.TypeName}}', [
     {{- range $ee := .Values}}
-        { value: {{if $ee.IsString}}'{{$ee.RawValue}}'{{else}}{{$ee.RawValue}}{{end}}, label: '{{$ee.Label}}' },
+        { value: {{ printf "ENUMS.%s.%s" $e.TypeName (formatTsEnumValue $ee.OriginalName $e.TypeName) }}, label: '{{$ee.Label}}' }, // {{$ee.RawValue}}: {{$ee.Label}}
     {{- end}}
     ]),
 {{- end}}
