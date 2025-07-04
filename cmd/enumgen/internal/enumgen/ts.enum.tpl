@@ -1,6 +1,13 @@
 import { Dict } from './dict';
 
+enum DictType {
+{{- range $e := .Enums}}
+    {{$e.TypeName}} = '{{styleName $.TypeStyle $e.TypeName}}', {{if $e.Explain}}// {{$e.Explain}}{{- end}}
+{{- end}}
+}
+
 export default {
+    DictType,
 {{- range $e := .Enums}}
 {{- if $e.Explain}}
     // {{$e.Explain}}
