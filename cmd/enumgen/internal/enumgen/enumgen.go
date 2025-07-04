@@ -92,7 +92,7 @@ func (g *Gen) GenEnum() error {
 		}
 		f.HasInteger = slices.ContainsFunc(f.Enums, func(v *Enumerate) bool { return !v.IsString })
 		buf := &bytes.Buffer{}
-		err := f.execute(buf)
+		err := f.execute(buf, enumTemplate)
 		if err != nil {
 			return nil, err
 		}
@@ -156,6 +156,31 @@ func (g *Gen) GenSql() error {
 	buf1.WriteTo(os.Stdout)
 	fmt.Fprintln(os.Stdout)
 	buf2.WriteTo(os.Stdout)
+	return nil
+}
+
+func (g *Gen) GenTs() error {
+	f := &File{
+		Version:      g.Version,
+		IsDeprecated: false,
+		Package:      g.pkg.Name,
+		HasInteger:   false,
+		Enums:        g.enums,
+	}
+	f.HasInteger = slices.ContainsFunc(f.Enums, func(v *Enumerate) bool { return !v.IsString })
+	buf := &bytes.Buffer{}
+	err := f.execute(buf, tsEnumTemplate)
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(path.Join(g.OutputDir, "dict.gen.ts"), buf.Bytes(), 0644)
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(path.Join(g.OutputDir, "dict.ts"), tsDict, 0644)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

@@ -83,7 +83,7 @@ func NewRootCmd() *RootCmd {
 	cmd.Flags().StringVar(&root.Filename, "filename", "", "filename when merge enabled, default: enums")
 	cmd.Flags().BoolVar(&root.OmitZero, "omitZero", false, "是否忽略零值")
 
-	cmd.AddCommand(NewSqlCmd().cmd)
+	cmd.AddCommand(NewSqlCmd().cmd, NewTsCmd().cmd)
 	root.cmd = cmd
 	return root
 }

@@ -8,12 +8,18 @@ import (
 	"github.com/thinkgos/proc-extra/cmd/enumgen/internal/enumerate"
 )
 
-//go:embed enum.tpl
+//go:embed enum.tpl ts.enum.tpl
 var Static embed.FS
 
-var enumTemplate = template.Must(template.New("components").
-	ParseFS(Static, "enum.tpl")).
-	Lookup("enum.tpl")
+//go:embed ts.dict.tpl
+var tsDict []byte
+
+var (
+	tpl = template.Must(template.New("components").
+		ParseFS(Static, "enum.tpl", "ts.enum.tpl"))
+	enumTemplate   = tpl.Lookup("enum.tpl")
+	tsEnumTemplate = tpl.Lookup("ts.enum.tpl")
+)
 
 type File struct {
 	Version      string
@@ -41,6 +47,6 @@ func (b SortEnumerates) Less(i, j int) bool {
 	return b[i].TypeName < b[j].TypeName
 }
 
-func (e *File) execute(w io.Writer) error {
-	return enumTemplate.Execute(w, e)
+func (e *File) execute(w io.Writer, tpl *template.Template) error {
+	return tpl.Execute(w, e)
 }
