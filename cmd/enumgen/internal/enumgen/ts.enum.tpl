@@ -5,7 +5,7 @@ export default {
 {{- if $e.Explain}}
     // {{$e.Explain}}
 {{- end}}
-    {{$e.TypeName}}: new Dict('{{$e.TypeName}}', [
+    {{$e.TypeName}}: new Dict('{{styleName $.TypeStyle $e.TypeName}}', [
     {{- range $ee := .Values}}
         { value: {{if $ee.IsString}}'{{$ee.RawValue}}'{{else}}{{$ee.RawValue}}{{end}}, label: '{{$ee.Label}}' },
     {{- end}}

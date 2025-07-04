@@ -6,6 +6,7 @@ import (
 	"text/template"
 
 	"github.com/thinkgos/proc-extra/cmd/enumgen/internal/enumerate"
+	"github.com/thinkgos/proc/infra"
 )
 
 //go:embed enum.tpl ts.enum.tpl
@@ -14,8 +15,17 @@ var Static embed.FS
 //go:embed ts.dict.tpl
 var tsDict []byte
 
+var TemplateFuncs = template.FuncMap{
+	"snakeCase":      func(s string) string { return infra.SnakeCase(s) },
+	"kebabCase":      func(s string) string { return infra.Kebab(s) },
+	"camelCase":      func(s string) string { return infra.PascalCase(s) },
+	"smallCamelCase": func(s string) string { return infra.SmallCamelCase(s) },
+	"styleName":      StyleName,
+}
+
 var (
 	tpl = template.Must(template.New("components").
+		Funcs(TemplateFuncs).
 		ParseFS(Static, "enum.tpl", "ts.enum.tpl"))
 	enumTemplate   = tpl.Lookup("enum.tpl")
 	tsEnumTemplate = tpl.Lookup("ts.enum.tpl")
@@ -26,6 +36,7 @@ type File struct {
 	IsDeprecated bool
 	Package      string
 	HasInteger   bool
+	TypeStyle    string // 字典类型type风格
 	Enums        []*Enumerate
 }
 

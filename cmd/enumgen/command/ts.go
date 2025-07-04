@@ -13,7 +13,8 @@ type TsOption struct {
 	Pattern   []string
 	Type      []string
 	Tags      []string
-	OmitZero  bool // 忽略零值
+	TypeStyle string // 字典类型type风格
+	OmitZero  bool   // 忽略零值
 }
 
 type TsCmd struct {
@@ -50,7 +51,7 @@ func NewTsCmd() *TsCmd {
 				Merge:        false,
 				Filename:     "",
 				OmitZero:     root.OmitZero,
-				SqlKeyStyle:  "",
+				TypeStyle:    root.TypeStyle,
 				SqlDictType:  "",
 				SqlDictItem:  "",
 				IsOrderValue: false,
@@ -67,6 +68,7 @@ func NewTsCmd() *TsCmd {
 	cmd.Flags().StringSliceVarP(&root.Pattern, "pattern", "p", []string{"."}, "the list of files or a directory.")
 	cmd.Flags().StringSliceVarP(&root.Type, "type", "t", nil, "the list type of enum names; must be set")
 	cmd.Flags().StringSliceVar(&root.Tags, "tags", nil, "comma-separated list of build tags to apply")
+	cmd.Flags().StringVar(&root.TypeStyle, "typeStyle", "", "字典类型type风格, 支持snakeCase,pascalCase,smallCamelCase,kebab")
 	cmd.Flags().BoolVar(&root.OmitZero, "omitZero", true, "是否忽略零值")
 
 	root.cmd = cmd

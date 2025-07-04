@@ -28,7 +28,7 @@ type Gen struct {
 	Merge        bool               // 合并到一个文件
 	Filename     string             // 合并文件名
 	OmitZero     bool               // 忽略零值
-	SqlKeyStyle  string             // 字典Key风格
+	TypeStyle    string             // 字典Key风格
 	SqlDictType  string             // 字典类型模板
 	SqlDictItem  string             // 字典项模板
 	IsOrderValue bool               // 是否枚举值排序
@@ -143,7 +143,7 @@ func (g *Gen) GenSql() error {
 	buf1 := &bytes.Buffer{}
 	buf2 := &bytes.Buffer{}
 	for _, v := range g.enums {
-		typeName := StyleName(g.SqlKeyStyle, v.TypeName)
+		typeName := StyleName(g.TypeStyle, v.TypeName)
 		fmt.Fprintf(buf1, DefaultDictTypeTpl, typeName, v.TypeComment, v.Explain)
 		fmt.Fprintln(buf1)
 		sort := 1
@@ -165,6 +165,7 @@ func (g *Gen) GenTs() error {
 		IsDeprecated: false,
 		Package:      g.pkg.Name,
 		HasInteger:   false,
+		TypeStyle:    g.TypeStyle,
 		Enums:        g.enums,
 	}
 	f.HasInteger = slices.ContainsFunc(f.Enums, func(v *Enumerate) bool { return !v.IsString })

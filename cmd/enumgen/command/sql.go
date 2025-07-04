@@ -13,7 +13,7 @@ type EnumSqlOption struct {
 	Pattern     []string
 	Type        []string
 	Tags        []string
-	SqlKeyStyle string // 字典Key风格
+	TypeStyle   string // 字典类型type风格
 	SqlDictType string // 字典类型模板
 	SqlDictItem string // 字典项模板
 	OmitZero    bool   // 忽略零值
@@ -55,7 +55,7 @@ func NewSqlCmd() *SqlCmd {
 				Merge:        false,
 				Filename:     "",
 				OmitZero:     root.OmitZero,
-				SqlKeyStyle:  root.SqlKeyStyle,
+				TypeStyle:    root.TypeStyle,
 				SqlDictType:  root.SqlDictType,
 				SqlDictItem:  root.SqlDictItem,
 				IsOrderValue: false,
@@ -71,7 +71,7 @@ func NewSqlCmd() *SqlCmd {
 	cmd.Flags().StringSliceVarP(&root.Pattern, "pattern", "p", []string{"."}, "the list of files or a directory.")
 	cmd.Flags().StringSliceVarP(&root.Type, "type", "t", nil, "the list type of enum names; must be set")
 	cmd.Flags().StringSliceVar(&root.Tags, "tags", nil, "comma-separated list of build tags to apply")
-	cmd.Flags().StringVar(&root.SqlKeyStyle, "sqlKeyStyle", "", "字典Key风格, 支持snakeCase,pascalCase,smallCamelCase,kebab")
+	cmd.Flags().StringVar(&root.TypeStyle, "typeStyle", "", "字典类型type风格, 支持snakeCase,pascalCase,smallCamelCase,kebab")
 	cmd.Flags().StringVar(&root.SqlDictType, "sqlDictType", enumgen.DefaultDictTypeTpl, "字典类型模板, 按顺序为[类型, 名称, 备注(同名称)]")
 	cmd.Flags().StringVar(&root.SqlDictItem, "sqlDictItem", enumgen.DefaultDictItemTpl, "字典项模板, 按顺序为[类型, 标签, 值, 顺序, 备注(同标签)]")
 	cmd.Flags().BoolVar(&root.OmitZero, "omitZero", true, "是否忽略零值")
