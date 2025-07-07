@@ -49,7 +49,7 @@ func (x {{$e.TypeName}}) IsZeroValue() bool {
 
 // IsValid whether the enum value is valid or not.
 func (x {{$e.TypeName}}) IsValid() bool {
-	return !x.IsZeroValue() && slices.Contains(__{{$e.TypeName}}_Enum_Validity, {{$e.TypeName}}(x))
+	return !x.IsZeroValue() && slices.Contains(__{{$e.TypeName}}_Enum_Validity, x)
 }
 
 // Label returns the enum value's label.
