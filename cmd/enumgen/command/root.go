@@ -48,14 +48,15 @@ func NewRootCmd() *RootCmd {
 				srcDir = filepath.Dir(srcDir)
 			}
 			g := &enumgen.Gen{
-				Pattern:   root.Pattern,
-				OutputDir: srcDir,
-				Type:      root.Type,
-				Tags:      root.Tags,
-				Version:   version,
-				Merge:     root.Merge,
-				Filename:  root.Filename,
-				OmitZero:  root.OmitZero,
+				Pattern:      root.Pattern,
+				OutputDir:    srcDir,
+				Type:         root.Type,
+				Tags:         root.Tags,
+				Version:      version,
+				OmitZero:     root.OmitZero,
+				Merge:        root.Merge,
+				Filename:     root.Filename,
+				IsOrderValue: true,
 			}
 			err = g.Init()
 			if err != nil {
@@ -82,7 +83,7 @@ func NewRootCmd() *RootCmd {
 	cmd.Flags().StringVar(&root.Filename, "filename", "", "filename when merge enabled, default: enums")
 	cmd.Flags().BoolVar(&root.OmitZero, "omitZero", false, "是否忽略零值")
 
-	cmd.AddCommand(NewSqlCmd().cmd)
+	cmd.AddCommand(NewSqlCmd().cmd, NewTsCmd().cmd)
 	root.cmd = cmd
 	return root
 }

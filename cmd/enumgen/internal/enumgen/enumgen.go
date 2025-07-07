@@ -20,18 +20,20 @@ const DefaultDictTypeTpl = "INSERT INTO `sys_dict_type` (`type`, `name`, `remark
 const DefaultDictItemTpl = "INSERT INTO `sys_dict_item` (`dict_type`, `label`, `value`, `sort`, `remark`, `status`) VALUES ('%s', '%s', '%s', %d, '%s', 1);"
 
 type Gen struct {
-	Pattern     []string           // 匹配路径
-	OutputDir   string             // 输出路径
-	Type        []string           // 相关类型
-	Tags        []string           // 编译标签
-	Version     string             // 版本
-	Merge       bool               // 合并到一个文件
-	Filename    string             // 合并文件名
-	OmitZero    bool               // 忽略零值
-	SqlDictType string             // 字典类型模板
-	SqlDictItem string             // 字典项模板
-	pkg         *enumerate.Package // 包
-	enums       []*Enumerate       // 枚举列表
+	Pattern      []string           // 匹配路径
+	OutputDir    string             // 输出路径
+	Type         []string           // 枚举类型
+	Tags         []string           // 编译标签
+	Version      string             // 版本
+	Merge        bool               // 合并到一个文件
+	Filename     string             // 合并文件名
+	OmitZero     bool               // 忽略零值
+	TypeStyle    string             // 字典Key风格
+	SqlDictType  string             // 字典类型模板
+	SqlDictItem  string             // 字典项模板
+	IsOrderValue bool               // 是否枚举值排序
+	pkg          *enumerate.Package // 包
+	enums        []*Enumerate       // 枚举列表
 }
 
 func (g *Gen) Init() error {
@@ -43,7 +45,7 @@ func (g *Gen) Init() error {
 			packages.NeedSyntax,
 		Tests:      false,
 		BuildFlags: []string{fmt.Sprintf("-tags=%s", strings.Join(g.Tags, " "))},
-		Logf: func(format string, args ...interface{}) {
+		Logf: func(format string, args ...any) {
 			slog.Debug(fmt.Sprintf(format, args...))
 		},
 	}
@@ -75,7 +77,7 @@ func (g *Gen) Init() error {
 		}
 		g.enums = append(g.enums, enums)
 	}
-	sort.Stable(SorEnumerate(g.enums))
+	sort.Stable(SortEnumerates(g.enums))
 	return nil
 }
 
@@ -90,7 +92,7 @@ func (g *Gen) GenEnum() error {
 		}
 		f.HasInteger = slices.ContainsFunc(f.Enums, func(v *Enumerate) bool { return !v.IsString })
 		buf := &bytes.Buffer{}
-		err := f.execute(buf)
+		err := f.execute(buf, enumTemplate)
 		if err != nil {
 			return nil, err
 		}
@@ -141,11 +143,12 @@ func (g *Gen) GenSql() error {
 	buf1 := &bytes.Buffer{}
 	buf2 := &bytes.Buffer{}
 	for _, v := range g.enums {
-		fmt.Fprintf(buf1, DefaultDictTypeTpl, v.TypeName, v.TypeComment, v.Explain)
+		typeName := StyleName(g.TypeStyle, v.TypeName)
+		fmt.Fprintf(buf1, DefaultDictTypeTpl, typeName, v.TypeComment, v.Explain)
 		fmt.Fprintln(buf1)
 		sort := 1
 		for _, vv := range v.Values {
-			fmt.Fprintf(buf2, DefaultDictItemTpl, v.TypeName, vv.Label, vv.RawValue, sort, vv.Label)
+			fmt.Fprintf(buf2, DefaultDictItemTpl, typeName, vv.Label, vv.RawValue, sort, vv.Label)
 			fmt.Fprintln(buf2)
 			sort++
 		}
@@ -153,6 +156,28 @@ func (g *Gen) GenSql() error {
 	buf1.WriteTo(os.Stdout)
 	fmt.Fprintln(os.Stdout)
 	buf2.WriteTo(os.Stdout)
+	return nil
+}
+
+func (g *Gen) GenTs() error {
+	f := &File{
+		Version:      g.Version,
+		IsDeprecated: false,
+		Package:      g.pkg.Name,
+		HasInteger:   false,
+		TypeStyle:    g.TypeStyle,
+		Enums:        g.enums,
+	}
+	f.HasInteger = slices.ContainsFunc(f.Enums, func(v *Enumerate) bool { return !v.IsString })
+	buf := &bytes.Buffer{}
+	err := f.execute(buf, tsEnumTemplate)
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(path.Join(g.OutputDir, "dict.ts"), buf.Bytes(), 0644)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -180,8 +205,15 @@ func (g *Gen) inspectEnum(typeName string) *Enumerate {
 	if typeType == "" {
 		return nil
 	}
-	// sort.Stable(enumerate.SortValue(values))
-	explain := enumerate.SortValues(values).ArrayString()
+	explain := ""
+	if g.IsOrderValue {
+		sort.Stable(enumerate.SortValues(values))
+		explain = enumerate.SortValues(values).ArrayString()
+	} else {
+		tmpSortValues := enumerate.SortValues(values).Clone()
+		sort.Stable(enumerate.SortValues(tmpSortValues))
+		explain = enumerate.SortValues(tmpSortValues).ArrayString()
+	}
 	if typeComment != "" {
 		explain = typeComment + ": " + explain
 	}

@@ -9,7 +9,6 @@ import (
 	"log/slog"
 	"os"
 	"slices"
-	"sort"
 	"strings"
 )
 
@@ -61,21 +60,23 @@ func (b SortValues) Less(i, j int) bool {
 	return false
 }
 
-// ArrayString convert to array string format [0:aaa,1:bbb,3:ccc]
-func (vs SortValues) ArrayString() string {
-	if len(vs) == 0 {
-		return "[]"
-	}
+func (vs SortValues) Clone() SortValues {
 	sortValues := make([]*Value, 0, len(vs))
 	for _, v := range vs {
 		tv := *v
 		sortValues = append(sortValues, &tv)
 	}
-	sort.Sort(SortValues(sortValues))
+	return sortValues
+}
 
+// ArrayString convert to array string format [0:aaa,1:bbb,3:ccc]
+func (vs SortValues) ArrayString() string {
+	if len(vs) == 0 {
+		return "[]"
+	}
 	b := strings.Builder{}
 	b.WriteString("[")
-	for i, k := range sortValues {
+	for i, k := range vs {
 		if i != 0 {
 			b.WriteString(",")
 		}
@@ -113,7 +114,7 @@ func (f *File) GenDecl(node ast.Node) bool {
 				}
 				basic := obj.Type().Underlying().(*types.Basic)
 				if (basic.Info() & (types.IsInteger | types.IsString)) == 0 {
-					slog.Error(fmt.Sprintf("can't handle non-integer or string constant type %s", typ))
+					slog.Error(fmt.Sprintf("can't handle non-integer or non-string constant type %s", typ))
 					os.Exit(1)
 				}
 				f.IsString = (basic.Info() & types.IsString) != 0
@@ -175,12 +176,12 @@ func (f *File) GenDecl(node ast.Node) bool {
 				}
 				info := obj.Type().Underlying().(*types.Basic).Info()
 				if (info & (types.IsInteger | types.IsString)) == 0 {
-					slog.Error(fmt.Sprintf("can't handle non-integer or string constant type %s", typ))
+					slog.Error(fmt.Sprintf("can't handle non-integer or non-string constant type %s", typ))
 					os.Exit(1)
 				}
 				value := obj.(*types.Const).Val() // Guaranteed to succeed as this is CONST.
 				if value.Kind() != constant.Int && value.Kind() != constant.String {
-					slog.Error(fmt.Sprintf("can't happen: constant is not an integer %s", name))
+					slog.Error(fmt.Sprintf("can't happen: constant is not an integer or a string %s", name))
 					os.Exit(1)
 				}
 

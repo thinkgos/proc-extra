@@ -12,7 +12,7 @@ import (
 {{- range $e := .Enums}}
 
 {{- range $ee := $e.Values}}
-// Err{{$ee.OriginalName}} {{$ee.Value}}: {{.Mapping}}
+// Err{{$ee.OriginalName}} {{$ee.Value}}: {{.Label}}
 func Err{{$ee.OriginalName}}() *errors.Error {
 	return errors.New(int32({{$ee.OriginalName}}), {{$ee.OriginalName}}.String())
 }

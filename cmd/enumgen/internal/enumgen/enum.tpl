@@ -7,6 +7,7 @@
 package {{.Package}}
 
 import (
+	"cmp"
 	"slices"
 {{- if .HasInteger}}
 	"strconv"
@@ -40,36 +41,41 @@ func ({{$e.TypeName}}) EnumCount() int {
 	return {{len .Values}}
 }
 
+// IsZeroValue returns the enum value is valid or not.
+func (x {{$e.TypeName}}) IsZeroValue() bool {
+	var zero {{$e.TypeName}}
+    return x == zero
+}
+
 // IsValid whether the enum value is valid or not.
 func (x {{$e.TypeName}}) IsValid() bool {
-	return slices.Contains(__{{$e.TypeName}}_Enum_Validity, {{$e.TypeName}}(x))
+	return !x.IsZeroValue() && slices.Contains(__{{$e.TypeName}}_Enum_Validity, {{$e.TypeName}}(x))
 }
 
 // Label returns the enum value's label.
 // {{.Explain}}
-func (x {{$e.TypeName}}) Label() (s string) {
+func (x {{$e.TypeName}}) Label(dflt ...string) (s string) {
 	switch x {
 	{{- range $ee := .Values}}
 		case {{$ee.OriginalName}}: // {{$ee.RawValue}}
 			s = "{{$ee.Label}}"
 	{{- end}}
 		default:
-			s = ""
+			s = cmp.Or(dflt...)
 	}
 	return s
 }
 
-// FromLabel parse string to the enum value
+// ParseLabel parse label to the enum value
 // {{$e.Explain}}
-func (x *{{$e.TypeName}}) FromLabel(s string) {
+func (x *{{$e.TypeName}}) ParseLabel(s string, dflt ...{{$e.TypeName}}) {
 	switch s {
 	{{- range $ee := .Values}}
 		case "{{$ee.Label}}": // {{$ee.RawValue}}
 			*x = {{$ee.OriginalName}}
 	{{- end}}
 		default:
-			var dflt {{$e.TypeName}}
-			*x = dflt
+			*x = cmp.Or(dflt...)
 	}
 }
 {{- end}}
