@@ -69,7 +69,7 @@ func NewTsCmd() *TsCmd {
 	cmd.Flags().StringSliceVarP(&root.Type, "type", "t", nil, "the list type of enum names; must be set")
 	cmd.Flags().StringSliceVar(&root.Tags, "tags", nil, "comma-separated list of build tags to apply")
 	cmd.Flags().StringVar(&root.TypeStyle, "typeStyle", "", "字典类型type风格, 支持snakeCase,pascalCase,smallCamelCase,kebab")
-	cmd.Flags().BoolVar(&root.OmitZero, "omitZero", true, "是否忽略零值")
+	cmd.Flags().BoolVar(&root.OmitZero, "omitZero", false, "是否忽略零值")
 
 	root.cmd = cmd
 	return root

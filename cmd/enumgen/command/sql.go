@@ -74,7 +74,7 @@ func NewSqlCmd() *SqlCmd {
 	cmd.Flags().StringVar(&root.TypeStyle, "typeStyle", "", "字典类型type风格, 支持snakeCase,pascalCase,smallCamelCase,kebab")
 	cmd.Flags().StringVar(&root.SqlDictType, "sqlDictType", enumgen.DefaultDictTypeTpl, "字典类型模板, 按顺序为[类型, 名称, 备注(同名称)]")
 	cmd.Flags().StringVar(&root.SqlDictItem, "sqlDictItem", enumgen.DefaultDictItemTpl, "字典项模板, 按顺序为[类型, 标签, 值, 顺序, 备注(同标签)]")
-	cmd.Flags().BoolVar(&root.OmitZero, "omitZero", true, "是否忽略零值")
+	cmd.Flags().BoolVar(&root.OmitZero, "omitZero", false, "是否忽略零值")
 
 	root.cmd = cmd
 	return root
