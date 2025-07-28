@@ -1,5 +1,7 @@
 package desensitize
 
+const SixStar = "******"
+
 // 定义脱敏接口
 type DesensitizeAble[T any] interface {
 	IntoDesensitized() T
