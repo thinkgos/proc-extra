@@ -26,7 +26,8 @@ type Gen struct {
 	Tags         []string           // 编译标签
 	Version      string             // 版本
 	Merge        bool               // 合并到一个文件
-	Filename     string             // 合并文件名
+	EnableTsDef  bool               // 使能ts定义
+	Filename     string             // 合并文件名/ts文件名
 	OmitZero     bool               // 忽略零值
 	TypeStyle    string             // 字典Key风格
 	SqlDictType  string             // 字典类型模板
@@ -160,6 +161,12 @@ func (g *Gen) GenSql() error {
 }
 
 func (g *Gen) GenTs() error {
+	if g.EnableTsDef {
+		err := os.WriteFile(path.Join(g.OutputDir, "dictDef.ts"), enumDef, 0644)
+		if err != nil {
+			return err
+		}
+	}
 	f := &File{
 		Version:      g.Version,
 		IsDeprecated: false,
@@ -174,7 +181,7 @@ func (g *Gen) GenTs() error {
 	if err != nil {
 		return err
 	}
-	err = os.WriteFile(path.Join(g.OutputDir, "dict.ts"), buf.Bytes(), 0644)
+	err = os.WriteFile(path.Join(g.OutputDir, g.Filename), buf.Bytes(), 0644)
 	if err != nil {
 		return err
 	}

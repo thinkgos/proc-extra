@@ -13,6 +13,9 @@ import (
 //go:embed enum.tpl ts.enum.tpl
 var Static embed.FS
 
+//go:embed ts.enum_def.ts
+var enumDef []byte
+
 var TemplateFuncs = template.FuncMap{
 	"snakeCase":      func(s string) string { return infra.SnakeCase(s) },
 	"kebabCase":      func(s string) string { return infra.Kebab(s) },

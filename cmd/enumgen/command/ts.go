@@ -9,12 +9,14 @@ import (
 )
 
 type TsOption struct {
-	OutputDir string
-	Pattern   []string
-	Type      []string
-	Tags      []string
-	TypeStyle string // 字典类型type风格
-	OmitZero  bool   // 忽略零值
+	OutputDir   string
+	Pattern     []string
+	Type        []string
+	Tags        []string
+	TypeStyle   string // 字典类型type风格
+	OmitZero    bool   // 忽略零值
+	EnableTsDef bool   // 使能ts定义
+	Filename    string // 输出文件名
 }
 
 type TsCmd struct {
@@ -49,7 +51,8 @@ func NewTsCmd() *TsCmd {
 				Tags:         root.Tags,
 				Version:      version,
 				Merge:        false,
-				Filename:     "",
+				EnableTsDef:  root.EnableTsDef,
+				Filename:     root.Filename,
 				OmitZero:     root.OmitZero,
 				TypeStyle:    root.TypeStyle,
 				SqlDictType:  "",
@@ -70,6 +73,9 @@ func NewTsCmd() *TsCmd {
 	cmd.Flags().StringSliceVar(&root.Tags, "tags", nil, "comma-separated list of build tags to apply")
 	cmd.Flags().StringVar(&root.TypeStyle, "typeStyle", "", "字典类型type风格, 支持snakeCase,pascalCase,smallCamelCase,kebab")
 	cmd.Flags().BoolVar(&root.OmitZero, "omitZero", false, "是否忽略零值")
+	cmd.Flags().BoolVar(&root.EnableTsDef, "enableTsDef", false, "是否使能ts定义")
+	cmd.Flags().StringVarP(&root.Filename, "filename", "f", "", "输出文件名")
+	cmd.MarkFlagRequired("filename")
 
 	root.cmd = cmd
 	return root
