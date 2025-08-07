@@ -2,13 +2,11 @@ package excel
 
 import (
 	"crypto/rand"
-	"text/template"
 	"time"
 	"unsafe"
 )
 
 var defaultAlphabet = []byte("QWERTYUIOPLKJHGFDSAZXCVBNMabcdefghijklmnopqrstuvwxyz")
-var tmpl = template.Must(template.New("customTitle").Parse(`{{.Now}}`))
 
 func randAlphabet(length int) string {
 	b := make([]byte, length)

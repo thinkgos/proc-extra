@@ -274,6 +274,9 @@ func (e *File[T]) writeCell(sheet string, row, col int, cellValue any, c *Config
 	}
 	if c.dataCellStyleBaseRow > 0 && c.dataCellStyleBaseRow != row {
 		baseAxis, err := excelize.JoinCellName(colName, c.dataCellStyleBaseRow)
+		if err != nil {
+			return err
+		}
 		//* 获取基于指定行的单元格样式
 		style, err := e.GetCellStyle(sheet, baseAxis)
 		if err != nil {
