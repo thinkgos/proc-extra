@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestTagParsing(t *testing.T) {
+func Test_ParseTag(t *testing.T) {
 	name, opts := parseTag("")
 	if name != "" {
 		t.Fatalf("name = %q, want ''", name)
@@ -31,7 +31,7 @@ func TestTagParsing(t *testing.T) {
 	}
 }
 
-func Test_isValidTag(t *testing.T) {
+func Test_IsValidTag(t *testing.T) {
 	tests := []struct {
 		name string
 		args string

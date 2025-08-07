@@ -5,7 +5,6 @@ import (
 	"reflect"
 
 	"github.com/spf13/cast"
-	"github.com/xuri/excelize/v2"
 )
 
 // Decode 反射出工作表到数据
@@ -53,7 +52,7 @@ func (e *File[T]) Decode(sheet string, opts ...Option) ([]T, error) {
 			continue
 		}
 		// 如果有限制, 则超出行数则跳过
-		if c.limitReadMaxLine > 0 && totalRows >= (c.limitReadMaxLine+rowStart) {
+		if c.readMaxLines > 0 && totalRows >= (c.readMaxLines+rowStart) {
 			break
 		}
 		line, err := rows.Columns()
@@ -84,8 +83,8 @@ func scanIntoStruct(values reflect.Value, line []string) (reflect.Value, error) 
 	for vv.Kind() == reflect.Ptr {
 		vv = vv.Elem()
 	}
-	for colIdx, t := 0, vv.Type(); colIdx < t.NumField(); colIdx++ {
-		field := t.Field(colIdx)
+	for colIdx, idx, t := 1, 0, vv.Type(); idx < t.NumField(); idx++ {
+		field := t.Field(idx)
 		if !field.IsExported() {
 			continue
 		}
@@ -93,21 +92,12 @@ func scanIntoStruct(values reflect.Value, line []string) (reflect.Value, error) 
 		if tag == "-" {
 			continue
 		}
-		cellDefine, err := getCellDefine(t)
-		if err != nil {
-			return vv, err
-		}
-		fieldCellDefine := cellDefine.field[field.Name]
-		cell := fieldCellDefine.cell
-		colIndex, err := excelize.ColumnNameToNumber(cell.Column)
-		if err != nil {
-			return vv, err
-		}
-		index := colIndex - 1
+		index := colIdx - 1
+		colIdx += 1
 		if index >= len(line) {
 			continue
 		}
-		fieldValue := vv.Field(colIdx)
+		fieldValue := vv.Field(idx)
 		val := line[index]
 		switch field.Type.Kind() { // nolint: exhaustive
 		case reflect.String:

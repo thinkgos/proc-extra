@@ -8,9 +8,9 @@ import (
 )
 
 type Line struct {
-	CarNo    string `xlsx:"A 卡号 20 20 3"`
-	PrefixNo string `xlsx:"B 前缀 - - 3"`
-	No       int    `xlsx:"C 编号 - - 3,omitempty"`
+	CarNo    string `xlsx:"卡号"`
+	PrefixNo string `xlsx:"前缀"`
+	No       int    `xlsx:"编号,omitempty"`
 }
 
 func encodeToNewFile[T any](filename string, data []T, opts ...Option) error {
@@ -50,6 +50,7 @@ func Test_Encode_SliceStruct(t *testing.T) {
 		os.Remove(filename) // nolint: errcheck
 		return nil
 	}
+
 	t.Run("empty data", func(t *testing.T) {
 		filename := randExcelFilename()
 		err := encodeToNewFile(filename, []*Line{},
@@ -58,19 +59,22 @@ func Test_Encode_SliceStruct(t *testing.T) {
 		require.NoError(t, err)
 		os.Remove(filename) // nolint: errcheck
 	})
+
 	t.Run("empty option", func(t *testing.T) {
 		err := encodeWithOption()
 		require.NoError(t, err)
 	})
+
 	t.Run("title option", func(t *testing.T) {
 		err := encodeWithOption(
 			WithTitle(
 				NewTitle().
-					SetCustomValueFunc(customTitle),
+					SetTitle(customTitle()),
 			),
 		)
 		require.NoError(t, err)
 	})
+
 	t.Run("header option", func(t *testing.T) {
 		err := encodeWithOption(
 			WithEnableHeader(),
@@ -82,7 +86,7 @@ func Test_Encode_SliceStruct(t *testing.T) {
 			WithEnableHeader(),
 			WithTitle(
 				NewTitle().
-					SetCustomValueFunc(customTitle),
+					SetTitle(customTitle()),
 			),
 		)
 		require.NoError(t, err)
@@ -92,7 +96,7 @@ func Test_Encode_SliceStruct(t *testing.T) {
 			WithRowStart(4),
 			WithTitle(
 				NewTitle().
-					SetCustomValueFunc(customTitle),
+					SetTitle(customTitle()),
 			),
 		)
 		require.NoError(t, err)
@@ -105,25 +109,27 @@ func Test_Encode_SliceStruct(t *testing.T) {
 		)
 		require.NoError(t, err)
 	})
+
 	t.Run("title,header and row start option", func(t *testing.T) {
 		err := encodeWithOption(
 			WithEnableHeader(),
 			WithRowStart(4),
 			WithTitle(
 				NewTitle().
-					SetCustomValueFunc(customTitle),
+					SetTitle(customTitle()),
 			),
 		)
 		require.NoError(t, err)
 	})
+
 	t.Run("title, header and row start option(custom header)", func(t *testing.T) {
 		err := encodeWithOption(
 			WithEnableHeader(),
-			WithHeaders([]string{"A1", "A2", "A3"}),
+			WithCustomHeaders([]string{"A1", "A2", "A3"}),
 			WithRowStart(4),
 			WithTitle(
 				NewTitle().
-					SetCustomValueFunc(customTitle),
+					SetTitle(customTitle()),
 			),
 		)
 		require.NoError(t, err)
@@ -163,7 +169,7 @@ func Test_Encode_SliceStruct_Append(t *testing.T) {
 		err := encodeWithOption(
 			WithTitle(
 				NewTitle().
-					SetCustomValueFunc(customTitle),
+					SetTitle(customTitle()),
 			),
 		)
 		require.NoError(t, err)
@@ -179,7 +185,7 @@ func Test_Encode_SliceStruct_Append(t *testing.T) {
 			WithEnableHeader(),
 			WithTitle(
 				NewTitle().
-					SetCustomValueFunc(customTitle),
+					SetTitle(customTitle()),
 			),
 		)
 		require.NoError(t, err)
@@ -189,7 +195,7 @@ func Test_Encode_SliceStruct_Append(t *testing.T) {
 			WithRowStart(4),
 			WithTitle(
 				NewTitle().
-					SetCustomValueFunc(customTitle),
+					SetTitle(customTitle()),
 			),
 		)
 		require.NoError(t, err)
@@ -208,7 +214,7 @@ func Test_Encode_SliceStruct_Append(t *testing.T) {
 			WithRowStart(4),
 			WithTitle(
 				NewTitle().
-					SetCustomValueFunc(customTitle),
+					SetTitle(customTitle()),
 			),
 		)
 		require.NoError(t, err)
@@ -246,7 +252,7 @@ func Test_Encode_Matrix(t *testing.T) {
 		err := encodeWithOption(
 			WithTitle(
 				NewTitle().
-					SetCustomValueFunc(customTitle),
+					SetTitle(customTitle()),
 			),
 		)
 		require.NoError(t, err)
@@ -254,17 +260,17 @@ func Test_Encode_Matrix(t *testing.T) {
 	t.Run("header option", func(t *testing.T) {
 		err := encodeWithOption(
 			WithEnableHeader(),
-			WithHeaders([]string{"卡号", "前缀", "编号"}),
+			WithCustomHeaders([]string{"卡号", "前缀", "编号"}),
 		)
 		require.NoError(t, err)
 	})
 	t.Run("title and header option", func(t *testing.T) {
 		err := encodeWithOption(
 			WithEnableHeader(),
-			WithHeaders([]string{"卡号", "前缀", "编号"}),
+			WithCustomHeaders([]string{"卡号", "前缀", "编号"}),
 			WithTitle(
 				NewTitle().
-					SetCustomValueFunc(customTitle),
+					SetTitle(customTitle()),
 			),
 		)
 		require.NoError(t, err)
@@ -274,7 +280,7 @@ func Test_Encode_Matrix(t *testing.T) {
 			WithRowStart(4),
 			WithTitle(
 				NewTitle().
-					SetCustomValueFunc(customTitle),
+					SetTitle(customTitle()),
 			),
 		)
 		require.NoError(t, err)
@@ -283,7 +289,7 @@ func Test_Encode_Matrix(t *testing.T) {
 	t.Run("header and row start option", func(t *testing.T) {
 		err := encodeWithOption(
 			WithEnableHeader(),
-			WithHeaders([]string{"卡号", "前缀", "编号"}),
+			WithCustomHeaders([]string{"卡号", "前缀", "编号"}),
 			WithRowStart(4),
 		)
 		require.NoError(t, err)
@@ -291,11 +297,11 @@ func Test_Encode_Matrix(t *testing.T) {
 	t.Run("title,header and row start option", func(t *testing.T) {
 		err := encodeWithOption(
 			WithEnableHeader(),
-			WithHeaders([]string{"卡号", "前缀", "编号"}),
+			WithCustomHeaders([]string{"卡号", "前缀", "编号"}),
 			WithRowStart(4),
 			WithTitle(
 				NewTitle().
-					SetCustomValueFunc(customTitle),
+					SetTitle(customTitle()),
 			),
 		)
 		require.NoError(t, err)

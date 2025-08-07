@@ -55,7 +55,7 @@ func Test_Encode_Decode(t *testing.T) {
 			[]Option{
 				WithTitle(
 					NewTitle().
-						SetCustomValueFunc(customTitle),
+						SetTitle(customTitle()),
 				),
 			},
 		},
@@ -77,7 +77,7 @@ func Test_Encode_Decode(t *testing.T) {
 				WithEnableHeader(),
 				WithTitle(
 					NewTitle().
-						SetCustomValueFunc(customTitle),
+						SetTitle(customTitle()),
 				),
 			},
 		},
@@ -87,7 +87,7 @@ func Test_Encode_Decode(t *testing.T) {
 				WithRowStart(4),
 				WithTitle(
 					NewTitle().
-						SetCustomValueFunc(customTitle),
+						SetTitle(customTitle()),
 				),
 			},
 		},
@@ -105,7 +105,7 @@ func Test_Encode_Decode(t *testing.T) {
 				WithRowStart(4),
 				WithTitle(
 					NewTitle().
-						SetCustomValueFunc(customTitle),
+						SetTitle(customTitle()),
 				),
 			},
 		},
@@ -173,7 +173,7 @@ func Test_Encode_Decode_With_Append(t *testing.T) {
 			[]Option{
 				WithTitle(
 					NewTitle().
-						SetCustomValueFunc(customTitle),
+						SetTitle(customTitle()),
 				),
 			},
 		},
@@ -195,7 +195,7 @@ func Test_Encode_Decode_With_Append(t *testing.T) {
 				WithEnableHeader(),
 				WithTitle(
 					NewTitle().
-						SetCustomValueFunc(customTitle),
+						SetTitle(customTitle()),
 				),
 			},
 		},
@@ -205,7 +205,7 @@ func Test_Encode_Decode_With_Append(t *testing.T) {
 				WithRowStart(4),
 				WithTitle(
 					NewTitle().
-						SetCustomValueFunc(customTitle),
+						SetTitle(customTitle()),
 				),
 			},
 		},
@@ -223,7 +223,7 @@ func Test_Encode_Decode_With_Append(t *testing.T) {
 				WithRowStart(4),
 				WithTitle(
 					NewTitle().
-						SetCustomValueFunc(customTitle),
+						SetTitle(customTitle()),
 				),
 			},
 		},
@@ -298,7 +298,7 @@ func Test_Encode_Decode_Matrix(t *testing.T) {
 			[]Option{
 				WithTitle(
 					NewTitle().
-						SetCustomValueFunc(customTitle),
+						SetTitle(customTitle()),
 				),
 			},
 		},
@@ -320,7 +320,7 @@ func Test_Encode_Decode_Matrix(t *testing.T) {
 				WithEnableHeader(),
 				WithTitle(
 					NewTitle().
-						SetCustomValueFunc(customTitle),
+						SetTitle(customTitle()),
 				),
 			},
 		},
@@ -330,7 +330,7 @@ func Test_Encode_Decode_Matrix(t *testing.T) {
 				WithRowStart(4),
 				WithTitle(
 					NewTitle().
-						SetCustomValueFunc(customTitle),
+						SetTitle(customTitle()),
 				),
 			},
 		},
@@ -348,7 +348,7 @@ func Test_Encode_Decode_Matrix(t *testing.T) {
 				WithRowStart(4),
 				WithTitle(
 					NewTitle().
-						SetCustomValueFunc(customTitle),
+						SetTitle(customTitle()),
 				),
 			},
 		},
@@ -416,7 +416,7 @@ func Test_Matrix_Encode_Decode_With_APPEND(t *testing.T) {
 			[]Option{
 				WithTitle(
 					NewTitle().
-						SetCustomValueFunc(customTitle),
+						SetTitle(customTitle()),
 				),
 			},
 		},
@@ -438,7 +438,7 @@ func Test_Matrix_Encode_Decode_With_APPEND(t *testing.T) {
 				WithEnableHeader(),
 				WithTitle(
 					NewTitle().
-						SetCustomValueFunc(customTitle),
+						SetTitle(customTitle()),
 				),
 			},
 		},
@@ -448,7 +448,7 @@ func Test_Matrix_Encode_Decode_With_APPEND(t *testing.T) {
 				WithRowStart(4),
 				WithTitle(
 					NewTitle().
-						SetCustomValueFunc(customTitle),
+						SetTitle(customTitle()),
 				),
 			},
 		},
@@ -466,7 +466,7 @@ func Test_Matrix_Encode_Decode_With_APPEND(t *testing.T) {
 				WithRowStart(4),
 				WithTitle(
 					NewTitle().
-						SetCustomValueFunc(customTitle),
+						SetTitle(customTitle()),
 				),
 			},
 		},
