@@ -13,7 +13,7 @@ import (
 //   - T为结构体切片
 //   - T为基础数据类型的切片或数组
 //
-// T为结构体的结构tag定义:
+// T为结构体的字段tag定义:
 //
 //	`xlsx:"卡号,omitempty"`
 //	`xlsx:"卡号"`
@@ -45,99 +45,55 @@ func (e *File[T]) Encode(sheet string, data []T, opts ...Option) error {
 }
 
 func (e *File[T]) encodeSliceStruct(sheet string, totalRows int, dataElemType reflect.Type, data []T, c *Config) (err error) {
-	cellDefs, err := getCellDefine(dataElemType)
+	headers, err := getHeaders(dataElemType)
 	if err != nil {
 		return err
 	}
 	//* 设置抬头
-	if totalRows == 0 && c.title != nil {
-		err = e.setTile(sheet, c.title, c.rowStart, len(cellDefs.fields))
+	if c.title != nil {
+		err = e.setTile(sheet, c.title, c.rowStart, len(headers))
+		if err != nil {
+			return err
+		}
+	}
+	//* 设置表头
+	if c.enableHeader {
+		headerRow := c.rowStart
+		headerRowValue := headers
+		if len(c.customHeaders) > 0 {
+			headerRowValue = c.customHeaders
+		}
+		headerAxis, err := excelize.JoinCellName("A", headerRow)
+		if err != nil {
+			return err
+		}
+		err = e.SetSheetRow(sheet, headerAxis, &headerRowValue)
 		if err != nil {
 			return err
 		}
 	}
 
-	// 数据起始行
-	rowStart := c.rowStart
+	//* 数据起始行
+	dataRowStart := c.rowStart
 	if totalRows > 0 { // 有旧数据, 追加
-		rowStart = totalRows + 1
+		dataRowStart = totalRows + 1
 	} else if c.enableHeader {
-		rowStart += 1 // skip header
+		dataRowStart += 1 // 跳过表头
 	}
-
-	//* 设置表头
-	// 仅工作表无数据时, 才需要设置列宽和表头
-	if totalRows == 0 {
-		if c.enableHeader && len(c.customHeaders) > 0 {
-			axis, err := excelize.JoinCellName("A", rowStart-1)
-			if err != nil {
-				return err
-			}
-			err = e.SetSheetRow(sheet, axis, &c.customHeaders)
-			if err != nil {
-				return err
-			}
-		} else {
-			for idx, cellDef := range cellDefs.fields {
-				colIdx := idx + 1
-				colName, err := excelize.ColumnNumberToName(colIdx)
-				if err != nil {
-					return err
-				}
-				// //* 设置列宽
-				// if cellDef.Width > 0 {
-				// 	err = e.SetColWidth(sheet, colName, colName, cellDef.Width)
-				// 	if err != nil {
-				// 		return err
-				// 	}
-				// }
-				//* 设置表头
-				if c.enableHeader {
-					axisTitle, err := excelize.JoinCellName(colName, rowStart-1)
-					if err != nil {
-						return err
-					}
-					//* 设置表头名称
-					err = e.SetCellValue(sheet, axisTitle, cellDef.Head)
-					if err != nil {
-						return err
-					}
-					// //* 设置行高
-					// // 一行只设置一次, 由第一个元素决定
-					// if idx == 0 && cellDef.Height > 0 {
-					// 	err = e.SetRowHeight(sheet, rowStart-1, cellDef.Height)
-					// 	if err != nil {
-					// 		return err
-					// 	}
-					// }
-					// //* 设置表头样式
-					// if cellDef.Style > 0 {
-					// 	if style := e.cellStyle(cellDef.Style); style > 0 {
-					// 		err = e.SetCellStyle(sheet, axisTitle, axisTitle, style)
-					// 		if err != nil {
-					// 			return err
-					// 		}
-					// 	}
-					// }
-				}
-			}
-		}
-	}
-
-	rowHeight := float64(0)
-	if c.dataCellStyleBaseRow > 0 {
-		// 获取行高
-		rowHeight, err = e.GetRowHeight(sheet, c.dataCellStyleBaseRow)
+	//* 获取指定行的行高
+	dataRowHeight := float64(0)
+	if c.dataCellStyleBaseOnRow > 0 {
+		dataRowHeight, err = e.GetRowHeight(sheet, c.dataCellStyleBaseOnRow)
 		if err != nil {
 			return err
 		}
 	}
 	for rowIdx, rowValue := range data {
 		//* 当前处理的行
-		currentRow := rowStart + rowIdx
+		currentRow := dataRowStart + rowIdx
 		//* 设置行高度, 一行只设置一次
-		if rowHeight > 0 {
-			if err = e.SetRowHeight(sheet, currentRow, rowHeight); err != nil {
+		if dataRowHeight > 0 {
+			if err = e.SetRowHeight(sheet, currentRow, dataRowHeight); err != nil {
 				return err
 			}
 		}
@@ -184,7 +140,7 @@ func (e *File[T]) encodeSliceStruct(sheet string, totalRows int, dataElemType re
 func (e *File[T]) encodeMatrix(sheet string, totalRows int, dataElemType reflect.Type, data []T, c *Config) (err error) {
 	_ = dataElemType
 	//* 设置抬头
-	if totalRows == 0 && c.title != nil {
+	if c.title != nil {
 		colNum := 0
 		if len(data) > 0 {
 			colNum = reflect.ValueOf(data[0]).Len()
@@ -194,45 +150,46 @@ func (e *File[T]) encodeMatrix(sheet string, totalRows int, dataElemType reflect
 			return err
 		}
 	}
+	//* 设置表头
+	if c.enableHeader && len(c.customHeaders) > 0 {
+		// 表头行
+		headerRow := c.rowStart
+		headerAxis, err := excelize.JoinCellName("A", headerRow)
+		if err != nil {
+			return err
+		}
+		err = e.SetSheetRow(sheet, headerAxis, &c.customHeaders)
+		if err != nil {
+			return err
+		}
+	}
+
 	if len(data) == 0 {
 		return nil
 	}
 
-	// 数据起始行
-	rowStart := c.rowStart
+	//* 数据起始行
+	dataRowStart := c.rowStart
 	if totalRows > 0 { // 有旧数据, 追加
-		rowStart = totalRows + 1
+		dataRowStart = totalRows + 1
 	} else if c.enableHeader {
-		rowStart += 1 // skip header
-	}
-
-	//* 设置表头
-	// 仅工作表无数据时, 才需要设置列宽和表头
-	if totalRows == 0 && c.enableHeader && len(c.customHeaders) > 0 {
-		axis, err := excelize.JoinCellName("A", rowStart-1)
-		if err != nil {
-			return err
-		}
-		err = e.SetSheetRow(sheet, axis, &c.customHeaders)
-		if err != nil {
-			return err
-		}
+		dataRowStart += 1 // 跳过表头
 	}
 
 	//* 获取指定行的行高
-	rowHeight := float64(0)
-	if c.dataCellStyleBaseRow > 0 {
-		rowHeight, err = e.GetRowHeight(sheet, c.dataCellStyleBaseRow)
+	dataRowHeight := float64(0)
+	if c.dataCellStyleBaseOnRow > 0 {
+		dataRowHeight, err = e.GetRowHeight(sheet, c.dataCellStyleBaseOnRow)
 		if err != nil {
 			return err
 		}
 	}
 	for rowIdx, rowValue := range data {
 		//* 当前处理的行
-		currentRow := rowStart + rowIdx
+		currentRow := dataRowStart + rowIdx
 		//* 设置行高度, 一行只设置一次
-		if rowHeight > 0 {
-			if err = e.SetRowHeight(sheet, currentRow, rowHeight); err != nil {
+		if dataRowHeight > 0 {
+			if err = e.SetRowHeight(sheet, currentRow, dataRowHeight); err != nil {
 				return err
 			}
 		}
@@ -272,18 +229,18 @@ func (e *File[T]) writeCell(sheet string, row, col int, cellValue any, c *Config
 	if err != nil {
 		return err
 	}
-	if c.dataCellStyleBaseRow > 0 && c.dataCellStyleBaseRow != row {
-		baseAxis, err := excelize.JoinCellName(colName, c.dataCellStyleBaseRow)
+	if c.dataCellStyleBaseOnRow > 0 && c.dataCellStyleBaseOnRow != row {
+		baseAxis, err := excelize.JoinCellName(colName, c.dataCellStyleBaseOnRow)
 		if err != nil {
 			return err
 		}
 		//* 获取基于指定行的单元格样式
-		style, err := e.GetCellStyle(sheet, baseAxis)
+		styleId, err := e.GetCellStyle(sheet, baseAxis)
 		if err != nil {
 			return err
 		}
 		//* 应用到当前单元格
-		err = e.SetCellStyle(sheet, axis, axis, style)
+		err = e.SetCellStyle(sheet, axis, axis, styleId)
 		if err != nil {
 			return err
 		}

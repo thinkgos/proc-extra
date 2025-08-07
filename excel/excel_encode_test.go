@@ -67,10 +67,9 @@ func Test_Encode_SliceStruct(t *testing.T) {
 
 	t.Run("title option", func(t *testing.T) {
 		err := encodeWithOption(
-			WithTitle(
-				NewTitle().
-					SetTitle(customTitle()),
-			),
+			NewTitle().
+				SetTitle(customTitle()).
+				BuildOption(),
 		)
 		require.NoError(t, err)
 	})
@@ -84,20 +83,18 @@ func Test_Encode_SliceStruct(t *testing.T) {
 	t.Run("title and header option", func(t *testing.T) {
 		err := encodeWithOption(
 			WithEnableHeader(),
-			WithTitle(
-				NewTitle().
-					SetTitle(customTitle()),
-			),
+			NewTitle().
+				SetTitle(customTitle()).
+				BuildOption(),
 		)
 		require.NoError(t, err)
 	})
 	t.Run("title and row start option", func(t *testing.T) {
 		err := encodeWithOption(
 			WithRowStart(4),
-			WithTitle(
-				NewTitle().
-					SetTitle(customTitle()),
-			),
+			NewTitle().
+				SetTitle(customTitle()).
+				BuildOption(),
 		)
 		require.NoError(t, err)
 	})
@@ -114,10 +111,9 @@ func Test_Encode_SliceStruct(t *testing.T) {
 		err := encodeWithOption(
 			WithEnableHeader(),
 			WithRowStart(4),
-			WithTitle(
-				NewTitle().
-					SetTitle(customTitle()),
-			),
+			NewTitle().
+				SetTitle(customTitle()).
+				BuildOption(),
 		)
 		require.NoError(t, err)
 	})
@@ -127,10 +123,9 @@ func Test_Encode_SliceStruct(t *testing.T) {
 			WithEnableHeader(),
 			WithCustomHeaders([]string{"A1", "A2", "A3"}),
 			WithRowStart(4),
-			WithTitle(
-				NewTitle().
-					SetTitle(customTitle()),
-			),
+			NewTitle().
+				SetTitle(customTitle()).
+				BuildOption(),
 		)
 		require.NoError(t, err)
 	})
@@ -167,10 +162,9 @@ func Test_Encode_SliceStruct_Append(t *testing.T) {
 	})
 	t.Run("title option", func(t *testing.T) {
 		err := encodeWithOption(
-			WithTitle(
-				NewTitle().
-					SetTitle(customTitle()),
-			),
+			NewTitle().
+				SetTitle(customTitle()).
+				BuildOption(),
 		)
 		require.NoError(t, err)
 	})
@@ -183,20 +177,18 @@ func Test_Encode_SliceStruct_Append(t *testing.T) {
 	t.Run("title and header option", func(t *testing.T) {
 		err := encodeWithOption(
 			WithEnableHeader(),
-			WithTitle(
-				NewTitle().
-					SetTitle(customTitle()),
-			),
+			NewTitle().
+				SetTitle(customTitle()).
+				BuildOption(),
 		)
 		require.NoError(t, err)
 	})
 	t.Run("title and row start option", func(t *testing.T) {
 		err := encodeWithOption(
 			WithRowStart(4),
-			WithTitle(
-				NewTitle().
-					SetTitle(customTitle()),
-			),
+			NewTitle().
+				SetTitle(customTitle()).
+				BuildOption(),
 		)
 		require.NoError(t, err)
 	})
@@ -212,10 +204,9 @@ func Test_Encode_SliceStruct_Append(t *testing.T) {
 		err := encodeWithOption(
 			WithEnableHeader(),
 			WithRowStart(4),
-			WithTitle(
-				NewTitle().
-					SetTitle(customTitle()),
-			),
+			NewTitle().
+				SetTitle(customTitle()).
+				BuildOption(),
 		)
 		require.NoError(t, err)
 	})
@@ -250,10 +241,9 @@ func Test_Encode_Matrix(t *testing.T) {
 	})
 	t.Run("title option", func(t *testing.T) {
 		err := encodeWithOption(
-			WithTitle(
-				NewTitle().
-					SetTitle(customTitle()),
-			),
+			NewTitle().
+				SetTitle(customTitle()).
+				BuildOption(),
 		)
 		require.NoError(t, err)
 	})
@@ -268,20 +258,18 @@ func Test_Encode_Matrix(t *testing.T) {
 		err := encodeWithOption(
 			WithEnableHeader(),
 			WithCustomHeaders([]string{"卡号", "前缀", "编号"}),
-			WithTitle(
-				NewTitle().
-					SetTitle(customTitle()),
-			),
+			NewTitle().
+				SetTitle(customTitle()).
+				BuildOption(),
 		)
 		require.NoError(t, err)
 	})
 	t.Run("title and row start option", func(t *testing.T) {
 		err := encodeWithOption(
 			WithRowStart(4),
-			WithTitle(
-				NewTitle().
-					SetTitle(customTitle()),
-			),
+			NewTitle().
+				SetTitle(customTitle()).
+				BuildOption(),
 		)
 		require.NoError(t, err)
 	})
@@ -299,10 +287,9 @@ func Test_Encode_Matrix(t *testing.T) {
 			WithEnableHeader(),
 			WithCustomHeaders([]string{"卡号", "前缀", "编号"}),
 			WithRowStart(4),
-			WithTitle(
-				NewTitle().
-					SetTitle(customTitle()),
-			),
+			NewTitle().
+				SetTitle(customTitle()).
+				BuildOption(),
 		)
 		require.NoError(t, err)
 	})

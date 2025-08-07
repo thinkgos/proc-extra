@@ -47,16 +47,16 @@ func Test_Encode_Template(t *testing.T) {
 				Remark: "测试备注2",
 			},
 		},
-		WithTitle(
-			NewTitle().WithUseTemplate(&testTemplateTitle{
-				Name:  "测一下",
-				Area:  "测试区域",
-				Total: 2,
-			}),
-		),
+
+		NewTitle().SetUseTemplate(&testTemplateTitle{
+			Name:  "测一下",
+			Area:  "测试区域",
+			Total: 2,
+		}).
+			BuildOption(),
 		WithOverrideRow(),
 		WithRowStart(3),
-		WithDataCellStyleBaseRow(3),
+		WithDataCellStyleBaseOnRow(3),
 	)
 	require.NoError(t, err)
 	filename := randExcelFilename()

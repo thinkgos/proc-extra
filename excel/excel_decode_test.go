@@ -53,10 +53,9 @@ func Test_Encode_Decode(t *testing.T) {
 		{
 			"only title",
 			[]Option{
-				WithTitle(
-					NewTitle().
-						SetTitle(customTitle()),
-				),
+				NewTitle().
+					SetTitle(customTitle()).
+					BuildOption(),
 			},
 		},
 		{
@@ -75,20 +74,18 @@ func Test_Encode_Decode(t *testing.T) {
 			"title and header",
 			[]Option{
 				WithEnableHeader(),
-				WithTitle(
-					NewTitle().
-						SetTitle(customTitle()),
-				),
+				NewTitle().
+					SetTitle(customTitle()).
+					BuildOption(),
 			},
 		},
 		{
 			"title and row start",
 			[]Option{
 				WithRowStart(4),
-				WithTitle(
-					NewTitle().
-						SetTitle(customTitle()),
-				),
+				NewTitle().
+					SetTitle(customTitle()).
+					BuildOption(),
 			},
 		},
 		{
@@ -103,10 +100,9 @@ func Test_Encode_Decode(t *testing.T) {
 			[]Option{
 				WithEnableHeader(),
 				WithRowStart(4),
-				WithTitle(
-					NewTitle().
-						SetTitle(customTitle()),
-				),
+				NewTitle().
+					SetTitle(customTitle()).
+					BuildOption(),
 			},
 		},
 	}
@@ -171,10 +167,9 @@ func Test_Encode_Decode_With_Append(t *testing.T) {
 		{
 			"only title",
 			[]Option{
-				WithTitle(
-					NewTitle().
-						SetTitle(customTitle()),
-				),
+				NewTitle().
+					SetTitle(customTitle()).
+					BuildOption(),
 			},
 		},
 		{
@@ -193,20 +188,18 @@ func Test_Encode_Decode_With_Append(t *testing.T) {
 			"title and header",
 			[]Option{
 				WithEnableHeader(),
-				WithTitle(
-					NewTitle().
-						SetTitle(customTitle()),
-				),
+				NewTitle().
+					SetTitle(customTitle()).
+					BuildOption(),
 			},
 		},
 		{
 			"title and row start",
 			[]Option{
 				WithRowStart(4),
-				WithTitle(
-					NewTitle().
-						SetTitle(customTitle()),
-				),
+				NewTitle().
+					SetTitle(customTitle()).
+					BuildOption(),
 			},
 		},
 		{
@@ -221,10 +214,9 @@ func Test_Encode_Decode_With_Append(t *testing.T) {
 			[]Option{
 				WithEnableHeader(),
 				WithRowStart(4),
-				WithTitle(
-					NewTitle().
-						SetTitle(customTitle()),
-				),
+				NewTitle().
+					SetTitle(customTitle()).
+					BuildOption(),
 			},
 		},
 	}
@@ -296,10 +288,9 @@ func Test_Encode_Decode_Matrix(t *testing.T) {
 		{
 			"only title",
 			[]Option{
-				WithTitle(
-					NewTitle().
-						SetTitle(customTitle()),
-				),
+				NewTitle().
+					SetTitle(customTitle()).
+					BuildOption(),
 			},
 		},
 		{
@@ -318,20 +309,18 @@ func Test_Encode_Decode_Matrix(t *testing.T) {
 			"title and header",
 			[]Option{
 				WithEnableHeader(),
-				WithTitle(
-					NewTitle().
-						SetTitle(customTitle()),
-				),
+				NewTitle().
+					SetTitle(customTitle()).
+					BuildOption(),
 			},
 		},
 		{
 			"title and row start",
 			[]Option{
 				WithRowStart(4),
-				WithTitle(
-					NewTitle().
-						SetTitle(customTitle()),
-				),
+				NewTitle().
+					SetTitle(customTitle()).
+					BuildOption(),
 			},
 		},
 		{
@@ -346,10 +335,9 @@ func Test_Encode_Decode_Matrix(t *testing.T) {
 			[]Option{
 				WithEnableHeader(),
 				WithRowStart(4),
-				WithTitle(
-					NewTitle().
-						SetTitle(customTitle()),
-				),
+				NewTitle().
+					SetTitle(customTitle()).
+					BuildOption(),
 			},
 		},
 	}
@@ -414,10 +402,9 @@ func Test_Matrix_Encode_Decode_With_APPEND(t *testing.T) {
 		{
 			"only title",
 			[]Option{
-				WithTitle(
-					NewTitle().
-						SetTitle(customTitle()),
-				),
+				NewTitle().
+					SetTitle(customTitle()).
+					BuildOption(),
 			},
 		},
 		{
@@ -436,20 +423,18 @@ func Test_Matrix_Encode_Decode_With_APPEND(t *testing.T) {
 			"title and header",
 			[]Option{
 				WithEnableHeader(),
-				WithTitle(
-					NewTitle().
-						SetTitle(customTitle()),
-				),
+				NewTitle().
+					SetTitle(customTitle()).
+					BuildOption(),
 			},
 		},
 		{
 			"title and row start",
 			[]Option{
 				WithRowStart(4),
-				WithTitle(
-					NewTitle().
-						SetTitle(customTitle()),
-				),
+				NewTitle().
+					SetTitle(customTitle()).
+					BuildOption(),
 			},
 		},
 		{
@@ -464,10 +449,9 @@ func Test_Matrix_Encode_Decode_With_APPEND(t *testing.T) {
 			[]Option{
 				WithEnableHeader(),
 				WithRowStart(4),
-				WithTitle(
-					NewTitle().
-						SetTitle(customTitle()),
-				),
+				NewTitle().
+					SetTitle(customTitle()).
+					BuildOption(),
 			},
 		},
 	}

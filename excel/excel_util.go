@@ -54,30 +54,38 @@ func (e *File[T]) setTile(sheet string, tt *Title, rowStart, colNum int) error {
 		}
 		return e.SetCellStr(sheet, "A1", v.String())
 	} else {
-		err := e.SetRowHeight(sheet, 1, tt.Height())
+		err := e.SetRowHeight(sheet, 1, tt.rowHeight)
 		if err != nil {
 			return err
 		}
-		col, err := excelize.ColumnNumberToName(colNum)
-		if err != nil {
-			return err
+		if tt.colNum > 0 {
+			colNum = tt.colNum
 		}
-		vcell, err := excelize.JoinCellName(col, rowStart-1)
-		if err != nil {
-			return err
+		vcell := "A1"
+		if colNum > 0 {
+			col, err := excelize.ColumnNumberToName(colNum)
+			if err != nil {
+				return err
+			}
+			vcell, err = excelize.JoinCellName(col, rowStart-1)
+			if err != nil {
+				return err
+			}
+			// 合并单元格
+			err = e.MergeCell(sheet, "A1", vcell)
+			if err != nil {
+				return err
+			}
 		}
-		// 合并单元格
-		err = e.MergeCell(sheet, "A1", vcell)
-		if err != nil {
-			return err
-		}
-		style, err := e.NewStyle(&excelize.Style{Alignment: &excelize.Alignment{WrapText: true}})
-		if err != nil {
-			return err
-		}
-		err = e.SetCellStyle(sheet, "A1", vcell, style)
-		if err != nil {
-			return err
+		if tt.style != nil {
+			styleId, err := e.NewStyle(&excelize.Style{Alignment: &excelize.Alignment{WrapText: true}})
+			if err != nil {
+				return err
+			}
+			err = e.SetCellStyle(sheet, "A1", vcell, styleId)
+			if err != nil {
+				return err
+			}
 		}
 		return e.SetCellStr(sheet, "A1", tt.value)
 	}

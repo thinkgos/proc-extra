@@ -13,7 +13,7 @@ type Config struct {
 	enableHeader bool
 	// 自定义表头, enableHeader = true 有效, 默认: 空
 	customHeaders []string
-	// 输出起始行(含表头, 如果无表头, 则为数据行)
+	// 起始行(含表头, 如果无表头, 则为数据行)
 	// title != nil, 如果 rowStart < 2 则 rowStart = 2, 即至少保留一行给抬头
 	// 其它 rowStart = 实际值, 如果 rowStart < 1 则 rowStart = 1, 至少从第一行开始
 	// 前面的行数将被合并做为抬头
@@ -24,7 +24,7 @@ type Config struct {
 	readMaxLines int
 	// 数据单元格样式(行高, 列宽)基于哪一行, 仅对数据行有效
 	// 0: 表示不使用样式, 其它: 基于所指定的行
-	dataCellStyleBaseRow int
+	dataCellStyleBaseOnRow int
 }
 
 func (c *Config) takeOptions(opts ...Option) {
@@ -66,19 +66,12 @@ func WithCustomHeaders(headers []string) Option {
 	}
 }
 
-// WithRowStart 输出的起始行(含表头, 如果无表头, 则为数据行)
+// WithRowStart 起始行(含表头, 如果无表头, 则为数据行)
 // 启用抬头配置(title != nil), 如果 rowStart < 2 则 rowStart = 2, 即保留一行给抬头
 // 其它 rowStart = 实际值, 如果 rowStart < 1 则 rowStart = 1, 从第一行开始
 func WithRowStart(rowStart int) Option {
 	return func(c *Config) {
 		c.rowStart = rowStart
-	}
-}
-
-// WithTitle 抬头配置, 当不为nil时, 启用抬头.
-func WithTitle(title *Title) Option {
-	return func(c *Config) {
-		c.title = title
 	}
 }
 
@@ -89,10 +82,10 @@ func WithReadMaxLines(limit int) Option {
 	}
 }
 
-// WithDataCellStyleBaseRow 数据单元格样式基于哪一行, 仅对数据行有效
+// WithDataCellStyleBaseOnRow 数据单元格样式基于哪一行, 仅对数据行有效
 // 0: 表示不使用样式, 其它: 基于所指定的行
-func WithDataCellStyleBaseRow(row int) Option {
+func WithDataCellStyleBaseOnRow(row int) Option {
 	return func(c *Config) {
-		c.dataCellStyleBaseRow = row
+		c.dataCellStyleBaseOnRow = row
 	}
 }

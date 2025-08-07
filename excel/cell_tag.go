@@ -1,6 +1,7 @@
 package excel
 
 import (
+	"reflect"
 	"slices"
 	"strings"
 	"unicode"
@@ -39,4 +40,21 @@ func isValidTag(s string) bool {
 		}
 	}
 	return true
+}
+
+func getHeaders(t reflect.Type) ([]string, error) {
+	headers := make([]string, 0, t.NumField())
+	for i := range t.NumField() {
+		field := t.Field(i)
+		if !field.IsExported() {
+			continue
+		}
+		tag := field.Tag.Get("xlsx")
+		if tag == "-" {
+			continue
+		}
+		tagName, _ := parseTag(tag)
+		headers = append(headers, tagName)
+	}
+	return headers, nil
 }
