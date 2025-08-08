@@ -37,6 +37,14 @@ func (e *File[T]) sheetTotalRows(sheet string, overrideRow bool) (int, error) {
 	return totalRows, nil
 }
 
+func (e *File[T]) GetCellDirectlyStyle(sheet, cell string) (*excelize.Style, error) {
+	styleId, err := e.GetCellStyle(sheet, cell)
+	if err != nil {
+		return nil, err
+	}
+	return e.GetStyle(styleId)
+}
+
 func (e *File[T]) setTile(sheet string, tt *Title, rowStart, colNum int) error {
 	if tt.useTemplate {
 		value, err := e.GetCellValue(sheet, "A1")
@@ -78,7 +86,7 @@ func (e *File[T]) setTile(sheet string, tt *Title, rowStart, colNum int) error {
 			}
 		}
 		if tt.style != nil {
-			styleId, err := e.NewStyle(&excelize.Style{Alignment: &excelize.Alignment{WrapText: true}})
+			styleId, err := e.NewStyle(tt.style)
 			if err != nil {
 				return err
 			}

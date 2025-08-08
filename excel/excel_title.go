@@ -4,12 +4,12 @@ import "github.com/xuri/excelize/v2"
 
 // Title 抬头配置
 type Title struct {
-	rowHeight   float64 // 行高度, 默认: 20
-	colNum      int     // 合并列数, 默认: 0, 不合并
-	style       *excelize.Style
-	value       string // 抬头数据: 默认: 无
-	useTemplate bool   // 是否使用模板, 默认: false
-	data        any    // 模板数据
+	rowHeight   float64         // 行高度, 默认: 20
+	colNum      int             // 合并列数, 默认: 0, 不合并
+	style       *excelize.Style // 样式
+	value       string          // 抬头数据: 默认: 无
+	useTemplate bool            // 是否使用模板, 默认: false
+	data        any             // 模板数据
 }
 
 func NewTitle() *Title {

@@ -26,7 +26,7 @@ func Test_Encode_Decode(t *testing.T) {
 		}
 
 		filename := randExcelFilename()
-		err := encodeToNewFile(filename, want, opts...)
+		err := encodeToNewFile(filename, want, false, opts...)
 		if err != nil {
 			return err
 		}
@@ -127,7 +127,7 @@ func Test_Encode_Decode_With_Append(t *testing.T) {
 		wantData2 := append(wantData1, appendData...)
 
 		filename := randExcelFilename()
-		err := encodeToNewFile(filename, wantData1, opts...)
+		err := encodeToNewFile(filename, wantData1, false, opts...)
 		if err != nil {
 			return err
 		}
@@ -232,7 +232,7 @@ func Test_Encode_Empty_Matrix(t *testing.T) {
 		want := [][]string{}
 
 		filename := randAlphabet(10) + ".xlsx"
-		err := encodeToNewFile(filename, want, opts...)
+		err := encodeToNewFile(filename, want, false, opts...)
 		if err != nil {
 			return err
 		}
@@ -261,7 +261,7 @@ func Test_Encode_Decode_Matrix(t *testing.T) {
 		}
 
 		filename := randAlphabet(10) + ".xlsx"
-		err := encodeToNewFile(filename, want, opts...)
+		err := encodeToNewFile(filename, want, false, opts...)
 		if err != nil {
 			return err
 		}
@@ -362,7 +362,7 @@ func Test_Matrix_Encode_Decode_With_APPEND(t *testing.T) {
 		wantData2 := append(wantData1, appendData...)
 
 		filename := randAlphabet(10) + ".xlsx"
-		err := encodeToNewFile(filename, wantData1, opts...)
+		err := encodeToNewFile(filename, wantData1, false, opts...)
 		if err != nil {
 			return err
 		}
@@ -478,7 +478,7 @@ func Test_Encode_Decode2(t *testing.T) {
 		}
 
 		filename := randExcelFilename()
-		err := encodeToNewFile(filename, want, opts...)
+		err := encodeToNewFile(filename, want, false, opts...)
 		if err != nil {
 			return err
 		}
