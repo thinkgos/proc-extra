@@ -57,7 +57,6 @@ func Test_Encode_Template(t *testing.T) {
 				Remark: "测试备注3",
 			},
 		},
-
 		WithOverrideRow(),
 		WithRowStart(3),
 		WithDataCellStyleBaseOnRow(3),
@@ -69,15 +68,9 @@ func Test_Encode_Template(t *testing.T) {
 			}).
 			BuildOption(),
 	)
-	style, err := xls.GetCellDirectlyStyle("关联摄像机", "A2")
-	require.NoError(t, err)
-	t.Log(style)
-	t.Log(style.Font)
-	t.Log(style.Alignment)
-
 	require.NoError(t, err)
 	filename := randExcelFilename()
 	err = xls.SaveAs(filename)
 	require.NoError(t, err)
-	os.Remove(filename)
+	_ = os.Remove(filename)
 }

@@ -25,7 +25,7 @@ func encodeToNewFile[T any](filename string, data []T, removed bool, opts ...Opt
 		return err
 	}
 	if removed {
-		os.Remove(filename)
+		_ = os.Remove(filename)
 	}
 	return nil
 }
