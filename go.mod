@@ -7,7 +7,7 @@ require (
 	github.com/oklog/ulid/v2 v2.1.1
 	github.com/panjf2000/ants/v2 v2.11.3
 	github.com/spf13/cast v1.9.2
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.1
 	github.com/thinkgos/limiter v0.2.0
 	github.com/thinkgos/proc v0.0.0-20250331133707-16250817967d
 	github.com/thinkgos/tdengine-gorm v0.2.0
