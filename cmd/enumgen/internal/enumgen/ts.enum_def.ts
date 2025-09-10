@@ -30,6 +30,11 @@ export class Dict {
     public getAttrType(value: string | number, defaultValue: string = 'info'): string {
         return this.mapping.get('' + value)?.attrType ?? defaultValue;
     }
+    public getField(value: string | number, field: string, defaultValue?: any): any {
+        const entry = this.mapping.get('' + value);
+        if (!entry) return defaultValue;
+        return (entry as any)[field] ?? defaultValue;
+    }
     public patchFieldValue(map: Record<string | number, Partial<Omit<DictEntry, 'value' | 'label'>>>) {
         this.items.forEach(item => {
             const key = '' + item.value;
