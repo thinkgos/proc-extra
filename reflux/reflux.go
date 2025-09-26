@@ -117,3 +117,21 @@ func (r *Reflux) Verify(tk string, plainText []byte) error {
 	hashed := sha256.Sum256(plainText)
 	return rsa.VerifyPKCS1v15(r.pub, crypto.SHA256, hashed[:], signText)
 }
+
+// Encrypt rsa PKCS #1 v1.5. and base64 encoded.
+func Encrypt(pub *rsa.PublicKey, rawText []byte) (string, error) {
+	b, err := rsa.EncryptPKCS1v15(rand.Reader, pub, rawText)
+	if err != nil {
+		return "", err
+	}
+	return base64.StdEncoding.EncodeToString(b), nil
+}
+
+// Decrypt base64 decoded and rsa PKCS #1 v1.5.
+func Decrypt(pri *rsa.PrivateKey, cipherText string) ([]byte, error) {
+	b, err := base64.StdEncoding.DecodeString(cipherText)
+	if err != nil {
+		return nil, err
+	}
+	return rsa.DecryptPKCS1v15(rand.Reader, pri, b)
+}
