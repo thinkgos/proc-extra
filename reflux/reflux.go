@@ -7,8 +7,6 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 
-	"google.golang.org/protobuf/proto"
-
 	"github.com/thinkgos/proc-extra/cert"
 )
 
@@ -24,6 +22,7 @@ type Codec interface {
 
 type Option func(*Reflux)
 
+// WithCodecString set the codec string. default use base64.StdEncoding.
 func WithCodecString(c CodecString) Option {
 	return func(r *Reflux) {
 		if c != nil {
@@ -32,6 +31,7 @@ func WithCodecString(c CodecString) Option {
 	}
 }
 
+// WithCodec set the codec. default use CodecJSON.
 func WithCodec(c Codec) Option {
 	return func(r *Reflux) {
 		if c != nil {
@@ -80,12 +80,8 @@ func (r *Reflux) PrivateKey() *rsa.PrivateKey { return r.priv }
 
 func (r *Reflux) PublicKey() *rsa.PublicKey { return r.pub }
 
-// Encrypt encode a message use PublicKey.
-func (r *Reflux) Encrypt(message proto.Message) (string, error) {
-	plainText, err := r.codec.Marshal(message)
-	if err != nil {
-		return "", err
-	}
+// Encrypt encode a value use PublicKey.
+func (r *Reflux) Encrypt(plainText []byte) (string, error) {
 	cipherText, err := rsa.EncryptPKCS1v15(rand.Reader, r.pub, plainText)
 	if err != nil {
 		return "", err
@@ -93,25 +89,17 @@ func (r *Reflux) Encrypt(message proto.Message) (string, error) {
 	return r.codecString.EncodeToString(cipherText), nil
 }
 
-// Decrypt decodes to a message use PrivateKey.
-func (r *Reflux) Decrypt(tk string, message proto.Message) error {
+// Decrypt decodes to a value use PrivateKey.
+func (r *Reflux) Decrypt(tk string) ([]byte, error) {
 	cipherText, err := r.codecString.DecodeString(tk)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	plainText, err := rsa.DecryptPKCS1v15(rand.Reader, r.priv, cipherText)
-	if err != nil {
-		return err
-	}
-	return r.codec.Unmarshal(plainText, message)
+	return rsa.DecryptPKCS1v15(rand.Reader, r.priv, cipherText)
 }
 
 // Sign sign a message use PrivateKey.
-func (r *Reflux) Sign(message proto.Message) (string, error) {
-	plainText, err := r.codec.Marshal(message)
-	if err != nil {
-		return "", err
-	}
+func (r *Reflux) Sign(plainText []byte) (string, error) {
 	hashed := sha256.Sum256(plainText)
 	sighText, err := rsa.SignPKCS1v15(rand.Reader, r.priv, crypto.SHA256, hashed[:])
 	if err != nil {
@@ -121,69 +109,11 @@ func (r *Reflux) Sign(message proto.Message) (string, error) {
 }
 
 // Verify a message signature use PubicKey.
-func (r *Reflux) Verify(tk string, message proto.Message) error {
-	plainText, err := r.codec.Marshal(message)
-	if err != nil {
-		return err
-	}
-	sighText, err := r.codecString.DecodeString(tk)
+func (r *Reflux) Verify(tk string, plainText []byte) error {
+	signText, err := r.codecString.DecodeString(tk)
 	if err != nil {
 		return err
 	}
 	hashed := sha256.Sum256(plainText)
-	return rsa.VerifyPKCS1v15(r.pub, crypto.SHA256, hashed[:], sighText)
-}
-
-// EncryptProto encode a protobuf message use PublicKey.
-func (r *Reflux) EncryptProto(message proto.Message) (string, error) {
-	plainText, err := proto.Marshal(message)
-	if err != nil {
-		return "", err
-	}
-	cipherText, err := rsa.EncryptPKCS1v15(rand.Reader, r.pub, plainText)
-	if err != nil {
-		return "", err
-	}
-	return r.codecString.EncodeToString(cipherText), nil
-}
-
-// DecryptProto decodes to a protobuf message use PrivateKey.
-func (r *Reflux) DecryptProto(tk string, message proto.Message) error {
-	cipherText, err := r.codecString.DecodeString(tk)
-	if err != nil {
-		return err
-	}
-	plainText, err := rsa.DecryptPKCS1v15(rand.Reader, r.priv, cipherText)
-	if err != nil {
-		return err
-	}
-	return proto.Unmarshal(plainText, message)
-}
-
-// SignProto sign a protobuf message use PrivateKey.
-func (r *Reflux) SignProto(message proto.Message) (string, error) {
-	plainText, err := proto.Marshal(message)
-	if err != nil {
-		return "", err
-	}
-	hashed := sha256.Sum256(plainText)
-	sighText, err := rsa.SignPKCS1v15(rand.Reader, r.priv, crypto.SHA256, hashed[:])
-	if err != nil {
-		return "", err
-	}
-	return r.codecString.EncodeToString(sighText), nil
-}
-
-// VerifyProto a protobuf message signature use PublicKey.
-func (r *Reflux) VerifyProto(tk string, message proto.Message) error {
-	plainText, err := proto.Marshal(message)
-	if err != nil {
-		return err
-	}
-	sighText, err := r.codecString.DecodeString(tk)
-	if err != nil {
-		return err
-	}
-	hashed := sha256.Sum256(plainText)
-	return rsa.VerifyPKCS1v15(r.pub, crypto.SHA256, hashed[:], sighText)
+	return rsa.VerifyPKCS1v15(r.pub, crypto.SHA256, hashed[:], signText)
 }
