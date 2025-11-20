@@ -28,7 +28,7 @@ jobs:
         with:
           go-version: "1.25.x"
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           # We must fetch at least the immediate parents so that if this is
           # a pull request then we can checkout the head.
