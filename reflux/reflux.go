@@ -82,7 +82,7 @@ func (r *Reflux) PublicKey() *rsa.PublicKey { return r.pub }
 
 // Encrypt encode a value use PublicKey.
 func (r *Reflux) Encrypt(plainText []byte) (string, error) {
-	cipherText, err := rsa.EncryptPKCS1v15(rand.Reader, r.pub, plainText)
+	cipherText, err := rsa.EncryptPKCS1v15(rand.Reader, r.pub, plainText) // nolint: staticcheck
 	if err != nil {
 		return "", err
 	}
@@ -95,7 +95,7 @@ func (r *Reflux) Decrypt(tk string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return rsa.DecryptPKCS1v15(rand.Reader, r.priv, cipherText)
+	return rsa.DecryptPKCS1v15(rand.Reader, r.priv, cipherText) // nolint: staticcheck
 }
 
 // Sign sign a message use PrivateKey.
@@ -120,7 +120,7 @@ func (r *Reflux) Verify(tk string, plainText []byte) error {
 
 // Encrypt rsa PKCS #1 v1.5. and base64 encoded.
 func Encrypt(pub *rsa.PublicKey, rawText []byte) (string, error) {
-	b, err := rsa.EncryptPKCS1v15(rand.Reader, pub, rawText)
+	b, err := rsa.EncryptPKCS1v15(rand.Reader, pub, rawText) // nolint: staticcheck
 	if err != nil {
 		return "", err
 	}
@@ -133,5 +133,5 @@ func Decrypt(pri *rsa.PrivateKey, cipherText string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return rsa.DecryptPKCS1v15(rand.Reader, pri, b)
+	return rsa.DecryptPKCS1v15(rand.Reader, pri, b) // nolint: staticcheck
 }
