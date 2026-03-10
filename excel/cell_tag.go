@@ -44,8 +44,8 @@ func isValidTag(s string) bool {
 
 func getHeaders(t reflect.Type) ([]string, error) {
 	headers := make([]string, 0, t.NumField())
-	for i := range t.NumField() {
-		field := t.Field(i)
+	for field := range t.Fields() {
+		field := field
 		if !field.IsExported() {
 			continue
 		}

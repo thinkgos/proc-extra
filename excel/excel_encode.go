@@ -21,7 +21,7 @@ func (e *File[T]) Encode(sheet string, data []T, opts ...Option) error {
 	c := Config{}
 	c.takeOptions(opts...)
 
-	dataElemType := indirectType(reflect.TypeOf(data).Elem())
+	dataElemType := indirectType(reflect.TypeFor[[]T]().Elem())
 	if !slices.Contains([]reflect.Kind{reflect.Array, reflect.Slice, reflect.Struct}, dataElemType.Kind()) {
 		return errors.New("xlsx: data element must be a struct, slice or array")
 	}
@@ -260,21 +260,21 @@ func isEmptyValue(v reflect.Value) bool {
 		return v.Float() == 0
 	case reflect.Array, reflect.Slice, reflect.Map, reflect.String, reflect.Chan:
 		return v.Len() == 0
-	case reflect.Interface, reflect.Ptr:
+	case reflect.Interface, reflect.Pointer:
 		return v.IsNil()
 	}
 	return false
 }
 
 func indirectValue(v reflect.Value) reflect.Value {
-	for v.Kind() == reflect.Ptr {
+	for v.Kind() == reflect.Pointer {
 		v = v.Elem()
 	}
 	return v
 }
 
 func indirectType(v reflect.Type) reflect.Type {
-	for v.Kind() == reflect.Ptr {
+	for v.Kind() == reflect.Pointer {
 		v = v.Elem()
 	}
 	return v

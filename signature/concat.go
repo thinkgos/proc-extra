@@ -185,11 +185,11 @@ func indirectToStringer(vv any) any {
 		return nil
 	}
 
-	var errorType = reflect.TypeOf((*error)(nil)).Elem()
-	var fmtStringerType = reflect.TypeOf((*fmt.Stringer)(nil)).Elem()
+	var errorType = reflect.TypeFor[error]()
+	var fmtStringerType = reflect.TypeFor[fmt.Stringer]()
 
 	v := reflect.ValueOf(vv)
-	if !v.Type().Implements(fmtStringerType) && !v.Type().Implements(errorType) && v.Kind() == reflect.Ptr && !v.IsNil() {
+	if !v.Type().Implements(fmtStringerType) && !v.Type().Implements(errorType) && v.Kind() == reflect.Pointer && !v.IsNil() {
 		v = v.Elem()
 	}
 	return v.Interface()

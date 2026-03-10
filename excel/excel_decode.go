@@ -17,7 +17,7 @@ func (e *File[T]) Decode(sheet string, opts ...Option) ([]T, error) {
 
 	reflectValue := reflect.ValueOf([]T{})
 	dataElemType := reflectValue.Type().Elem()
-	isPtr := dataElemType.Kind() == reflect.Ptr
+	isPtr := dataElemType.Kind() == reflect.Pointer
 	if isPtr {
 		dataElemType = dataElemType.Elem()
 	}
@@ -80,7 +80,7 @@ func (e *File[T]) Decode(sheet string, opts ...Option) ([]T, error) {
 
 func scanIntoStruct(values reflect.Value, line []string) (reflect.Value, error) {
 	vv := values
-	for vv.Kind() == reflect.Ptr {
+	for vv.Kind() == reflect.Pointer {
 		vv = vv.Elem()
 	}
 	for colIdx, idx, t := 1, 0, vv.Type(); idx < t.NumField(); idx++ {
