@@ -11,7 +11,7 @@ require (
 	github.com/thinkgos/limiter v0.2.0
 	github.com/thinkgos/proc v0.0.0-20251013014314-a2607a29bf15
 	github.com/xuri/excelize/v2 v2.10.1
-	go.opentelemetry.io/otel/sdk v1.43.0
+	go.opentelemetry.io/otel/sdk v1.44.0
 	go.opentelemetry.io/otel/trace v1.44.0
 	golang.org/x/crypto v0.53.0
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260226221140-a57be14db171
