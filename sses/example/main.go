@@ -136,12 +136,12 @@ func applySessionIdHandler() http.Handler {
 
 func responseCode400(w http.ResponseWriter, r *http.Request, msg string) {
 	w.WriteHeader(http.StatusBadRequest)
-	_ = json.NewEncoder(w).Encode(map[string]any{"code": http.StatusBadRequest, "msg": msg, "data": struct{}{}})
+	_ = json.NewEncoder(w).Encode(map[string]any{"code": http.StatusBadRequest, "msg": msg, "data": struct{}{}}) //nolint: errchkjson
 }
 
 func responseCode200(w http.ResponseWriter, r *http.Request, data any) {
 	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(map[string]any{"code": 0, "msg": "ok", "data": data})
+	_ = json.NewEncoder(w).Encode(map[string]any{"code": 0, "msg": "ok", "data": data}) //nolint: errchkjson
 }
 
 type Middleware func(http.Handler) http.Handler
@@ -165,5 +165,5 @@ func (p Pipeline) Handle(final http.Handler) http.Handler {
 }
 
 func (p Pipeline) HandleFunc(final http.HandlerFunc) http.Handler {
-	return p.Handle(http.HandlerFunc(final))
+	return p.Handle(final)
 }

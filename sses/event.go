@@ -25,10 +25,10 @@ var fieldReplacer = strings.NewReplacer("\n", "\\n", "\r", "\\r")
 var dataReplacer = strings.NewReplacer("\n", "\ndata:", "\r", "\\r")
 
 type Event struct {
-	Event string
-	Id    string
-	Retry uint
-	Data  any
+	Event string `json:"event"`
+	Id    string `json:"id"`
+	Retry uint   `json:"retry"`
+	Data  any    `json:"data"`
 }
 
 func (r Event) Render(w http.ResponseWriter) error {
@@ -104,7 +104,7 @@ func writeData(w stringWriter, data any) error {
 func kindOfData(data any) reflect.Kind {
 	value := reflect.ValueOf(data)
 	valueType := value.Kind()
-	if valueType == reflect.Ptr {
+	if valueType == reflect.Pointer {
 		valueType = value.Elem().Kind()
 	}
 	return valueType
