@@ -83,12 +83,12 @@ func Test_Error_Unwrap(t *testing.T) {
 func Test_FromError(t *testing.T) {
 	t.Run("nil error", func(t *testing.T) {
 		var err error
-		gotErr := errorx.Parse(err)
+		gotErr := errorx.FromError(err)
 		require.Nil(t, gotErr)
 	})
 	t.Run("not Error", func(t *testing.T) {
 		err := newTestError("内部错误")
-		gotErr := errorx.Parse(err)
+		gotErr := errorx.FromError(err)
 
 		require.Equal(t, gotErr.Code(), int32(500))
 		require.Equal(t, gotErr.Message(), "服务器错误")
@@ -97,7 +97,7 @@ func Test_FromError(t *testing.T) {
 	})
 	t.Run("Error", func(t *testing.T) {
 		err := errorx.New(400, "请求参数错误")
-		gotErr := errorx.Parse(err)
+		gotErr := errorx.FromError(err)
 
 		require.Equal(t, gotErr.Code(), int32(400))
 		require.Equal(t, gotErr.Message(), "请求参数错误")

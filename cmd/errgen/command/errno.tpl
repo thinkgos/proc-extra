@@ -14,7 +14,11 @@ import (
 {{- range $ee := $e.Values}}
 // Err{{$ee.OriginalName}} {{$ee.Value}}: {{.Label}}
 func Err{{$ee.OriginalName}}() *errors.Error {
+{{- if {{.Mode}} == "errorx" }} 
 	return errors.New(int32({{$ee.OriginalName}}), {{$ee.OriginalName}}.String())
+{{- else }}
+	return errors.New(int32({{$ee.OriginalName}}), {{$ee.OriginalName}}.String(), {{$ee.OriginalName}}.String())
+{{- end}}
 }
 {{- end}}
 

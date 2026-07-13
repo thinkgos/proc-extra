@@ -18,6 +18,7 @@ type GenFile struct {
 	IsDeprecated bool
 	Package      string
 	Epk          string
+	Mode         string
 	Enums        []*Enumerate
 }
 

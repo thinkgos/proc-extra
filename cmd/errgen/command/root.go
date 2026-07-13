@@ -17,6 +17,7 @@ type ErrnoOption struct {
 	Tags            []string
 	DisableStringer bool
 	Epk             string
+	Mode            string // errorx, kratos
 }
 
 type RootCmd struct {
@@ -102,6 +103,7 @@ func NewRootCmd() *RootCmd {
 	cmd.Flags().StringSliceVar(&root.Tags, "tags", nil, "comma-separated list of build tags to apply")
 	cmd.Flags().BoolVarP(&root.DisableStringer, "disable-stringer", "d", false, "disable use `stringer` command.")
 	cmd.Flags().StringVarP(&root.Epk, "epk", "e", "github.com/thinkgos/proc-extra/errorx", "errors package import path")
+	cmd.Flags().StringVarP(&root.Mode, "mode", "m", "errorx", "errorx or kratos")
 
 	root.cmd = cmd
 	return root

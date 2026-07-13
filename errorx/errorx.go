@@ -159,14 +159,14 @@ func WithMetadata(k, v string) Option {
 	}
 }
 
-// Parse parser error is `Error`, if not `Error`, new `Error` with code 500 and warp the err.
+// FromError parser error is `Error`, if not `Error`, new `Error` with code 500 and warp the err.
 // err == nil: return nil
 // err is not Error: return NewInternalServer
 // err is Error(as te):
 //
 //	te == nil:  return nil
 //	te != nil:  return te
-func Parse(err error) *Error {
+func FromError(err error) *Error {
 	if err == nil {
 		return nil
 	}
@@ -174,6 +174,13 @@ func Parse(err error) *Error {
 		return te
 	}
 	return NewInternalServer().WithCause(err)
+}
+
+// parser error is `Error`, if not `Error`, new `Error` with code 500 and warp the err.
+//
+// Deprecated: this value is simply [errorx.FromError].
+func Parse(err error) *Error {
+	return FromError(err)
 }
 
 // EqualCode return true if error underlying code equal target code.
