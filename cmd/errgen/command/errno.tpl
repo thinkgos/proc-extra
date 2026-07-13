@@ -17,7 +17,7 @@ func Err{{$ee.OriginalName}}() *errors.Error {
 {{- if eq $.Mode "errorx"}}
 	return errors.New(int32({{$ee.OriginalName}}), {{$ee.OriginalName}}.String())
 {{- else}}
-	return errors.New(int({{$ee.OriginalName}}), {{$ee.OriginalName}}.String(), {{$ee.OriginalName}}.String())
+	return errors.New(int({{$ee.OriginalName}}), {{$ee.OriginalName}}.String(), "{{$ee.OriginalName}}")
 {{- end}}
 }
 {{- end}}
