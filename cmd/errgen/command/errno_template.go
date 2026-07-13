@@ -2,7 +2,7 @@ package command
 
 import (
 	"embed"
-	"html/template"
+	"text/template"
 	"io"
 )
 
