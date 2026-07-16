@@ -20,7 +20,7 @@ import (
 {{- end}}
 var __{{$typeName}}_Enum_Validity = []{{$typeName}} { 
 {{- range $ee := .Oneof}}
-	{{$ee.GoTypeName}}, // {{$ee.RawValue}}: {{$ee.Label}}
+	{{$ee.GoName}}, // {{$ee.RawValue}}: {{$ee.Label}}
 {{- end}}
 }
 
@@ -57,7 +57,7 @@ func (x {{$typeName}}) IsValid() bool {
 func (x {{$typeName}}) Label(dflt ...string) (s string) {
 	switch x {
 	{{- range $ee := .Oneof}}
-		case {{$ee.GoTypeName}}: // {{$ee.RawValue}}
+		case {{$ee.GoName}}: // {{$ee.RawValue}}
 			s = "{{$ee.Label}}"
 	{{- end}}
 		default:
@@ -72,7 +72,7 @@ func (x *{{$typeName}}) ParseLabel(s string, dflt ...{{$typeName}}) {
 	switch s {
 	{{- range $ee := .Oneof}}
 		case "{{$ee.Label}}": // {{$ee.RawValue}}
-			*x = {{$ee.GoTypeName}}
+			*x = {{$ee.GoName}}
 	{{- end}}
 		default:
 			*x = cmp.Or(dflt...)

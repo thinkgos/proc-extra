@@ -9,8 +9,8 @@ github.com/spf13/cobra v1.10.2/go.mod h1:7C1pvHqHw5A4vrJfjNwvOdzYu0Gml16OCs2GRiT
 github.com/spf13/pflag v1.0.9/go.mod h1:McXfInJRrz4CZXVZOBLb0bTZqETkiAhM9Iw0y3An2Bg=
 github.com/spf13/pflag v1.0.10 h1:4EBh2KAYBwaONj6b2Ye1GiHfwjqyROoF4RwYO+vPwFk=
 github.com/spf13/pflag v1.0.10/go.mod h1:McXfInJRrz4CZXVZOBLb0bTZqETkiAhM9Iw0y3An2Bg=
-github.com/thinkgos/proc v0.0.0-20260716030818-4bde20b722f2 h1:jcVcn/XJqgmrqIdzlSpAVFbqNcc/qsThtX7yqUqo7uU=
-github.com/thinkgos/proc v0.0.0-20260716030818-4bde20b722f2/go.mod h1:ffYGxTZny5GPLNbtDVoFg4+SBt00DBphIE1mhn+yXaw=
+github.com/thinkgos/proc v0.0.0-20260716054007-4155cff834b1 h1:a1JSaU6mXflbAZhinrw5iFohVQsMhEhlyDfbLuBuQm0=
+github.com/thinkgos/proc v0.0.0-20260716054007-4155cff834b1/go.mod h1:ffYGxTZny5GPLNbtDVoFg4+SBt00DBphIE1mhn+yXaw=
 go.yaml.in/yaml/v3 v3.0.4/go.mod h1:DhzuOOF2ATzADvBadXxruRBLzYTpT36CKvDb3+aBEFg=
 golang.org/x/mod v0.38.0 h1:MECBjubtXD7yj4HrhIUcywNaGeNVUdfVnxmPajOk4yk=
 golang.org/x/mod v0.38.0/go.mod h1:V6Xz0pq8TQ3dGqVQ1FVHuelZpAL0uNhSkk9ogYP3c40=

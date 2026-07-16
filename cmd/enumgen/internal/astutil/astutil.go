@@ -95,11 +95,11 @@ func (g *AstInspect) findEnumerateViaTypeName(typeName string) *enum_spec.Enumer
 	oneof := make([]*enum_spec.EnumerateValue, 0, len(values))
 	for _, v := range values {
 		oneof = append(oneof, &enum_spec.EnumerateValue{
-			GoTypeName: v.OriginalName,
-			Name:       strings.TrimPrefix(strings.TrimPrefix(v.OriginalName, typeName), "_"),
-			Const:      v.Const,
-			Label:      v.Label,
-			RawValue:   v.RawValue,
+			GoName:   v.OriginalName,
+			Name:     strings.TrimPrefix(strings.TrimPrefix(v.OriginalName, typeName), "_"),
+			Const:    v.Const,
+			Label:    v.Label,
+			RawValue: v.RawValue,
 		})
 	}
 	realType := typeType
