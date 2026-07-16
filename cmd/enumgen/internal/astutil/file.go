@@ -1,4 +1,4 @@
-package enumerate
+package astutil
 
 import (
 	"fmt"
@@ -24,7 +24,6 @@ type File struct {
 	TypeName    string
 	TypeComment string
 	Type        string
-	IsString    bool
 	Values      []*Value
 	OmitZero    bool
 }
@@ -34,14 +33,14 @@ type Value struct {
 	OriginalName string // 常量定义的名称
 	Label        string // 注释, 如果没有, 则同常量名称
 	// value相关
-	Value    uint64 // 需要时转为`int64`(integer有效).
-	Signed   bool   // `constant`是否是有符号类型(integer有效),
-	RawValue string // 纯值, 字符串不包含引号, 整型直接格式化成字符串
-	IsString bool   // 是否是string, 否则为integer
-	Val      string // `constant`的字符串值,由"go/constant"包提供.
+	Const     string // 值, string unquote.
+	RawValue  string // `constant`的字符串值,由"go/constant"包提供,  string quote.
+	value     uint64 // 需要时转为`int64`(integer有效).
+	signed    bool   // `constant`是否是有符号类型(integer有效),
+	isInteger bool   // 是否是integer, 否则为string
 }
 
-func (v *Value) String() string { return v.Val }
+func (v *Value) String() string { return v.RawValue }
 
 // SortValues 使我们可以将`constants`进行排序
 // 字符串不排序, 整型谨慎地按照有符号或无符号的顺序进行恰当的排序
@@ -50,11 +49,11 @@ type SortValues []*Value
 func (b SortValues) Len() int      { return len(b) }
 func (b SortValues) Swap(i, j int) { b[i], b[j] = b[j], b[i] }
 func (b SortValues) Less(i, j int) bool {
-	if !b[i].IsString {
-		if b[i].Signed {
-			return int64(b[i].Value) < int64(b[j].Value)
+	if b[i].isInteger {
+		if b[i].signed {
+			return int64(b[i].value) < int64(b[j].value)
 		} else {
-			return b[i].Value < b[j].Value
+			return b[i].value < b[j].value
 		}
 	}
 	return false
@@ -67,25 +66,6 @@ func (vs SortValues) Clone() SortValues {
 		sortValues = append(sortValues, &tv)
 	}
 	return sortValues
-}
-
-// ArrayString convert to array string format [0:aaa,1:bbb,3:ccc]
-func (vs SortValues) ArrayString() string {
-	if len(vs) == 0 {
-		return "[]"
-	}
-	b := strings.Builder{}
-	b.WriteString("[")
-	for i, k := range vs {
-		if i != 0 {
-			b.WriteString(",")
-		}
-		b.WriteString(k.RawValue)
-		b.WriteString(":")
-		b.WriteString(k.Label)
-	}
-	b.WriteString("]")
-	return b.String()
 }
 
 // GenDecl processes one declaration clause.
@@ -117,7 +97,6 @@ func (f *File) GenDecl(node ast.Node) bool {
 					slog.Error(fmt.Sprintf("can't handle non-integer or non-string constant type %s", typ))
 					os.Exit(1)
 				}
-				f.IsString = (basic.Info() & types.IsString) != 0
 				f.Type = basic.Name() // 拿到类型
 				if c := tsepc.Comment.Text(); c != "" {
 					f.TypeComment += strings.TrimSuffix(strings.TrimSpace(c), "\n")
@@ -188,11 +167,11 @@ func (f *File) GenDecl(node ast.Node) bool {
 				v := &Value{
 					OriginalName: name.Name,
 					Label:        "",
-					Value:        0,
-					Signed:       false,
+					value:        0,
+					signed:       false,
+					Const:        value.String(),
+					isInteger:    (info & types.IsInteger) != 0,
 					RawValue:     value.String(),
-					IsString:     (info & types.IsString) != 0,
-					Val:          value.String(),
 				}
 				if c := vspec.Comment; c != nil && len(c.List) == 1 {
 					v.Label = strings.TrimSpace(c.Text())
@@ -200,12 +179,7 @@ func (f *File) GenDecl(node ast.Node) bool {
 					v.Label = v.OriginalName
 				}
 
-				if v.IsString {
-					v.RawValue = constant.StringVal(value)
-					if f.OmitZero && v.RawValue == "" {
-						continue
-					}
-				} else {
+				if v.isInteger {
 					i64, isInt := constant.Int64Val(value)
 					u64, isUint := constant.Uint64Val(value)
 					if !isInt && !isUint {
@@ -218,8 +192,13 @@ func (f *File) GenDecl(node ast.Node) bool {
 					if f.OmitZero && u64 == 0 {
 						continue
 					}
-					v.Value = u64
-					v.Signed = info&types.IsUnsigned == 0
+					v.value = u64
+					v.signed = info&types.IsUnsigned == 0
+				} else {
+					v.Const = constant.StringVal(value)
+					if f.OmitZero && v.Const == "" {
+						continue
+					}
 				}
 				f.Values = append(f.Values, v)
 			}

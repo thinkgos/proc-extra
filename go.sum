@@ -51,8 +51,8 @@ github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
 github.com/thinkgos/limiter v0.2.0 h1:U0v9T2eUXIYcHmlrIehZ1Dj1vXjDPcIpUV1d4oC6orA=
 github.com/thinkgos/limiter v0.2.0/go.mod h1:ijvHq1IFh/xiilQ4H/ZaOQIDwxESaZ8msMexhEtdDCc=
-github.com/thinkgos/proc v0.0.0-20251013014314-a2607a29bf15 h1:YGUd25YW9bM8wTW2Vm6oulsG4NvHbCHy6kmnKtI0vC0=
-github.com/thinkgos/proc v0.0.0-20251013014314-a2607a29bf15/go.mod h1:fRZP+RW9gLyCNk0B5hK2rm45REWXxhXbUWhPhzBK4jY=
+github.com/thinkgos/proc v0.0.0-20260716030818-4bde20b722f2 h1:jcVcn/XJqgmrqIdzlSpAVFbqNcc/qsThtX7yqUqo7uU=
+github.com/thinkgos/proc v0.0.0-20260716030818-4bde20b722f2/go.mod h1:ffYGxTZny5GPLNbtDVoFg4+SBt00DBphIE1mhn+yXaw=
 github.com/tiendc/go-deepcopy v1.7.2 h1:Ut2yYR7W9tWjTQitganoIue4UGxZwCcJy3orjrrIj44=
 github.com/tiendc/go-deepcopy v1.7.2/go.mod h1:4bKjNC2r7boYOkD2IOuZpYjmlDdzjbpTRyCx+goBCJQ=
 github.com/xuri/efp v0.0.1 h1:fws5Rv3myXyYni8uwj2qKjVaRP30PdjeYe2Y6FDsCL8=

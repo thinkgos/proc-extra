@@ -1,16 +1,16 @@
 module github.com/thinkgos/proc-extra/cmd/enumgen
 
-go 1.24
+go 1.26
 
 require (
-	github.com/spf13/cobra v1.9.1
-	github.com/thinkgos/proc v0.0.0-20250606144108-c21be1bda40c
-	golang.org/x/tools v0.34.0
+	github.com/spf13/cobra v1.10.2
+	github.com/thinkgos/proc v0.0.0-20260716030818-4bde20b722f2
+	golang.org/x/tools v0.48.0
 )
 
 require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/spf13/pflag v1.0.6 // indirect
-	golang.org/x/mod v0.25.0 // indirect
-	golang.org/x/sync v0.15.0 // indirect
+	github.com/spf13/pflag v1.0.10 // indirect
+	golang.org/x/mod v0.38.0 // indirect
+	golang.org/x/sync v0.22.0 // indirect
 )

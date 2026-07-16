@@ -1,22 +1,14 @@
 package command
 
 import (
-	"log/slog"
-	"os"
-
 	"github.com/spf13/cobra"
 	"github.com/thinkgos/proc-extra/cmd/enumgen/internal/enumgen"
 )
 
 type TsOption struct {
-	OutputDir   string
-	Pattern     []string
-	Type        []string
-	Tags        []string
-	TypeStyle   string // 字典类型type风格
-	OmitZero    bool   // 忽略零值
-	EnableTsDef bool   // 使能ts定义
-	Filename    string // 输出文件名
+	Uri       string // uri: file://enum.json 或 http://xxx.com/a.json
+	TypeStyle string // 字典类型type风格
+	Filename  string // 输出文件名
 }
 
 type TsCmd struct {
@@ -34,46 +26,18 @@ func NewTsCmd() *TsCmd {
 		SilenceUsage:  false,
 		SilenceErrors: false,
 		RunE: func(*cobra.Command, []string) error {
-			fileInfo, err := os.Stat(root.Pattern[0])
-			if err != nil {
-				return err
+			g := &enumgen.GenTs{
+				Uri:       root.Uri,
+				Version:   version,
+				Filename:  root.Filename,
+				TypeStyle: root.TypeStyle,
 			}
-			if !fileInfo.IsDir() {
-				if len(root.Tags) != 0 {
-					slog.Error("--tags option applies only to directories, not when files are specified")
-					os.Exit(1)
-				}
-			}
-			g := &enumgen.Gen{
-				Pattern:      root.Pattern,
-				OutputDir:    root.OutputDir,
-				Type:         root.Type,
-				Tags:         root.Tags,
-				Version:      version,
-				Merge:        false,
-				EnableTsDef:  root.EnableTsDef,
-				Filename:     root.Filename,
-				OmitZero:     root.OmitZero,
-				TypeStyle:    root.TypeStyle,
-				SqlDictType:  "",
-				SqlDictItem:  "",
-				IsOrderValue: false,
-			}
-			if err = g.Init(); err != nil {
-				return err
-			}
-			return g.GenTs()
+			return g.Gen()
 		},
 		Args: cobra.NoArgs,
 	}
-
-	cmd.Flags().StringVarP(&root.OutputDir, "output", "o", ".", "output directory")
-	cmd.Flags().StringSliceVarP(&root.Pattern, "pattern", "p", []string{"."}, "the list of files or a directory.")
-	cmd.Flags().StringSliceVarP(&root.Type, "type", "t", nil, "the list type of enum names; must be set")
-	cmd.Flags().StringSliceVar(&root.Tags, "tags", nil, "comma-separated list of build tags to apply")
-	cmd.Flags().StringVar(&root.TypeStyle, "typeStyle", "", "字典类型type风格, 支持snakeCase,pascalCase,smallCamelCase,kebab")
-	cmd.Flags().BoolVar(&root.OmitZero, "omitZero", false, "是否忽略零值")
-	cmd.Flags().BoolVar(&root.EnableTsDef, "enableTsDef", false, "是否使能ts定义")
+	cmd.Flags().StringVar(&root.Uri, "uri", "", "uri: file://enum.json 或 http://xxx.com/a.json")
+	cmd.Flags().StringVar(&root.TypeStyle, "typeStyle", "", "字典类型type风格, 支持snakecase,pascalcase,camelcase,kebabcase")
 	cmd.Flags().StringVarP(&root.Filename, "filename", "f", "", "输出文件名")
 	cmd.MarkFlagRequired("filename")
 

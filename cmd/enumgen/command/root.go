@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/thinkgos/proc-extra/cmd/enumgen/internal/astutil"
 	"github.com/thinkgos/proc-extra/cmd/enumgen/internal/enumgen"
 )
 
@@ -16,7 +17,6 @@ type EnumOption struct {
 	Tags     []string
 	Merge    bool   // 合并到一个文件
 	Filename string // 合并文件名
-	OmitZero bool   // 忽略零值
 }
 
 type RootCmd struct {
@@ -47,22 +47,22 @@ func NewRootCmd() *RootCmd {
 				}
 				srcDir = filepath.Dir(srcDir)
 			}
-			g := &enumgen.Gen{
-				Pattern:      root.Pattern,
-				OutputDir:    srcDir,
-				Type:         root.Type,
-				Tags:         root.Tags,
-				Version:      version,
-				OmitZero:     root.OmitZero,
-				Merge:        root.Merge,
-				Filename:     root.Filename,
-				IsOrderValue: true,
+			g := &enumgen.GenGo{
+				AstInspect: astutil.AstInspect{
+					Pattern: root.Pattern,
+					Type:    root.Type,
+					Tags:    root.Tags,
+				},
+				OutputDir: srcDir,
+				Version:   version,
+				Merge:     root.Merge,
+				Filename:  root.Filename,
 			}
 			err = g.Init()
 			if err != nil {
 				return err
 			}
-			return g.GenEnum()
+			return g.Gen()
 		},
 		Args: cobra.NoArgs,
 	}
@@ -81,9 +81,8 @@ func NewRootCmd() *RootCmd {
 	cmd.Flags().StringSliceVar(&root.Tags, "tags", nil, "comma-separated list of build tags to apply")
 	cmd.Flags().BoolVar(&root.Merge, "merge", false, "merge in a file")
 	cmd.Flags().StringVar(&root.Filename, "filename", "", "filename when merge enabled, default: enums")
-	cmd.Flags().BoolVar(&root.OmitZero, "omitZero", false, "是否忽略零值")
 
-	cmd.AddCommand(NewSqlCmd().cmd, NewTsCmd().cmd)
+	cmd.AddCommand(NewTsCmd().cmd, NewDocCmd().cmd)
 	root.cmd = cmd
 	return root
 }

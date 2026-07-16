@@ -3,10 +3,10 @@ package enumgen
 import "github.com/thinkgos/proc/infra"
 
 const (
-	StyleSmallCamelCase = "smallCamelCase"
-	StylePascalCase     = "pascalCase"
-	StyleSnakeCase      = "snakeCase"
-	StyleKebab          = "kebab"
+	StyleSmallCamelCase = "camelcase"
+	StylePascalCase     = "pascalcase"
+	StyleSnakeCase      = "snakecase"
+	StyleKebab          = "kebabcase"
 )
 
 func StyleName(kind, name string) string {
