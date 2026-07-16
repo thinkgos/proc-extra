@@ -29,6 +29,7 @@ func (g *AstInspect) Init() error {
 				packages.NeedTypes |
 				packages.NeedTypesInfo |
 				packages.NeedImports |
+				packages.NeedDeps |
 				packages.NeedSyntax,
 			Tests:      false,
 			BuildFlags: []string{fmt.Sprintf("-tags=%s", strings.Join(g.Tags, " "))},
