@@ -4,7 +4,7 @@ go 1.26
 
 require (
 	github.com/mojocn/base64Captcha v1.3.8
-	github.com/oklog/ulid/v2 v2.1.1
+	github.com/oklog/ulid/v2 v2.1.2
 	github.com/panjf2000/ants/v2 v2.12.1
 	github.com/spf13/cast v1.10.0
 	github.com/stretchr/testify v1.11.1
