@@ -17,7 +17,7 @@ import (
 type ctxAuthKey struct{}
 
 // Subject returns the value associated with this context for subjectCtxKey,
-func ExtractUserId(w http.ResponseWriter, r *http.Request) string {
+func ExtractUserId(r *http.Request) string {
 	val, _ := r.Context().Value(ctxAuthKey{}).(string)
 	return val
 }

@@ -16,7 +16,7 @@ type ServeOption func(*serveOptions)
 
 type serveOptions struct {
 	headers            map[string]string
-	extractUserId      func(http.ResponseWriter, *http.Request) string
+	extractUserId      func(*http.Request) string
 	extractSessionId   *lookup.Lookup
 	extractChannel     *lookup.Lookup
 	extractEventType   *lookup.Lookup
@@ -28,7 +28,7 @@ type serveOptions struct {
 
 func defaultServeOptions() *serveOptions {
 	return &serveOptions{
-		extractUserId:      func(http.ResponseWriter, *http.Request) string { return "" },
+		extractUserId:      func(*http.Request) string { return "" },
 		extractSessionId:   lookup.NewLookup("query:sessionId"),
 		extractChannel:     lookup.NewLookup("query:channel"),
 		extractEventType:   lookup.NewLookup("query:eventType,header:Event-Type"),
@@ -57,7 +57,7 @@ func WithServeHeaders(headers map[string]string) ServeOption {
 }
 
 // WithServeExtractUserId(Require) sets the function to extract the user Id from the request.
-func WithServeExtractUserId(f func(http.ResponseWriter, *http.Request) string) ServeOption {
+func WithServeExtractUserId(f func(*http.Request) string) ServeOption {
 	return func(o *serveOptions) {
 		o.extractUserId = f
 	}
@@ -135,7 +135,7 @@ func (h *Hub) Serve(opts ...ServeOption) http.Handler {
 			return
 		}
 		//* 获取用户id
-		userId := opt.extractUserId(w, r)
+		userId := opt.extractUserId(r)
 		if userId == "" {
 			opt.errFallback(w, r, errors.New("userId is empty, not allow connection"))
 			return
