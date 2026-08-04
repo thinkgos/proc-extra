@@ -30,7 +30,7 @@ func Test_SlidingWindowFailureLimiter_Work(t *testing.T) {
 	tests.GenericTest_SlidingWindowFailureLimiter_Work(
 		t,
 		mr,
-		redisv9.NewLimitFailureRedisStore(redis.NewClient(&redis.Options{Addr: "10.110.18.12:6379", DB: 1})),
+		redisv9.NewLimitFailureRedisStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
 	)
 }
 
