@@ -5,47 +5,52 @@ import (
 	"errors"
 )
 
-// Challenge question and answer for CaptchaDriver driver
+type CaptchaVerifier[S comparable] interface {
+	Generate(ctx context.Context, driverName string, scene S, opts ...Option) (id, question string, err error)
+	Verify(ctx context.Context, scene S, id, answer string) (bool, error)
+}
+
+// Challenge question and answer.
 type Challenge struct {
 	Id       string
 	Question string
 	Answer   string
 }
 
-// CaptchaDriver the captcha driver
-type CaptchaDriver interface {
+// ChallengeProvider the captcha challenge provider
+type ChallengeProvider interface {
 	Name() string
-	GenerateQuestionAnswer() (*Challenge, error)
+	GenerateChallenge() (*Challenge, error)
 }
 
-// CaptchaProvider the captcha provider
-type CaptchaProvider interface {
-	AcquireDriver(dName string) CaptchaDriver
+// CaptchaDriver the captcha driver
+type CaptchaDriver interface {
+	Driver(dName string) ChallengeProvider
 }
 
 // Captcha verified captcha limit
-type Captcha[K comparable, P CaptchaProvider, B StorageBackend] struct {
+type Captcha[S comparable, P CaptchaDriver, B StorageBackend] struct {
 	p       P            // captcha provider
 	backend B            // store backend
-	params  map[K]*Param // param set, kind -> 验证码参数
+	params  map[S]*Param // param set, scene -> 验证码参数
 }
 
-// NewCaptchaVerified new captcha instance.
-func NewCaptchaVerified[K comparable, P CaptchaProvider, B StorageBackend](p P, backend B) *Captcha[K, P, B] {
-	return &Captcha[K, P, B]{
+// NewCaptcha new captcha instance.
+func NewCaptcha[S comparable, P CaptchaDriver, B StorageBackend](p P, backend B) *Captcha[S, P, B] {
+	return &Captcha[S, P, B]{
 		p:       p,
 		backend: backend,
-		params:  make(map[K]*Param),
+		params:  make(map[S]*Param),
 	}
 }
 
-func (c *Captcha[K, P, B]) SetParams(params map[K]*Param) *Captcha[K, P, B] {
+func (c *Captcha[S, P, B]) SetParams(params map[S]*Param) *Captcha[S, P, B] {
 	c.params = params
 	return c
 }
 
-func (c *Captcha[K, P, B]) getParam(kind K, opts ...Option) (*Param, error) {
-	p, ok := c.params[kind]
+func (c *Captcha[S, P, B]) getParam(scene S, opts ...Option) (*Param, error) {
+	p, ok := c.params[scene]
 	if !ok {
 		return nil, ErrParamKindNotFound
 	}
@@ -53,17 +58,17 @@ func (c *Captcha[K, P, B]) getParam(kind K, opts ...Option) (*Param, error) {
 }
 
 // Name the provider name
-func (c *Captcha[K, P, B]) Name(driverName string) string {
-	return c.p.AcquireDriver(driverName).Name()
+func (c *Captcha[S, P, B]) Name(driverName string) string {
+	return c.p.Driver(driverName).Name()
 }
 
 // Generate generate id, question.
-func (c *Captcha[K, P, B]) Generate(ctx context.Context, driverName string, kind K, opts ...Option) (id, question string, err error) {
-	p, err := c.getParam(kind, opts...)
+func (c *Captcha[S, P, B]) Generate(ctx context.Context, driverName string, scene S, opts ...Option) (id, question string, err error) {
+	p, err := c.getParam(scene, opts...)
 	if err != nil {
 		return "", "", err
 	}
-	qa, err := c.p.AcquireDriver(driverName).GenerateQuestionAnswer()
+	qa, err := c.p.Driver(driverName).GenerateChallenge()
 	if err != nil {
 		return "", "", err
 	}
@@ -80,8 +85,8 @@ func (c *Captcha[K, P, B]) Generate(ctx context.Context, driverName string, kind
 }
 
 // Verify the answer.
-func (c *Captcha[K, P, B]) Verify(ctx context.Context, kind K, id, answer string) (bool, error) {
-	p, err := c.getParam(kind)
+func (c *Captcha[S, P, B]) Verify(ctx context.Context, scene S, id, answer string) (bool, error) {
+	p, err := c.getParam(scene)
 	if err != nil {
 		return false, err
 	}
@@ -91,11 +96,11 @@ func (c *Captcha[K, P, B]) Verify(ctx context.Context, kind K, id, answer string
 	})
 }
 
-type UnsupportedCaptchaDriver struct{}
+type UnsupportedChallengeProvider struct{}
 
-func (x UnsupportedCaptchaDriver) Name() string {
+func (x UnsupportedChallengeProvider) Name() string {
 	return "Unsupported captcha driver"
 }
-func (x UnsupportedCaptchaDriver) GenerateQuestionAnswer() (*Challenge, error) {
+func (x UnsupportedChallengeProvider) GenerateChallenge() (*Challenge, error) {
 	return nil, errors.New(x.Name())
 }

@@ -10,71 +10,69 @@ import (
 	"github.com/thinkgos/proc-extra/limiter/verified/tests"
 )
 
-func TestCaptcha_Improve_Cover(t *testing.T) {
+func Test_Captcha_ImproveCoverage(t *testing.T) {
 	mr, err := miniredis.Run()
 	require.Nil(t, err)
 	defer mr.Close()
-	tests.GenericTestCaptcha_Improve_Cover(
+	tests.GenericTest_Captcha_ImproveCoverage(
 		t,
 		mr,
 		NewRedisStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
 	)
 }
 
-func TestCaptcha_Unsupported_Driver(t *testing.T) {
+func Test_Captcha_UnsupportedChallengeProvider(t *testing.T) {
 	mr, err := miniredis.Run()
 	require.Nil(t, err)
 	addr := mr.Addr()
 	mr.Close()
-	tests.GenericTestCaptcha_Unsupported_Driver(
+	tests.GenericTest_Captcha_UnsupportedChallengeProvider(
 		t,
 		mr,
 		NewRedisStore(redis.NewClient(&redis.Options{Addr: addr})),
 	)
 }
 
-func TestCaptcha_OneTime(t *testing.T) {
+func Test_Captcha_InMaxAttempts(t *testing.T) {
 	mr, err := miniredis.Run()
 	assert.NoError(t, err)
 	defer mr.Close()
 
-	tests.GenericTestCaptcha_OneTime(
+	tests.GenericTest_Captcha_InMaxAttempts(
 		t,
 		mr,
 		NewRedisStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
 	)
 }
 
-func TestCaptcha_In_MaxAttempts(t *testing.T) {
+func Test_Captcha_OverMaxAttempts(t *testing.T) {
 	mr, err := miniredis.Run()
 	assert.NoError(t, err)
 	defer mr.Close()
 
-	tests.GenericTestCaptcha_In_MaxAttempts(
+	tests.GenericTest_Captcha_OverMaxAttempts(
 		t,
 		mr,
 		NewRedisStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
 	)
 }
-
-func TestCaptcha_Over_MaxAttempts(t *testing.T) {
+func Test_Captcha_OneShot(t *testing.T) {
 	mr, err := miniredis.Run()
 	assert.NoError(t, err)
 	defer mr.Close()
 
-	tests.GenericTestCaptcha_Over_MaxAttempts(
+	tests.GenericTest_Captcha_OneShot(
 		t,
 		mr,
 		NewRedisStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
 	)
 }
-
-func TestCaptcha_Onetime_Timeout(t *testing.T) {
+func Test_Captcha_OneShot_Timeout(t *testing.T) {
 	mr, err := miniredis.Run()
 	assert.NoError(t, err)
 	defer mr.Close()
 
-	tests.GenericTestCaptcha_Onetime_Timeout(
+	tests.GenericTest_Captcha_OneShot_Timeout(
 		t,
 		mr,
 		NewRedisStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),

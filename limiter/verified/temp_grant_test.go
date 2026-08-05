@@ -11,59 +11,57 @@ import (
 	"github.com/thinkgos/proc-extra/limiter/verified/tests"
 )
 
-func TestTempGrantImprove_Cover(t *testing.T) {
+func Test_TempGrant_ImproveCoverage(t *testing.T) {
 	mr, err := miniredis.Run()
 	require.Nil(t, err)
 	defer mr.Close()
-	tests.GenericTestTempGrantImprove_Cover(
+	tests.GenericTest_TempGrant_ImproveCoverage(
 		t,
 		mr,
 		redisV9.NewRedisStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
 	)
 }
 
-func TestTempGrantOne_Time(t *testing.T) {
+func Test_TempGrant_InMaxAttempts(t *testing.T) {
 	mr, err := miniredis.Run()
 	assert.NoError(t, err)
 	defer mr.Close()
 
-	tests.GenericTestTempGrantOne_Time(
+	tests.GenericTest_TempGrant_InMaxAttempts(
 		t,
 		mr,
 		redisV9.NewRedisStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
 	)
 }
 
-func TestTempGrantIn_MaxAttempts(t *testing.T) {
+func Test_TempGrant_OverMaxAttempts(t *testing.T) {
 	mr, err := miniredis.Run()
 	assert.NoError(t, err)
 	defer mr.Close()
 
-	tests.GenericTestTempGrantIn_MaxAttempts(
+	tests.GenericTest_TempGrant_OverMaxAttempts(
 		t,
 		mr,
 		redisV9.NewRedisStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
 	)
 }
-
-func TestTempGrantOver_MaxAttempts(t *testing.T) {
+func Test_TempGrant_OneShot(t *testing.T) {
 	mr, err := miniredis.Run()
 	assert.NoError(t, err)
 	defer mr.Close()
 
-	tests.GenericTestTempGrantOver_MaxAttempts(
+	tests.GenericTest_TempGrant_OneShot(
 		t,
 		mr,
 		redisV9.NewRedisStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
 	)
 }
-
-func TestTempGrantOneTime_Timeout(t *testing.T) {
+func Test_TempGrant_OneShot_Timeout(t *testing.T) {
 	mr, err := miniredis.Run()
 	assert.NoError(t, err)
 	defer mr.Close()
 
-	tests.GenericTestTempGrantOneTime_Timeout(
+	tests.GenericTest_TempGrant_OneShot_Timeout(
 		t,
 		mr,
 		redisV9.NewRedisStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),

@@ -19,12 +19,13 @@ const (
 	unsupportedDriverName = "unsupported_driver_name"
 )
 
-const testInvalidKind = "invalid_kind"
-const testKind = "test_kind"
+const testInvalidScene = "invalid_kind"
+const testScene = "test_kind"
 const (
-	testKeyPrefix     = "verified:captcha:test-kind:"
+	testKeyPrefix     = "verified:captcha:test-scene:"
 	testKeyExpires    = time.Minute * 5
 	testMaxAttempts_1 = 1
+	testMaxAttempts_3 = 3
 )
 
 const (
@@ -34,7 +35,7 @@ const (
 )
 
 var testCaptchaParams = map[string]*verified.Param{
-	testKind: {
+	testScene: {
 		KeyPrefix:   testKeyPrefix,
 		KeyExpires:  testKeyExpires,
 		MaxAttempts: testMaxAttempts_1,
@@ -65,21 +66,21 @@ func randString(length int) string {
 	return string(b)
 }
 
-var _ verified.CaptchaProvider = (*TestCaptchaProvider)(nil)
-
-type TestCaptchaProvider struct{}
-
-func (t TestCaptchaProvider) AcquireDriver(dName string) verified.CaptchaDriver {
-	if dName == unsupportedDriverName {
-		return new(verified.UnsupportedCaptchaDriver)
-	}
-	return new(TestCaptchaDriver)
-}
+var _ verified.CaptchaDriver = (*TestCaptchaDriver)(nil)
 
 type TestCaptchaDriver struct{}
 
-func (t TestCaptchaDriver) Name() string { return testDriverName }
-func (t TestCaptchaDriver) GenerateQuestionAnswer() (*verified.Challenge, error) {
+func (t TestCaptchaDriver) Driver(dName string) verified.ChallengeProvider {
+	if dName == unsupportedDriverName {
+		return new(verified.UnsupportedChallengeProvider)
+	}
+	return new(TestChallenge)
+}
+
+type TestChallenge struct{}
+
+func (t TestChallenge) Name() string { return testDriverName }
+func (t TestChallenge) GenerateChallenge() (*verified.Challenge, error) {
 	return &verified.Challenge{
 		Id:       randString(6),
 		Question: question,
@@ -87,96 +88,96 @@ func (t TestCaptchaDriver) GenerateQuestionAnswer() (*verified.Challenge, error)
 	}, nil
 }
 
-func GenericTestCaptcha_Improve_Cover[B verified.StorageBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
-	l := verified.NewCaptchaVerified[string](new(TestCaptchaProvider), backend).
+func GenericTest_Captcha_ImproveCoverage[B verified.StorageBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
+	l := verified.NewCaptcha[string](new(TestCaptchaDriver), backend).
 		SetParams(testCaptchaParams)
 	require.Equal(t, testDriverName, l.Name(testDriverName))
 
-	id, _, err := l.Generate(context.Background(), testDriverName, testInvalidKind)
+	id, _, err := l.Generate(context.Background(), testDriverName, testInvalidScene)
 	require.ErrorIs(t, verified.ErrParamKindNotFound, err)
 
-	_, err = l.Verify(context.Background(), testInvalidKind, id, rightAnswer)
+	_, err = l.Verify(context.Background(), testInvalidScene, id, rightAnswer)
 	require.ErrorIs(t, verified.ErrParamKindNotFound, err)
 }
 
-func GenericTestCaptcha_Unsupported_Driver[B verified.StorageBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
-	l := verified.NewCaptchaVerified[string](new(TestCaptchaProvider), backend).
+func GenericTest_Captcha_UnsupportedChallengeProvider[B verified.StorageBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
+	l := verified.NewCaptcha[string](new(TestCaptchaDriver), backend).
 		SetParams(testCaptchaParams)
 
-	_, _, err := l.Generate(context.Background(), unsupportedDriverName, testKind)
+	_, _, err := l.Generate(context.Background(), unsupportedDriverName, testScene)
 	assert.Error(t, err)
 }
 
-func GenericTestCaptcha_OneTime[B verified.StorageBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
-	l := verified.NewCaptchaVerified[string](new(TestCaptchaProvider), backend).
-		SetParams(testCaptchaParams)
-
-	id, _, err := l.Generate(context.Background(), testDriverName, testKind)
-	assert.NoError(t, err)
-
-	b, err := l.Verify(context.Background(), testKind, id, rightAnswer)
-	require.NoError(t, err)
-	require.True(t, b)
-
-	b, err = l.Verify(context.Background(), testKind, id, rightAnswer)
-	require.NoError(t, err)
-	require.False(t, b)
-}
-
-func GenericTestCaptcha_In_MaxAttempts[B verified.StorageBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
-	l := verified.NewCaptchaVerified[string](new(TestCaptchaProvider), backend).
+func GenericTest_Captcha_InMaxAttempts[B verified.StorageBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
+	l := verified.NewCaptcha[string](new(TestCaptchaDriver), backend).
 		SetParams(testCaptchaParams)
 
 	id, _, err := l.Generate(
 		context.Background(),
 		testDriverName,
-		testKind,
+		testScene,
 		verified.WithKeyExpires(time.Minute*5),
 		verified.WithMaxAttempts(3),
 	)
 	assert.NoError(t, err)
 
-	b, err := l.Verify(context.Background(), testKind, id, wrongAnswer)
+	b, err := l.Verify(context.Background(), testScene, id, wrongAnswer)
 	require.NoError(t, err)
 	require.False(t, b)
-	b, err = l.Verify(context.Background(), testKind, id, wrongAnswer)
+	b, err = l.Verify(context.Background(), testScene, id, wrongAnswer)
 	require.NoError(t, err)
 	require.False(t, b)
-	b, err = l.Verify(context.Background(), testKind, id, rightAnswer)
+	b, err = l.Verify(context.Background(), testScene, id, rightAnswer)
 	require.NoError(t, err)
 	require.True(t, b)
 }
 
-func GenericTestCaptcha_Over_MaxAttempts[B verified.StorageBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
-	l := verified.NewCaptchaVerified[string](new(TestCaptchaProvider), backend).
+func GenericTest_Captcha_OverMaxAttempts[B verified.StorageBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
+	l := verified.NewCaptcha[string](new(TestCaptchaDriver), backend).
 		SetParams(testCaptchaParams)
 
-	id, _, err := l.Generate(context.Background(), testDriverName, testKind,
+	id, _, err := l.Generate(context.Background(), testDriverName, testScene,
 		verified.WithKeyExpires(time.Minute*5),
 		verified.WithMaxAttempts(6),
 	)
 	assert.NoError(t, err)
 
 	for range 6 {
-		b, err := l.Verify(context.Background(), testKind, id, wrongAnswer)
+		b, err := l.Verify(context.Background(), testScene, id, wrongAnswer)
 		require.NoError(t, err)
 		require.False(t, b)
 	}
-	b, err := l.Verify(context.Background(), testKind, id, rightAnswer)
+	b, err := l.Verify(context.Background(), testScene, id, rightAnswer)
 	require.NoError(t, err)
 	require.False(t, b)
 }
 
-func GenericTestCaptcha_Onetime_Timeout[B verified.StorageBackend](t *testing.T, mr *miniredis.Miniredis, backend B) {
-	l := verified.NewCaptchaVerified[string](new(TestCaptchaProvider), backend).
+func GenericTest_Captcha_OneShot[B verified.StorageBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
+	l := verified.NewCaptcha[string](new(TestCaptchaDriver), backend).
 		SetParams(testCaptchaParams)
 
-	id, _, err := l.Generate(context.Background(), testDriverName, testKind, verified.WithKeyExpires(time.Second*1))
+	id, _, err := l.Generate(context.Background(), testDriverName, testScene)
+	assert.NoError(t, err)
+
+	b, err := l.Verify(context.Background(), testScene, id, rightAnswer)
+	require.NoError(t, err)
+	require.True(t, b)
+
+	b, err = l.Verify(context.Background(), testScene, id, rightAnswer)
+	require.NoError(t, err)
+	require.False(t, b)
+}
+
+func GenericTest_Captcha_OneShot_Timeout[B verified.StorageBackend](t *testing.T, mr *miniredis.Miniredis, backend B) {
+	l := verified.NewCaptcha[string](new(TestCaptchaDriver), backend).
+		SetParams(testCaptchaParams)
+
+	id, _, err := l.Generate(context.Background(), testDriverName, testScene, verified.WithKeyExpires(time.Second*1))
 	assert.NoError(t, err)
 
 	mr.FastForward(time.Second * 2) // time.Sleep(time.Second * 2)
 
-	b, err := l.Verify(context.Background(), testKind, id, rightAnswer)
+	b, err := l.Verify(context.Background(), testScene, id, rightAnswer)
 	require.NoError(t, err)
 	require.False(t, b)
 }
