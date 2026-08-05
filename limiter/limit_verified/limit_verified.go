@@ -8,9 +8,17 @@ import (
 	"time"
 )
 
-// ErrParamKindNotFound is an error that param kind not found.
-var ErrParamKindNotFound = errors.New("limit: param kind not found")
+// ErrSceneParamNotFound is an error that param scene not found.
+var ErrSceneParamNotFound = errors.New("limit: the scene's param not found")
 var ErrReachMaximumQuota = errors.New("limit: reach the maximum quota")
+
+type SendCodeResult = EvaluateResult
+
+type LimitVerifier[S comparable] interface {
+	Name() string
+	SendCode(ctx context.Context, scene S, target, code string) (*SendCodeResult, error)
+	VerifyCode(ctx context.Context, scene S, target, code string) (*VerifyResult, error)
+}
 
 // LimitVerifiedProvider the provider
 type LimitVerifiedProvider interface {
@@ -41,40 +49,40 @@ func NewParam(keyPrefix string) *Param {
 func (p *Param) FormatKey(id string) string { return p.KeyPrefix + id }
 
 // LimitVerified limit verified code
-type LimitVerified[K comparable, P LimitVerifiedProvider, B LimitVerifiedBackend] struct {
+type LimitVerified[S comparable, P LimitVerifiedProvider, B LimitVerifiedBackend] struct {
 	p       LimitVerifiedProvider // LimitVerifiedProvider send code
 	backend LimitVerifiedBackend  // backend client
-	params  map[K]*Param
+	params  map[S]*Param
 }
 
 // NewLimitVerified  new a limit verified
-func NewLimitVerified[K comparable, P LimitVerifiedProvider, B LimitVerifiedBackend](p P, backend B) *LimitVerified[K, P, B] {
-	v := &LimitVerified[K, P, B]{
+func NewLimitVerified[S comparable, P LimitVerifiedProvider, B LimitVerifiedBackend](p P, backend B) *LimitVerified[S, P, B] {
+	v := &LimitVerified[S, P, B]{
 		p:       p,
 		backend: backend,
-		params:  make(map[K]*Param),
+		params:  make(map[S]*Param),
 	}
 	return v
 }
 
-func (v *LimitVerified[K, P, B]) SetParams(params map[K]*Param) *LimitVerified[K, P, B] {
+func (v *LimitVerified[S, P, B]) SetParams(params map[S]*Param) *LimitVerified[S, P, B] {
 	v.params = params
 	return v
 }
-func (v *LimitVerified[K, P, B]) getParam(kind K) (*Param, error) {
-	param, ok := v.params[kind]
+func (v *LimitVerified[S, P, B]) getParam(scene S) (*Param, error) {
+	param, ok := v.params[scene]
 	if !ok {
-		return nil, ErrParamKindNotFound
+		return nil, ErrSceneParamNotFound
 	}
 	return param, nil
 }
 
 // Name the provider name
-func (v *LimitVerified[K, P, B]) Name() string { return v.p.Name() }
+func (v *LimitVerified[S, P, B]) Name() string { return v.p.Name() }
 
 // SendCode send code and backend.
-func (v *LimitVerified[K, P, B]) SendCode(ctx context.Context, kind K, target, code string) (*EvaluateResult, error) {
-	p, err := v.getParam(kind)
+func (v *LimitVerified[S, P, B]) SendCode(ctx context.Context, scene S, target, code string) (*EvaluateResult, error) {
+	p, err := v.getParam(scene)
 	if err != nil {
 		return nil, err
 	}
@@ -112,8 +120,8 @@ func (v *LimitVerified[K, P, B]) SendCode(ctx context.Context, kind K, target, c
 }
 
 // VerifyCode verify code from cache.
-func (v *LimitVerified[K, P, B]) VerifyCode(ctx context.Context, kind K, target, code string) (*VerifyResult, error) {
-	p, err := v.getParam(kind)
+func (v *LimitVerified[S, P, B]) VerifyCode(ctx context.Context, scene S, target, code string) (*VerifyResult, error) {
+	p, err := v.getParam(scene)
 	if err != nil {
 		return nil, err
 	}

@@ -52,7 +52,7 @@ func (c *Captcha[S, P, B]) SetParams(params map[S]*Param) *Captcha[S, P, B] {
 func (c *Captcha[S, P, B]) getParam(scene S, opts ...Option) (*Param, error) {
 	p, ok := c.params[scene]
 	if !ok {
-		return nil, ErrParamKindNotFound
+		return nil, ErrSceneParamNotFound
 	}
 	return p.clone().apply(opts...), nil
 }

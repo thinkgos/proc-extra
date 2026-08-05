@@ -94,10 +94,10 @@ func GenericTest_Captcha_ImproveCoverage[B verified.StorageBackend](t *testing.T
 	require.Equal(t, testDriverName, l.Name(testDriverName))
 
 	id, _, err := l.Generate(context.Background(), testDriverName, testInvalidScene)
-	require.ErrorIs(t, verified.ErrParamKindNotFound, err)
+	require.ErrorIs(t, verified.ErrSceneParamNotFound, err)
 
 	_, err = l.Verify(context.Background(), testInvalidScene, id, rightAnswer)
-	require.ErrorIs(t, verified.ErrParamKindNotFound, err)
+	require.ErrorIs(t, verified.ErrSceneParamNotFound, err)
 }
 
 func GenericTest_Captcha_UnsupportedChallengeProvider[B verified.StorageBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {

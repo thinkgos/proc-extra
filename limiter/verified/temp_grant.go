@@ -42,7 +42,7 @@ func (r *TempGrant[S, P, B]) SetParams(params map[S]*Param) *TempGrant[S, P, B] 
 func (r *TempGrant[S, P, B]) getParam(scene S, opts ...Option) (*Param, error) {
 	p, ok := r.params[scene]
 	if !ok {
-		return nil, ErrParamKindNotFound
+		return nil, ErrSceneParamNotFound
 	}
 	return p.clone().apply(opts...), nil
 }

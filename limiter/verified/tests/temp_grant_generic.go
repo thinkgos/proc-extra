@@ -36,10 +36,10 @@ func GenericTest_TempGrant_ImproveCoverage[B verified.StorageBackend](t *testing
 	l.Name()
 	targetId := randString(6)
 	wantAnswer, err := l.Issue(context.Background(), testInvalidScene, targetId)
-	require.ErrorIs(t, verified.ErrParamKindNotFound, err)
+	require.ErrorIs(t, verified.ErrSceneParamNotFound, err)
 
 	_, err = l.Consume(context.Background(), testInvalidScene, targetId, wantAnswer)
-	require.ErrorIs(t, verified.ErrParamKindNotFound, err)
+	require.ErrorIs(t, verified.ErrSceneParamNotFound, err)
 }
 
 func GenericTest_TempGrant_InMaxAttempts[B verified.StorageBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {

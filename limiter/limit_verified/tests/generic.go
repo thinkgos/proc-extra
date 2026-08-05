@@ -15,17 +15,17 @@ import (
 )
 
 const (
-	testKindInvalid   = "test_kind_invalid"
-	testKindNormal    = "test_kind1"
-	testKindOverQuota = "test_kind2"
-	target            = "112233"
-	code              = "123456"
-	badCode           = "654321"
+	testSceneInvalid   = "test_scene_invalid"
+	testSceneNormal    = "test_scene1"
+	testSceneOverQuota = "test_scene2"
+	target             = "112233"
+	code               = "123456"
+	badCode            = "654321"
 )
 
 var testParams = map[string]*limit_verified.Param{
-	testKindNormal: limit_verified.NewParam("limit:verified:"),
-	testKindOverQuota: &limit_verified.Param{
+	testSceneNormal: limit_verified.NewParam("limit:verified:"),
+	testSceneOverQuota: &limit_verified.Param{
 		KeyPrefix:       "limit:verified:",
 		Window:          time.Hour * 24,
 		Quota:           1,
@@ -52,35 +52,35 @@ func GenericTest_Name[B limit_verified.LimitVerifiedBackend](t *testing.T, _ *mi
 	require.Equal(t, "test_provider1", l.Name())
 }
 
-func GenericTest_InvalidKind[B limit_verified.LimitVerifiedBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
+func GenericTest_InvalidScene[B limit_verified.LimitVerifiedBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
 	l := limit_verified.NewLimitVerified[string](new(TestProvider), backend)
 
-	_, err := l.SendCode(context.Background(), testKindInvalid, target, code)
-	require.ErrorIs(t, err, limit_verified.ErrParamKindNotFound)
-	_, err = l.VerifyCode(context.Background(), testKindInvalid, target, code)
-	require.ErrorIs(t, err, limit_verified.ErrParamKindNotFound)
+	_, err := l.SendCode(context.Background(), testSceneInvalid, target, code)
+	require.ErrorIs(t, err, limit_verified.ErrSceneParamNotFound)
+	_, err = l.VerifyCode(context.Background(), testSceneInvalid, target, code)
+	require.ErrorIs(t, err, limit_verified.ErrSceneParamNotFound)
 }
 
 func GenericTest_Work[B limit_verified.LimitVerifiedBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
 	l := limit_verified.NewLimitVerified[string](new(TestProvider), backend).SetParams(testParams)
 
-	result, err := l.SendCode(context.Background(), testKindNormal, target, code)
+	result, err := l.SendCode(context.Background(), testSceneNormal, target, code)
 	require.NoError(t, err)
 	require.Equal(t, limit_verified.EvaluateCode_Success, result.Code)
 
-	vr, err := l.VerifyCode(context.Background(), testKindNormal, target, code)
+	vr, err := l.VerifyCode(context.Background(), testSceneNormal, target, code)
 	require.NoError(t, err)
 	require.Equal(t, limit_verified.VerifyCode_Success, vr.Code)
 }
 
-func GenericTestSendCode_Failure[B limit_verified.LimitVerifiedBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
+func GenericTest_SendCode_Failure[B limit_verified.LimitVerifiedBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
 	l := limit_verified.NewLimitVerified[string](new(TestErrProvider), backend).SetParams(testParams)
 
-	_, err := l.SendCode(context.Background(), testKindNormal, target, code)
+	_, err := l.SendCode(context.Background(), testSceneNormal, target, code)
 	require.Error(t, err)
 }
 
-func GenericTestSendCode_OverQuota[B limit_verified.LimitVerifiedBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
+func GenericTest_SendCode_OverQuota[B limit_verified.LimitVerifiedBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
 	var success uint32
 	var failed uint32
 
@@ -92,7 +92,7 @@ func GenericTestSendCode_OverQuota[B limit_verified.LimitVerifiedBackend](t *tes
 		go func() {
 			defer wg.Done()
 
-			result, err := l.SendCode(context.Background(), testKindOverQuota, target, code)
+			result, err := l.SendCode(context.Background(), testSceneOverQuota, target, code)
 			require.NoError(t, err)
 			switch result.Code {
 			case limit_verified.EvaluateCode_Success:
@@ -112,7 +112,7 @@ func GenericTestSendCode_OverQuota[B limit_verified.LimitVerifiedBackend](t *tes
 	require.Equal(t, uint32(14), failed)
 }
 
-func GenericTestSendCode_ResendTooFrequently[B limit_verified.LimitVerifiedBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
+func GenericTest_SendCode_ResendTooFrequently[B limit_verified.LimitVerifiedBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
 	var success uint32
 	var failed uint32
 
@@ -124,7 +124,7 @@ func GenericTestSendCode_ResendTooFrequently[B limit_verified.LimitVerifiedBacke
 		go func() {
 			defer wg.Done()
 
-			result, err := l.SendCode(context.Background(), testKindNormal, target, code)
+			result, err := l.SendCode(context.Background(), testSceneNormal, target, code)
 			require.NoError(t, err)
 			switch result.Code {
 			case limit_verified.EvaluateCode_Success:
@@ -144,32 +144,32 @@ func GenericTestSendCode_ResendTooFrequently[B limit_verified.LimitVerifiedBacke
 	require.Equal(t, uint32(14), failed)
 }
 
-func GenericTestVerifyCode_Expired[B limit_verified.LimitVerifiedBackend](t *testing.T, mr *miniredis.Miniredis, backend B) {
+func GenericTest_VerifyCode_Expired[B limit_verified.LimitVerifiedBackend](t *testing.T, mr *miniredis.Miniredis, backend B) {
 	l := limit_verified.NewLimitVerified[string](new(TestProvider), backend).SetParams(testParams)
 
 	// 没有验证码
-	vr, err := l.VerifyCode(context.Background(), testKindNormal, target, code)
+	vr, err := l.VerifyCode(context.Background(), testSceneNormal, target, code)
 	require.NoError(t, err)
 	require.Equal(t, limit_verified.VerifyCode_Expired, vr.Code)
 
 	// 验证码过期
-	result, err := l.SendCode(context.Background(), testKindNormal, target, code)
+	result, err := l.SendCode(context.Background(), testSceneNormal, target, code)
 	require.NoError(t, err)
 	require.Equal(t, limit_verified.EvaluateCode_Success, result.Code)
 
 	mr.FastForward(time.Second * 301)
-	vr, err = l.VerifyCode(context.Background(), testKindNormal, target, code)
+	vr, err = l.VerifyCode(context.Background(), testSceneNormal, target, code)
 	require.NoError(t, err)
 	require.Equal(t, limit_verified.VerifyCode_Expired, vr.Code)
 }
 
-func GenericTestVerifyCode_ReachMaxAttempt[B limit_verified.LimitVerifiedBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
+func GenericTest_VerifyCode_ReachMaxAttempt[B limit_verified.LimitVerifiedBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
 	var failedExpired uint32
 	var failedVerify uint32
 
 	l := limit_verified.NewLimitVerified[string](new(TestProvider), backend).SetParams(testParams)
 
-	result, err := l.SendCode(context.Background(), testKindNormal, target, code)
+	result, err := l.SendCode(context.Background(), testSceneNormal, target, code)
 	require.NoError(t, err)
 	require.Equal(t, limit_verified.EvaluateCode_Success, result.Code)
 
@@ -179,7 +179,7 @@ func GenericTestVerifyCode_ReachMaxAttempt[B limit_verified.LimitVerifiedBackend
 		go func() {
 			defer wg.Done()
 
-			vr, err := l.VerifyCode(context.Background(), testKindNormal, target, badCode)
+			vr, err := l.VerifyCode(context.Background(), testSceneNormal, target, badCode)
 			require.NoError(t, err)
 			switch vr.Code {
 			case limit_verified.VerifyCode_Failure:

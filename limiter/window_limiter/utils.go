@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-var ErrParamKindNotFound = errors.New("sliding_window_limiter: the param's kind not found")
+var ErrSceneParamNotFound = errors.New("window_limiter: the scene's param not found")
 
 // UniqueId 生成一个唯一的id.
 func UniqueId() string {

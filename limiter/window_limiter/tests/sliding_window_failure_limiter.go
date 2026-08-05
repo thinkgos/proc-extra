@@ -11,11 +11,11 @@ import (
 	"github.com/thinkgos/proc-extra/limiter/window_limiter"
 )
 
-const testSlidingWindowFailureLimiterInvalidKind = "invalid_kind"
-const testSlidingWindowFailureLimiterKind = "test_kind"
+const testSlidingWindowFailureLimiterScene_Invalid = "invalid_scene"
+const testSlidingWindowFailureLimiterScene = "test_kind"
 
 const (
-	testSlidingWindowFailureLimiterKeyPrefix  = "period:failure:limiter:test-kind:"
+	testSlidingWindowFailureLimiterKeyPrefix  = "period:failure:limiter:test-scene:"
 	testSlidingWindowFailureLimiterWindow     = 10
 	testSlidingWindowFailureLimiterMaxAttempt = 3
 )
@@ -25,28 +25,28 @@ const testSlidingWindowFailureLimiterId1 = "id1"
 var errTestSlidingWindowFailureLimiter = errors.New("a test error")
 
 var testSlidingWindowFailureLimiterParams = map[string]*window_limiter.SlidingWindowFailureLimiterParam{
-	testSlidingWindowFailureLimiterKind: {
+	testSlidingWindowFailureLimiterScene: {
 		KeyPrefix:   testSlidingWindowFailureLimiterKeyPrefix,
 		Window:      testSlidingWindowFailureLimiterWindow,
 		MaxFailures: testSlidingWindowFailureLimiterMaxAttempt,
 	},
 }
 
-func GenericTest_SlidingWindowFailureLimiter_InvalidKind[B window_limiter.SlidingWindowFailureLimiterBackend](t *testing.T, mr *miniredis.Miniredis, backend B) {
+func GenericTest_SlidingWindowFailureLimiter_InvalidScene[B window_limiter.SlidingWindowFailureLimiterBackend](t *testing.T, mr *miniredis.Miniredis, backend B) {
 	l := window_limiter.NewSlidingWindowFailureLimiter[string](backend).
 		SetParams(testSlidingWindowFailureLimiterParams)
 
-	_, err := l.EvaluateErr(context.Background(), testSlidingWindowFailureLimiterInvalidKind, testSlidingWindowFailureLimiterId1, errTestSlidingWindowFailureLimiter)
-	require.ErrorIs(t, window_limiter.ErrParamKindNotFound, err)
+	_, err := l.EvaluateErr(context.Background(), testSlidingWindowFailureLimiterScene_Invalid, testSlidingWindowFailureLimiterId1, errTestSlidingWindowFailureLimiter)
+	require.ErrorIs(t, window_limiter.ErrSceneParamNotFound, err)
 
-	_, err = l.Check(context.Background(), testSlidingWindowFailureLimiterInvalidKind, testSlidingWindowFailureLimiterId1)
-	require.ErrorIs(t, window_limiter.ErrParamKindNotFound, err)
+	_, err = l.Check(context.Background(), testSlidingWindowFailureLimiterScene_Invalid, testSlidingWindowFailureLimiterId1)
+	require.ErrorIs(t, window_limiter.ErrSceneParamNotFound, err)
 
-	_, err = l.Lock(context.Background(), testSlidingWindowFailureLimiterInvalidKind, testSlidingWindowFailureLimiterId1)
-	require.ErrorIs(t, window_limiter.ErrParamKindNotFound, err)
+	_, err = l.Lock(context.Background(), testSlidingWindowFailureLimiterScene_Invalid, testSlidingWindowFailureLimiterId1)
+	require.ErrorIs(t, window_limiter.ErrSceneParamNotFound, err)
 
-	err = l.Reset(context.Background(), testSlidingWindowFailureLimiterInvalidKind, testSlidingWindowFailureLimiterId1)
-	require.ErrorIs(t, window_limiter.ErrParamKindNotFound, err)
+	err = l.Reset(context.Background(), testSlidingWindowFailureLimiterScene_Invalid, testSlidingWindowFailureLimiterId1)
+	require.ErrorIs(t, window_limiter.ErrSceneParamNotFound, err)
 }
 
 func GenericTest_SlidingWindowFailureLimiter_Work[B window_limiter.SlidingWindowFailureLimiterBackend](t *testing.T, mr *miniredis.Miniredis, backend B) {
@@ -54,7 +54,7 @@ func GenericTest_SlidingWindowFailureLimiter_Work[B window_limiter.SlidingWindow
 		SetParams(testSlidingWindowFailureLimiterParams)
 
 		// check the sliding window first
-	pv1, err := l.Check(context.Background(), testSlidingWindowFailureLimiterKind, testSlidingWindowFailureLimiterId1)
+	pv1, err := l.Check(context.Background(), testSlidingWindowFailureLimiterScene, testSlidingWindowFailureLimiterId1)
 	require.NoError(t, err)
 	require.True(t, pv1.Allow)
 	require.Equal(t, 0, pv1.Failures)
@@ -63,7 +63,7 @@ func GenericTest_SlidingWindowFailureLimiter_Work[B window_limiter.SlidingWindow
 
 	// evaluate error operations
 	for i := range testSlidingWindowFailureLimiterMaxAttempt {
-		v, err := l.EvaluateErr(context.Background(), testSlidingWindowFailureLimiterKind, testSlidingWindowFailureLimiterId1, errTestSlidingWindowFailureLimiter)
+		v, err := l.EvaluateErr(context.Background(), testSlidingWindowFailureLimiterScene, testSlidingWindowFailureLimiterId1, errTestSlidingWindowFailureLimiter)
 		require.NoError(t, err)
 		require.True(t, v.Allow)
 		require.Equal(t, i+1, v.Failures)
@@ -73,14 +73,14 @@ func GenericTest_SlidingWindowFailureLimiter_Work[B window_limiter.SlidingWindow
 		mr.FastForward(time.Second * 2)
 	}
 	// full limit, not allowed
-	v, err := l.EvaluateErr(context.Background(), testSlidingWindowFailureLimiterKind, testSlidingWindowFailureLimiterId1, nil)
+	v, err := l.EvaluateErr(context.Background(), testSlidingWindowFailureLimiterScene, testSlidingWindowFailureLimiterId1, nil)
 	require.NoError(t, err)
 	require.False(t, v.Allow)
 	require.Equal(t, 3, v.Failures)
 	require.Equal(t, testSlidingWindowFailureLimiterMaxAttempt, v.MaxFailures)
 	require.NotZero(t, v.ExpireAt)
 	// check the sliding window after full limit
-	pv2, err := l.Check(context.Background(), testSlidingWindowFailureLimiterKind, testSlidingWindowFailureLimiterId1)
+	pv2, err := l.Check(context.Background(), testSlidingWindowFailureLimiterScene, testSlidingWindowFailureLimiterId1)
 	require.NoError(t, err)
 	require.Equal(t, v, pv2)
 
@@ -88,7 +88,7 @@ func GenericTest_SlidingWindowFailureLimiter_Work[B window_limiter.SlidingWindow
 	mr.FastForward(time.Second * 5)
 
 	// some request out of the window, then allowed
-	v, err = l.EvaluateErr(context.Background(), testSlidingWindowFailureLimiterKind, testSlidingWindowFailureLimiterId1, nil)
+	v, err = l.EvaluateErr(context.Background(), testSlidingWindowFailureLimiterScene, testSlidingWindowFailureLimiterId1, nil)
 	require.NoError(t, err)
 	require.True(t, v.Allow)
 	require.Equal(t, 0, v.Failures)
@@ -96,7 +96,7 @@ func GenericTest_SlidingWindowFailureLimiter_Work[B window_limiter.SlidingWindow
 	require.NotZero(t, v.ExpireAt)
 
 	// check the sliding window after success
-	pv3, err := l.Check(context.Background(), testSlidingWindowFailureLimiterKind, testSlidingWindowFailureLimiterId1)
+	pv3, err := l.Check(context.Background(), testSlidingWindowFailureLimiterScene, testSlidingWindowFailureLimiterId1)
 	require.NoError(t, err)
 	require.True(t, pv3.Allow)
 	require.Equal(t, 0, pv3.Failures)
@@ -104,7 +104,7 @@ func GenericTest_SlidingWindowFailureLimiter_Work[B window_limiter.SlidingWindow
 	require.NotZero(t, pv3.ExpireAt)
 
 	// evaluate requests operation after success
-	v, err = l.EvaluateErr(context.Background(), testSlidingWindowFailureLimiterKind, testSlidingWindowFailureLimiterId1, errTestSlidingWindowFailureLimiter)
+	v, err = l.EvaluateErr(context.Background(), testSlidingWindowFailureLimiterScene, testSlidingWindowFailureLimiterId1, errTestSlidingWindowFailureLimiter)
 	require.NoError(t, err)
 	require.True(t, v.Allow)
 	require.Equal(t, 1, v.Failures)
@@ -117,7 +117,7 @@ func GenericTest_SlidingWindowFailureLimiter_Lock[B window_limiter.SlidingWindow
 		SetParams(testSlidingWindowFailureLimiterParams)
 
 		// evaluate requests
-	v, err := l.EvaluateErr(context.Background(), testSlidingWindowFailureLimiterKind, testSlidingWindowFailureLimiterId1, errTestSlidingWindowFailureLimiter)
+	v, err := l.EvaluateErr(context.Background(), testSlidingWindowFailureLimiterScene, testSlidingWindowFailureLimiterId1, errTestSlidingWindowFailureLimiter)
 	require.NoError(t, err)
 	require.True(t, v.Allow)
 	require.Equal(t, 1, v.Failures)
@@ -125,7 +125,7 @@ func GenericTest_SlidingWindowFailureLimiter_Lock[B window_limiter.SlidingWindow
 	require.NotZero(t, v.ExpireAt)
 
 	// check the sliding window after evaluate
-	pv1, err := l.Check(context.Background(), testSlidingWindowFailureLimiterKind, testSlidingWindowFailureLimiterId1)
+	pv1, err := l.Check(context.Background(), testSlidingWindowFailureLimiterScene, testSlidingWindowFailureLimiterId1)
 	require.NoError(t, err)
 	require.True(t, pv1.Allow)
 	require.Equal(t, 1, pv1.Failures)
@@ -133,7 +133,7 @@ func GenericTest_SlidingWindowFailureLimiter_Lock[B window_limiter.SlidingWindow
 	require.NotZero(t, pv1.ExpireAt)
 
 	// lock the sliding window
-	v, err = l.Lock(context.Background(), testSlidingWindowFailureLimiterKind, testSlidingWindowFailureLimiterId1)
+	v, err = l.Lock(context.Background(), testSlidingWindowFailureLimiterScene, testSlidingWindowFailureLimiterId1)
 	require.NoError(t, err)
 	require.False(t, v.Allow)
 	require.Equal(t, 3, v.Failures)
@@ -141,7 +141,7 @@ func GenericTest_SlidingWindowFailureLimiter_Lock[B window_limiter.SlidingWindow
 	require.NotZero(t, v.ExpireAt)
 
 	// evaluate requests operation after lock
-	v, err = l.EvaluateErr(context.Background(), testSlidingWindowFailureLimiterKind, testSlidingWindowFailureLimiterId1, errTestSlidingWindowFailureLimiter)
+	v, err = l.EvaluateErr(context.Background(), testSlidingWindowFailureLimiterScene, testSlidingWindowFailureLimiterId1, errTestSlidingWindowFailureLimiter)
 	require.NoError(t, err)
 	require.False(t, v.Allow)
 	require.Equal(t, testSlidingWindowFailureLimiterMaxAttempt, v.Failures)
@@ -149,11 +149,11 @@ func GenericTest_SlidingWindowFailureLimiter_Lock[B window_limiter.SlidingWindow
 	require.NotZero(t, v.ExpireAt)
 
 	// reset the sliding window
-	err = l.Reset(context.Background(), testSlidingWindowFailureLimiterKind, testSlidingWindowFailureLimiterId1)
+	err = l.Reset(context.Background(), testSlidingWindowFailureLimiterScene, testSlidingWindowFailureLimiterId1)
 	require.NoError(t, err)
 
 	// check the sliding window after reset
-	pv2, err := l.Check(context.Background(), testSlidingWindowFailureLimiterKind, testSlidingWindowFailureLimiterId1)
+	pv2, err := l.Check(context.Background(), testSlidingWindowFailureLimiterScene, testSlidingWindowFailureLimiterId1)
 	require.NoError(t, err)
 	require.True(t, pv2.Allow)
 	require.Equal(t, 0, pv2.Failures)
@@ -161,7 +161,7 @@ func GenericTest_SlidingWindowFailureLimiter_Lock[B window_limiter.SlidingWindow
 	require.NotZero(t, pv2.ExpireAt)
 
 	// evaluate requests operation after reset
-	v, err = l.EvaluateErr(context.Background(), testSlidingWindowFailureLimiterKind, testSlidingWindowFailureLimiterId1, errTestSlidingWindowFailureLimiter)
+	v, err = l.EvaluateErr(context.Background(), testSlidingWindowFailureLimiterScene, testSlidingWindowFailureLimiterId1, errTestSlidingWindowFailureLimiter)
 	require.NoError(t, err)
 	require.True(t, v.Allow)
 	require.Equal(t, 1, v.Failures)

@@ -10,12 +10,12 @@ import (
 	"github.com/thinkgos/proc-extra/limiter/window_limiter/tests"
 )
 
-func Test_SlidingWindowFailureLimiter_InvalidKind(t *testing.T) {
+func Test_SlidingWindowFailureLimiter_InvalidScene(t *testing.T) {
 	mr, err := miniredis.Run()
 	assert.NoError(t, err)
 	defer mr.Close()
 
-	tests.GenericTest_SlidingWindowFailureLimiter_InvalidKind(
+	tests.GenericTest_SlidingWindowFailureLimiter_InvalidScene(
 		t,
 		mr,
 		redisv9.NewLimitFailureRedisStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),

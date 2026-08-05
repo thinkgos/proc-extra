@@ -5,8 +5,8 @@ import (
 	"time"
 )
 
-// ErrParamKindNotFound is an error that param kind not found.
-var ErrParamKindNotFound = errors.New("limit: param kind not found")
+// ErrSceneParamNotFound is an error that scene's param not found.
+var ErrSceneParamNotFound = errors.New("verified: the scene's param not found")
 
 // Param captcha param
 type Param struct {
