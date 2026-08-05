@@ -10,59 +10,59 @@ import (
 	"github.com/thinkgos/proc-extra/limiter/verified/tests"
 )
 
-func TestReflux_Improve_Cover(t *testing.T) {
+func TestTempGrantImprove_Cover(t *testing.T) {
 	mr, err := miniredis.Run()
 	require.Nil(t, err)
 	defer mr.Close()
-	tests.GenericTestReflux_Improve_Cover(
+	tests.GenericTestTempGrantImprove_Cover(
 		t,
 		mr,
 		NewRedisStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
 	)
 }
 
-func TestReflux_One_Time(t *testing.T) {
+func TestTempGrantOne_Time(t *testing.T) {
 	mr, err := miniredis.Run()
 	assert.NoError(t, err)
 	defer mr.Close()
 
-	tests.GenericTestReflux_One_Time(
+	tests.GenericTestTempGrantOne_Time(
 		t,
 		mr,
 		NewRedisStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
 	)
 }
 
-func TestReflux_In_MaxAttempts(t *testing.T) {
+func TestTempGrantIn_MaxAttempts(t *testing.T) {
 	mr, err := miniredis.Run()
 	assert.NoError(t, err)
 	defer mr.Close()
 
-	tests.GenericTestReflux_In_MaxAttempts(
+	tests.GenericTestTempGrantIn_MaxAttempts(
 		t,
 		mr,
 		NewRedisStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
 	)
 }
 
-func TestReflux_Over_MaxAttempts(t *testing.T) {
+func TestTempGrantOver_MaxAttempts(t *testing.T) {
 	mr, err := miniredis.Run()
 	assert.NoError(t, err)
 	defer mr.Close()
 
-	tests.GenericTestReflux_Over_MaxAttempts(
+	tests.GenericTestTempGrantOver_MaxAttempts(
 		t,
 		mr,
 		NewRedisStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
 	)
 }
 
-func TestReflux_OneTime_Timeout(t *testing.T) {
+func TestTempGrantOneTime_Timeout(t *testing.T) {
 	mr, err := miniredis.Run()
 	assert.NoError(t, err)
 	defer mr.Close()
 
-	tests.GenericTestReflux_OneTime_Timeout(
+	tests.GenericTestTempGrantOneTime_Timeout(
 		t,
 		mr,
 		NewRedisStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
