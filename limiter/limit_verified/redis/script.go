@@ -3,15 +3,15 @@ package redis
 import _ "embed"
 
 const (
-	InnerLimitVerifiedEvaluate_Success       = 0
-	InnerLimitVerifiedEvaluate_OverQuota     = 1
-	InnerLimitVerifiedEvaluate_TooFrequently = 2
+	InnerLimitVerifiedEvaluate_Success       = 0 // 成功
+	InnerLimitVerifiedEvaluate_OverQuota     = 1 // 超过配额
+	InnerLimitVerifiedEvaluate_TooFrequently = 2 // 过于频繁
 )
 
 const (
-	InnerLimitVerifiedVerify_Success = 0
-	InnerLimitVerifiedVerify_Failure = 1
-	InnerLimitVerifiedVerify_Expired = 2
+	InnerLimitVerifiedVerify_Success = 0 // 成功
+	InnerLimitVerifiedVerify_Failure = 1 // 失败
+	InnerLimitVerifiedVerify_Expired = 2 // 已失效
 )
 
 var (

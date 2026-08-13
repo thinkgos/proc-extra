@@ -25,7 +25,7 @@ else
 
     redis.call('ZADD', key, now, unique_id) -- 记录本次操作
     redis.call('EXPIRE', key, window)       -- 设置 Key 的过期时间
-    redis.call("HMSET", code_key, "code", code, "max_attempts", code_max_attempts, "attempts", 0, "lasted", now,
+    redis.call("HSET", code_key, "code", code, "max_attempts", code_max_attempts, "attempts", 0, "lasted", now,
         "id", unique_id)
     redis.call("EXPIRE", code_key, code_expires)
 
