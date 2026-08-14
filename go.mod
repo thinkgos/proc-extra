@@ -13,8 +13,8 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/thinkgos/proc v0.0.0-20260814070301-45de25ddf7c1
 	github.com/xuri/excelize/v2 v2.11.0
-	go.opentelemetry.io/otel/sdk v1.44.0
-	go.opentelemetry.io/otel/trace v1.44.0
+	go.opentelemetry.io/otel/sdk v1.45.0
+	go.opentelemetry.io/otel/trace v1.45.0
 	golang.org/x/crypto v0.54.0
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260729162451-8efbd57d26e0
 	google.golang.org/grpc v1.83.0
@@ -36,8 +36,8 @@ require (
 	github.com/xuri/nfp v0.0.2-0.20250530014748-2ddeb826f9a9 // indirect
 	github.com/yuin/gopher-lua v1.1.2 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
-	go.opentelemetry.io/otel v1.44.0 // indirect
-	go.opentelemetry.io/otel/metric v1.44.0 // indirect
+	go.opentelemetry.io/otel v1.45.0 // indirect
+	go.opentelemetry.io/otel/metric v1.45.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	golang.org/x/image v0.44.0 // indirect
 	golang.org/x/net v0.57.0 // indirect
