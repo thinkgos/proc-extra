@@ -29,7 +29,9 @@ const (
 
 // EvaluateRequest store arguments
 type EvaluateRequest struct {
-	Key             string        // 验证码key
+	KeyPrefix       string        // 验证码键前缀
+	Target          string        // 目标
+	Scene           string        // 场景
 	Window          time.Duration // 验证码滚动窗口时间, 24小时
 	Quota           int           // 验证码滚动窗口内配额, 30次
 	ResendInterval  int           // 验证码重发间隔时间, 60秒
@@ -43,13 +45,17 @@ type EvaluateResult struct {
 }
 
 type RollbackRequest struct {
-	Key      string // 验证码key
-	UniqueId string // 唯一id
+	KeyPrefix string // 验证码键前缀
+	Target    string // 目标
+	Scene     string // 场景
+	UniqueId  string // 唯一id
 }
 
 type VerifyRequest struct {
-	Key  string // 验证码key
-	Code string // 验证码
+	KeyPrefix string // 验证码键前缀
+	Target    string // 目标
+	Scene     string // 场景
+	Code      string // 验证码
 }
 type VerifyResult struct {
 	Code VerifyCode

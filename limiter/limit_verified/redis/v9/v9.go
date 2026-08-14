@@ -26,7 +26,9 @@ func (v *RedisStore) Evaluate(ctx context.Context, p *limit_verified.EvaluateReq
 		ctx,
 		redis_script.ScriptLimitVerifiedEvaluate,
 		[]string{
-			p.Key,
+			p.KeyPrefix,
+			p.Target,
+			p.Scene,
 		},
 		[]string{
 			strconv.FormatInt(int64(p.Window/time.Second), 10),
@@ -51,7 +53,9 @@ func (v *RedisStore) Rollback(ctx context.Context, p *limit_verified.RollbackReq
 		ctx,
 		redis_script.ScriptLimitVerifiedRollback,
 		[]string{
-			p.Key,
+			p.KeyPrefix,
+			p.Target,
+			p.Scene,
 		},
 		[]string{
 			p.UniqueId,
@@ -65,7 +69,9 @@ func (v *RedisStore) Verify(ctx context.Context, p *limit_verified.VerifyRequest
 		ctx,
 		redis_script.LimitVerifiedVerifyCodeScript,
 		[]string{
-			p.Key,
+			p.KeyPrefix,
+			p.Target,
+			p.Scene,
 		},
 		[]string{
 			p.Code,

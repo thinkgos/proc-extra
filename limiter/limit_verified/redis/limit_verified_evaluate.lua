@@ -1,4 +1,6 @@
-local key = KEYS[1]                                       -- key
+local keyPrefix = KEYS[1]                                 -- keyPrefix
+local target = KEYS[2]                                    -- target
+local scene = KEYS[3]                                     -- scene
 local window = tonumber(ARGV[1])                          -- 验证码滚动窗口时间, 单位: 秒
 local quota = tonumber(ARGV[2])                           -- 验证码滚动窗口内配额
 local resend_interval = tonumber(ARGV[3])                 -- 验证码重发间隔时间
@@ -7,7 +9,8 @@ local code_max_attempts = tonumber(ARGV[5])               -- 验证码最大允�
 local code = ARGV[6]                                      -- 验证码
 local unique_id = ARGV[7]                                 -- 唯一id
 
-local code_key = key .. ":_entry_:code"                   -- 验证码key
+local key = keyPrefix .. target                           -- 验证目标key
+local code_key = key .. ":" .. scene .. ":code"           -- 验证码key
 local time_res = redis.call('TIME')                       -- 获取redis节点当前时间.
 local now = tonumber(time_res[1])                         -- 当前时间戳, 单位秒
 

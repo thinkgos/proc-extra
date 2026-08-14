@@ -27,7 +27,7 @@ type LimitVerifiedProvider interface {
 }
 
 type Param struct {
-	KeyPrefix       string        // 验证码key的前缀.
+	Scene           string        // 验证码场景
 	Window          time.Duration // 验证码滚动窗口时间, 24小时
 	Quota           int           // 验证码滚动窗口内配额, 30次
 	ResendInterval  int           // 验证码重发间隔时间, 60秒
@@ -35,9 +35,9 @@ type Param struct {
 	CodeMaxAttempts int           // 验证码最大尝试次数, 3次
 }
 
-func NewParam(keyPrefix string) *Param {
+func NewParam(scene string) *Param {
 	return &Param{
-		KeyPrefix:       keyPrefix,
+		Scene:           scene,
 		Window:          time.Hour * 24,
 		Quota:           30,
 		ResendInterval:  60,
@@ -46,22 +46,26 @@ func NewParam(keyPrefix string) *Param {
 	}
 }
 
-func (p *Param) FormatKey(id string) string { return p.KeyPrefix + id }
-
 // LimitVerified limit verified code
 type LimitVerified[S comparable, P LimitVerifiedProvider, B LimitVerifiedBackend] struct {
-	p       LimitVerifiedProvider // LimitVerifiedProvider send code
-	backend LimitVerifiedBackend  // backend client
-	params  map[S]*Param
+	p         LimitVerifiedProvider // LimitVerifiedProvider send code
+	backend   LimitVerifiedBackend  // backend client
+	keyPrefix string                // key prefix
+	params    map[S]*Param
 }
 
 // NewLimitVerified  new a limit verified
 func NewLimitVerified[S comparable, P LimitVerifiedProvider, B LimitVerifiedBackend](p P, backend B) *LimitVerified[S, P, B] {
 	v := &LimitVerified[S, P, B]{
-		p:       p,
-		backend: backend,
-		params:  make(map[S]*Param),
+		p:         p,
+		backend:   backend,
+		keyPrefix: "limit:verifier:scene:",
+		params:    make(map[S]*Param),
 	}
+	return v
+}
+func (v *LimitVerified[S, P, B]) SetKeyPrefix(keyPrefix string) *LimitVerified[S, P, B] {
+	v.keyPrefix = keyPrefix
 	return v
 }
 
@@ -88,7 +92,9 @@ func (v *LimitVerified[S, P, B]) SendCode(ctx context.Context, scene S, target, 
 	}
 	uniqueId := UniqueId()
 	result, err := v.backend.Evaluate(ctx, &EvaluateRequest{
-		Key:             p.FormatKey(target),
+		KeyPrefix:       v.keyPrefix,
+		Scene:           p.Scene,
+		Target:          target,
 		Window:          p.Window,
 		Quota:           p.Quota,
 		ResendInterval:  p.ResendInterval,
@@ -107,8 +113,10 @@ func (v *LimitVerified[S, P, B]) SendCode(ctx context.Context, scene S, target, 
 	defer func() {
 		if err != nil && !errors.Is(err, ErrReachMaximumQuota) {
 			_ = v.backend.Rollback(context.Background(), &RollbackRequest{
-				Key:      p.FormatKey(target),
-				UniqueId: uniqueId,
+				KeyPrefix: v.keyPrefix,
+				Scene:     p.Scene,
+				Target:    target,
+				UniqueId:  uniqueId,
 			})
 		}
 	}()
@@ -126,8 +134,10 @@ func (v *LimitVerified[S, P, B]) VerifyCode(ctx context.Context, scene S, target
 		return nil, err
 	}
 	return v.backend.Verify(ctx, &VerifyRequest{
-		Key:  p.FormatKey(target),
-		Code: code,
+		KeyPrefix: v.keyPrefix,
+		Scene:     p.Scene,
+		Target:    target,
+		Code:      code,
 	})
 }
 

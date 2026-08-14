@@ -15,6 +15,7 @@ import (
 )
 
 const (
+	testKeyPrefix      = "limit:verifier:scene:"
 	testSceneInvalid   = "test_scene_invalid"
 	testSceneNormal    = "test_scene1"
 	testSceneOverQuota = "test_scene2"
@@ -24,9 +25,9 @@ const (
 )
 
 var testParams = map[string]*limit_verified.Param{
-	testSceneNormal: limit_verified.NewParam("limit:verified:"),
-	testSceneOverQuota: &limit_verified.Param{
-		KeyPrefix:       "limit:verified:",
+	testSceneNormal: limit_verified.NewParam(testSceneNormal),
+	testSceneOverQuota: {
+		Scene:           testSceneOverQuota,
 		Window:          time.Hour * 24,
 		Quota:           1,
 		ResendInterval:  1,
@@ -48,7 +49,7 @@ func (t TestErrProvider) SendCode(ctx context.Context, target, code string) erro
 }
 
 func GenericTest_Name[B limit_verified.LimitVerifiedBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
-	l := limit_verified.NewLimitVerified[string](new(TestProvider), backend)
+	l := limit_verified.NewLimitVerified[string](new(TestProvider), backend).SetKeyPrefix(testKeyPrefix)
 	require.Equal(t, "test_provider1", l.Name())
 }
 

@@ -5,7 +5,7 @@
 > redis 存储格式:  
 >
 > key: `keyPrefix:{target}` ----> `sorted zset member`  
-> code key: `keyPrefix:{target}:_entry_:code` -----> `{ code, max_attempts, attempts, lasted, id }`  
+> code key: `keyPrefix:{target}:{scene}:code` -----> `{ code, max_attempts, attempts, lasted, id }`  
 >
 > sorted zset member: 发送时间戳 -> 唯一id  
 > code: code 验证码  
