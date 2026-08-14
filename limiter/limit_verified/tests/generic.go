@@ -19,6 +19,7 @@ const (
 	testSceneInvalid   = "test_scene_invalid"
 	testSceneNormal    = "test_scene1"
 	testSceneOverQuota = "test_scene2"
+	testSceneTierLimit = "test_scene3"
 	target             = "112233"
 	code               = "123456"
 	badCode            = "654321"
@@ -30,7 +31,16 @@ var testParams = map[string]*limit_verified.Param{
 		Scene:           testSceneOverQuota,
 		Window:          time.Hour * 24,
 		Quota:           1,
-		ResendInterval:  1,
+		CodeExpires:     300,
+		CodeMaxAttempts: 3,
+	},
+	testSceneTierLimit: {
+		Scene:           testSceneTierLimit,
+		Window:          time.Hour * 24,
+		Quota:           30,
+		WindowTiers: []limit_verified.WindowTier{
+			{Window: time.Minute, Quota: 1},
+		},
 		CodeExpires:     300,
 		CodeMaxAttempts: 3,
 	},
@@ -100,8 +110,6 @@ func GenericTest_SendCode_OverQuota[B limit_verified.LimitVerifiedBackend](t *te
 				atomic.AddUint32(&success, 1)
 			case limit_verified.EvaluateStatus_OverQuota:
 				atomic.AddUint32(&failed, 1)
-			case limit_verified.EvaluateStatus_TooFrequently:
-				fallthrough
 			default:
 				require.Fail(t, "unexpected evaluate code")
 			}
@@ -125,15 +133,13 @@ func GenericTest_SendCode_ResendTooFrequently[B limit_verified.LimitVerifiedBack
 		go func() {
 			defer wg.Done()
 
-			result, err := l.SendCode(context.Background(), testSceneNormal, target, code)
+			result, err := l.SendCode(context.Background(), testSceneTierLimit, target, code)
 			require.NoError(t, err)
 			switch result.Status {
 			case limit_verified.EvaluateStatus_Success:
 				atomic.AddUint32(&success, 1)
 			case limit_verified.EvaluateStatus_TooFrequently:
 				atomic.AddUint32(&failed, 1)
-			case limit_verified.EvaluateStatus_OverQuota:
-				fallthrough
 			default:
 				require.Fail(t, "unexpected evaluate code")
 			}

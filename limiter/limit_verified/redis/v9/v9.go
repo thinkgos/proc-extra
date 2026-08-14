@@ -30,19 +30,28 @@ func buildKeys(keyPrefix, target, scene string) []string {
 
 func (v *RedisStore) Evaluate(ctx context.Context, p *limit_verified.EvaluateRequest) (*limit_verified.EvaluateResult, error) {
 	keys := buildKeys(p.KeyPrefix, p.Target, p.Scene)
+
+	args := []string{
+		strconv.FormatInt(int64(p.Window/time.Second), 10),
+		strconv.Itoa(p.Quota),
+		strconv.Itoa(p.CodeExpires),
+		strconv.Itoa(p.CodeMaxAttempts),
+		p.Code,
+		p.UniqueId,
+		strconv.Itoa(len(p.WindowTiers)),
+	}
+	for _, tier := range p.WindowTiers {
+		args = append(args,
+			strconv.FormatInt(int64(tier.Window/time.Second), 10),
+			strconv.Itoa(tier.Quota),
+		)
+	}
+
 	sts, err := v.store.Eval(
 		ctx,
 		redis_script.ScriptLimitVerifiedEvaluate,
 		keys,
-		[]string{
-			strconv.FormatInt(int64(p.Window/time.Second), 10),
-			strconv.Itoa(p.Quota),
-			strconv.Itoa(p.ResendInterval),
-			strconv.Itoa(p.CodeExpires),
-			strconv.Itoa(p.CodeMaxAttempts),
-			p.Code,
-			p.UniqueId,
-		},
+		args,
 	).Int64()
 	if err != nil {
 		return nil, err

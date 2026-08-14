@@ -26,11 +26,16 @@ type LimitVerifiedProvider interface {
 	SendCode(ctx context.Context, target, code string) error
 }
 
+type WindowTier struct {
+	Window time.Duration // 子窗口时间
+	Quota  int           // 子窗口内配额
+}
+
 type Param struct {
 	Scene           string        // 验证码场景
-	Window          time.Duration // 验证码滚动窗口时间, 24小时
-	Quota           int           // 验证码滚动窗口内配额, 30次
-	ResendInterval  int           // 验证码重发间隔时间, 60秒
+	Window          time.Duration // 验证码最大滚动窗口时间, 24小时
+	Quota           int           // 验证码最大滚动窗口内配额, 30次
+	WindowTiers     []WindowTier  // 子窗口限制, 从大到小排列, 如 [{4h,15}, {1min,3}]
 	CodeExpires     int           // 验证码有效期, 300秒
 	CodeMaxAttempts int           // 验证码最大尝试次数, 3次
 }
@@ -40,7 +45,6 @@ func NewParam(scene string) *Param {
 		Scene:           scene,
 		Window:          time.Hour * 24,
 		Quota:           30,
-		ResendInterval:  60,
 		CodeExpires:     300,
 		CodeMaxAttempts: 3,
 	}
@@ -97,7 +101,7 @@ func (v *LimitVerified[S, P, B]) SendCode(ctx context.Context, scene S, target, 
 		Target:          target,
 		Window:          p.Window,
 		Quota:           p.Quota,
-		ResendInterval:  p.ResendInterval,
+		WindowTiers:     p.WindowTiers,
 		CodeExpires:     p.CodeExpires,
 		CodeMaxAttempts: p.CodeMaxAttempts,
 		Code:            code,

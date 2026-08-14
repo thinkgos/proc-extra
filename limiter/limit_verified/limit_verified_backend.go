@@ -32,9 +32,9 @@ type EvaluateRequest struct {
 	KeyPrefix       string        // 验证码键前缀
 	Target          string        // 目标
 	Scene           string        // 场景
-	Window          time.Duration // 验证码滚动窗口时间, 24小时
-	Quota           int           // 验证码滚动窗口内配额, 30次
-	ResendInterval  int           // 验证码重发间隔时间, 60秒
+	Window          time.Duration // 验证码最大滚动窗口时间, 24小时
+	Quota           int           // 验证码最大滚动窗口内配额, 30次
+	WindowTiers     []WindowTier  // 子窗口限制
 	CodeExpires     int           // 验证码有效期, 180秒
 	CodeMaxAttempts int           // 验证码最大允许尝试次数, 3次
 	Code            string        // 验证码
