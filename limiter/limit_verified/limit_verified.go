@@ -112,7 +112,7 @@ func (v *LimitVerified[S, P, B]) SendCode(ctx context.Context, scene S, target, 
 	// 发送失败, 回滚发送次数
 	defer func() {
 		if err != nil && !errors.Is(err, ErrReachMaximumQuota) {
-			_ = v.backend.Rollback(context.Background(), &RollbackRequest{
+			_ = v.backend.Rollback(ctx, &RollbackRequest{
 				KeyPrefix: v.keyPrefix,
 				Scene:     p.Scene,
 				Target:    target,

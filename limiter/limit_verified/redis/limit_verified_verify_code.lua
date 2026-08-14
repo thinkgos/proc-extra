@@ -1,10 +1,6 @@
-local keyPrefix = KEYS[1]                       -- keyPrefix
-local target = KEYS[2]                          -- target
-local scene = KEYS[3]                           -- scene
+local key = KEYS[1]                             -- 验证目标key (keyPrefix + target)
+local code_key = KEYS[2]                        -- 验证码key (keyPrefix + target + ":" + scene + ":code")
 local code = ARGV[1]                            -- 验证码
-
-local key = keyPrefix .. target                 -- 验证目标key
-local code_key = key .. ":" .. scene .. ":code" -- 验证码key
 
 if redis.call("EXISTS", code_key) == 0 then
     return 2 -- 验证码已失效

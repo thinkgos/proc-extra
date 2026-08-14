@@ -20,5 +20,5 @@ var (
 	//go:embed limit_verified_rollback.lua
 	ScriptLimitVerifiedRollback string
 	//go:embed limit_verified_verify_code.lua
-	LimitVerifiedVerifyCodeScript string
+	ScriptLimitVerifiedVerifyCode string
 )

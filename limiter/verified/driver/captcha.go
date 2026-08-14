@@ -1,6 +1,8 @@
 package driver
 
 import (
+	"context"
+
 	"github.com/mojocn/base64Captcha"
 	"github.com/thinkgos/proc-extra/limiter/verified"
 )
@@ -17,7 +19,7 @@ func NewCaptcha(d base64Captcha.Driver) *Captcha {
 
 func (c *Captcha) Name() string { return "base64-captcha" }
 
-func (c *Captcha) GenerateChallenge() (*verified.Challenge, error) {
+func (c *Captcha) GenerateChallenge(ctx context.Context) (*verified.Challenge, error) {
 	id, q, a := c.driver.GenerateIdQuestionAnswer()
 	it, err := c.driver.DrawCaptcha(q)
 	if err != nil {

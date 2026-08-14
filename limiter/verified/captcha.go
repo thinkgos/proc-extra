@@ -20,7 +20,7 @@ type Challenge struct {
 // ChallengeProvider the captcha challenge provider
 type ChallengeProvider interface {
 	Name() string
-	GenerateChallenge() (*Challenge, error)
+	GenerateChallenge(ctx context.Context) (*Challenge, error)
 }
 
 // CaptchaDriver the captcha driver
@@ -68,7 +68,7 @@ func (c *Captcha[S, P, B]) Generate(ctx context.Context, driverName string, scen
 	if err != nil {
 		return "", "", err
 	}
-	qa, err := c.p.Driver(driverName).GenerateChallenge()
+	qa, err := c.p.Driver(driverName).GenerateChallenge(ctx)
 	if err != nil {
 		return "", "", err
 	}
@@ -101,6 +101,6 @@ type UnsupportedChallengeProvider struct{}
 func (x UnsupportedChallengeProvider) Name() string {
 	return "Unsupported captcha driver"
 }
-func (x UnsupportedChallengeProvider) GenerateChallenge() (*Challenge, error) {
+func (x UnsupportedChallengeProvider) GenerateChallenge(ctx context.Context) (*Challenge, error) {
 	return nil, errors.New(x.Name())
 }

@@ -80,7 +80,7 @@ func (t TestCaptchaDriver) Driver(dName string) verified.ChallengeProvider {
 type TestChallenge struct{}
 
 func (t TestChallenge) Name() string { return testDriverName }
-func (t TestChallenge) GenerateChallenge() (*verified.Challenge, error) {
+func (t TestChallenge) GenerateChallenge(ctx context.Context) (*verified.Challenge, error) {
 	return &verified.Challenge{
 		Id:       randString(6),
 		Question: question,

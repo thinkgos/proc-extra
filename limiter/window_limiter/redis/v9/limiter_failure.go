@@ -85,7 +85,7 @@ func (p *LimitFailureRedisStore) Check(ctx context.Context, v *window_limiter.Fa
 		return nil, err
 	}
 	return &window_limiter.FailureLimiterResult{
-		Allow:       int(vals[0]) == 0,
+		Allow:       vals[0] == 0,
 		ExpireAt:    vals[1],
 		Failures:    int(vals[2]),
 		MaxFailures: v.MaxFailures,

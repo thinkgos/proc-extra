@@ -74,6 +74,18 @@ func Test_LimitVerifiedSendCode_ResendTooFrequently(t *testing.T) {
 	)
 }
 
+func Test_LimitVerifiedSendCode_Rollback(t *testing.T) {
+	mr, err := miniredis.Run()
+	require.Nil(t, err)
+	defer mr.Close()
+
+	tests.GenericTest_SendCode_Rollback(
+		t,
+		mr,
+		redisV9.NewRedisStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
+	)
+}
+
 func Test_LimitVerifiedVerifyCode_CodeExpired(t *testing.T) {
 	mr, err := miniredis.Run()
 	require.Nil(t, err)

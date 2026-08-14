@@ -46,7 +46,7 @@ func WithKeyExpires(t time.Duration) Option {
 // WithMaxAttempts 设置最大允许尝试次数
 func WithMaxAttempts(attempts int) Option {
 	return func(p *Param) {
-		if attempts > 1 {
+		if attempts > 0 {
 			p.MaxAttempts = attempts
 		}
 	}
