@@ -35,9 +35,9 @@ var testParams = map[string]*limit_verified.Param{
 		CodeMaxAttempts: 3,
 	},
 	testSceneTierLimit: {
-		Scene:           testSceneTierLimit,
-		Window:          time.Hour * 24,
-		Quota:           30,
+		Scene:  testSceneTierLimit,
+		Window: time.Hour * 24,
+		Quota:  30,
 		WindowTiers: []limit_verified.WindowTier{
 			{Window: time.Minute, Quota: 1},
 		},
@@ -110,6 +110,8 @@ func GenericTest_SendCode_OverQuota[B limit_verified.LimitVerifiedBackend](t *te
 				atomic.AddUint32(&success, 1)
 			case limit_verified.EvaluateStatus_OverQuota:
 				atomic.AddUint32(&failed, 1)
+			case limit_verified.EvaluateStatus_TooFrequently:
+				fallthrough
 			default:
 				require.Fail(t, "unexpected evaluate code")
 			}
@@ -140,6 +142,8 @@ func GenericTest_SendCode_ResendTooFrequently[B limit_verified.LimitVerifiedBack
 				atomic.AddUint32(&success, 1)
 			case limit_verified.EvaluateStatus_TooFrequently:
 				atomic.AddUint32(&failed, 1)
+			case limit_verified.EvaluateStatus_OverQuota:
+				fallthrough
 			default:
 				require.Fail(t, "unexpected evaluate code")
 			}
