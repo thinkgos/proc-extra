@@ -106,7 +106,7 @@ func (v *LimitVerified[S, P, B]) SendCode(ctx context.Context, scene S, target, 
 	if err != nil {
 		return nil, err
 	}
-	if result.Code != EvaluateCode_Success {
+	if result.Status != EvaluateStatus_Success {
 		return result, nil
 	}
 	// 发送失败, 回滚发送次数

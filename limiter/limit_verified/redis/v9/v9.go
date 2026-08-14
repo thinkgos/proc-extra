@@ -44,7 +44,7 @@ func (v *RedisStore) Evaluate(ctx context.Context, p *limit_verified.EvaluateReq
 		return nil, err
 	}
 	return &limit_verified.EvaluateResult{
-		Code: limit_verified.EvaluateCode(sts),
+		Status: limit_verified.EvaluateStatus(sts),
 	}, nil
 }
 
@@ -81,6 +81,6 @@ func (v *RedisStore) Verify(ctx context.Context, p *limit_verified.VerifyRequest
 		return nil, err
 	}
 	return &limit_verified.VerifyResult{
-		Code: limit_verified.VerifyCode(sts),
+		Status: limit_verified.VerifyStatus(sts),
 	}, nil
 }

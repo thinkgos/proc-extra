@@ -67,11 +67,11 @@ func GenericTest_Work[B limit_verified.LimitVerifiedBackend](t *testing.T, _ *mi
 
 	result, err := l.SendCode(context.Background(), testSceneNormal, target, code)
 	require.NoError(t, err)
-	require.Equal(t, limit_verified.EvaluateCode_Success, result.Code)
+	require.Equal(t, limit_verified.EvaluateStatus_Success, result.Status)
 
 	vr, err := l.VerifyCode(context.Background(), testSceneNormal, target, code)
 	require.NoError(t, err)
-	require.Equal(t, limit_verified.VerifyCode_Success, vr.Code)
+	require.Equal(t, limit_verified.VerifyStatus_Success, vr.Status)
 }
 
 func GenericTest_SendCode_Failure[B limit_verified.LimitVerifiedBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
@@ -95,12 +95,12 @@ func GenericTest_SendCode_OverQuota[B limit_verified.LimitVerifiedBackend](t *te
 
 			result, err := l.SendCode(context.Background(), testSceneOverQuota, target, code)
 			require.NoError(t, err)
-			switch result.Code {
-			case limit_verified.EvaluateCode_Success:
+			switch result.Status {
+			case limit_verified.EvaluateStatus_Success:
 				atomic.AddUint32(&success, 1)
-			case limit_verified.EvaluateCode_OverQuota:
+			case limit_verified.EvaluateStatus_OverQuota:
 				atomic.AddUint32(&failed, 1)
-			case limit_verified.EvaluateCode_TooFrequently:
+			case limit_verified.EvaluateStatus_TooFrequently:
 				fallthrough
 			default:
 				require.Fail(t, "unexpected evaluate code")
@@ -127,12 +127,12 @@ func GenericTest_SendCode_ResendTooFrequently[B limit_verified.LimitVerifiedBack
 
 			result, err := l.SendCode(context.Background(), testSceneNormal, target, code)
 			require.NoError(t, err)
-			switch result.Code {
-			case limit_verified.EvaluateCode_Success:
+			switch result.Status {
+			case limit_verified.EvaluateStatus_Success:
 				atomic.AddUint32(&success, 1)
-			case limit_verified.EvaluateCode_TooFrequently:
+			case limit_verified.EvaluateStatus_TooFrequently:
 				atomic.AddUint32(&failed, 1)
-			case limit_verified.EvaluateCode_OverQuota:
+			case limit_verified.EvaluateStatus_OverQuota:
 				fallthrough
 			default:
 				require.Fail(t, "unexpected evaluate code")
@@ -151,17 +151,17 @@ func GenericTest_VerifyCode_Expired[B limit_verified.LimitVerifiedBackend](t *te
 	// 没有验证码
 	vr, err := l.VerifyCode(context.Background(), testSceneNormal, target, code)
 	require.NoError(t, err)
-	require.Equal(t, limit_verified.VerifyCode_Expired, vr.Code)
+	require.Equal(t, limit_verified.VerifyStatus_Expired, vr.Status)
 
 	// 验证码过期
 	result, err := l.SendCode(context.Background(), testSceneNormal, target, code)
 	require.NoError(t, err)
-	require.Equal(t, limit_verified.EvaluateCode_Success, result.Code)
+	require.Equal(t, limit_verified.EvaluateStatus_Success, result.Status)
 
 	mr.FastForward(time.Second * 301)
 	vr, err = l.VerifyCode(context.Background(), testSceneNormal, target, code)
 	require.NoError(t, err)
-	require.Equal(t, limit_verified.VerifyCode_Expired, vr.Code)
+	require.Equal(t, limit_verified.VerifyStatus_Expired, vr.Status)
 }
 
 func GenericTest_VerifyCode_ReachMaxAttempt[B limit_verified.LimitVerifiedBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
@@ -172,7 +172,7 @@ func GenericTest_VerifyCode_ReachMaxAttempt[B limit_verified.LimitVerifiedBacken
 
 	result, err := l.SendCode(context.Background(), testSceneNormal, target, code)
 	require.NoError(t, err)
-	require.Equal(t, limit_verified.EvaluateCode_Success, result.Code)
+	require.Equal(t, limit_verified.EvaluateStatus_Success, result.Status)
 
 	wg := &sync.WaitGroup{}
 	wg.Add(15)
@@ -182,12 +182,12 @@ func GenericTest_VerifyCode_ReachMaxAttempt[B limit_verified.LimitVerifiedBacken
 
 			vr, err := l.VerifyCode(context.Background(), testSceneNormal, target, badCode)
 			require.NoError(t, err)
-			switch vr.Code {
-			case limit_verified.VerifyCode_Failure:
+			switch vr.Status {
+			case limit_verified.VerifyStatus_Failure:
 				atomic.AddUint32(&failedVerify, 1)
-			case limit_verified.VerifyCode_Expired:
+			case limit_verified.VerifyStatus_Expired:
 				atomic.AddUint32(&failedExpired, 1)
-			case limit_verified.VerifyCode_Success:
+			case limit_verified.VerifyStatus_Success:
 				fallthrough
 			default:
 				require.Fail(t, "unexpected verify code")

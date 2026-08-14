@@ -5,26 +5,26 @@ import (
 	"time"
 )
 
-type EvaluateCode int
+type EvaluateStatus int
 
 const (
-	// EvaluateCode_Success 发送成功
-	EvaluateCode_Success EvaluateCode = iota
-	// EvaluateCode_OverQuota 发送超过配额
-	EvaluateCode_OverQuota
-	// EvaluateCode_TooFrequently 发送过于频繁
-	EvaluateCode_TooFrequently
+	// EvaluateStatus_Success 发送成功
+	EvaluateStatus_Success EvaluateStatus = iota
+	// EvaluateStatus_OverQuota 发送超过配额
+	EvaluateStatus_OverQuota
+	// EvaluateStatus_TooFrequently 发送过于频繁
+	EvaluateStatus_TooFrequently
 )
 
-type VerifyCode int
+type VerifyStatus int
 
 const (
-	// VerifyCode_Success 验证成功
-	VerifyCode_Success VerifyCode = iota
-	// VerifyCode_Failure 验证失败
-	VerifyCode_Failure
-	// VerifyCode_Expired 验证码已失效
-	VerifyCode_Expired
+	// VerifyStatus_Success 验证成功
+	VerifyStatus_Success VerifyStatus = iota
+	// VerifyStatus_Failure 验证失败
+	VerifyStatus_Failure
+	// VerifyStatus_Expired 验证码已失效
+	VerifyStatus_Expired
 )
 
 // EvaluateRequest store arguments
@@ -41,7 +41,7 @@ type EvaluateRequest struct {
 	UniqueId        string        // 唯一id
 }
 type EvaluateResult struct {
-	Code EvaluateCode
+	Status EvaluateStatus
 }
 
 type RollbackRequest struct {
@@ -58,7 +58,7 @@ type VerifyRequest struct {
 	Code      string // 验证码
 }
 type VerifyResult struct {
-	Code VerifyCode
+	Status VerifyStatus
 }
 
 type LimitVerifiedBackend interface {
