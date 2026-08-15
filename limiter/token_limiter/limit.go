@@ -1,4 +1,4 @@
-package token_rate
+package token_limiter
 
 import (
 	"errors"

@@ -1,4 +1,4 @@
-package token_rate_test
+package v9
 
 import (
 	"context"
@@ -8,8 +8,7 @@ import (
 	"github.com/alicebob/miniredis/v2"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
-	"github.com/thinkgos/proc-extra/limiter/token_rate"
-	v9 "github.com/thinkgos/proc-extra/limiter/token_rate/redis/v9"
+	"github.com/thinkgos/proc-extra/limiter/token_limiter"
 )
 
 func Test_TokenRate_Take(t *testing.T) {
@@ -23,16 +22,18 @@ func Test_TokenRate_Take(t *testing.T) {
 		burst = 10
 	)
 
-	l := token_rate.NewTokenRate(
-		v9.NewTokenRateStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
-		"tokenlimit",
-		rate,
-		burst,
-	)
+	l := NewTokenRateStore(redis.NewClient(&redis.Options{Addr: mr.Addr()}))
 	var allowed int
 	for range total {
 		time.Sleep(time.Second / time.Duration(total))
-		if l.Allow(context.Background()) {
+		b, err := l.AllowN(context.Background(), &token_limiter.AllowNRequest{
+			Key:   "tokenlimit",
+			Rate:  rate,
+			Burst: burst,
+			Now:   time.Now(),
+			N:     1,
+		})
+		if err == nil && b {
 			allowed++
 		}
 	}
@@ -50,15 +51,17 @@ func Test_TokenRate_TakeBurst(t *testing.T) {
 		rate  = 5
 		burst = 10
 	)
-	l := token_rate.NewTokenRate(
-		v9.NewTokenRateStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
-		"tokenlimit",
-		rate,
-		burst,
-	)
+	l := NewTokenRateStore(redis.NewClient(&redis.Options{Addr: mr.Addr()}))
 	var allowed int
 	for range total {
-		if l.Allow(context.Background()) {
+		b, err := l.AllowN(context.Background(), &token_limiter.AllowNRequest{
+			Key:   "tokenlimit",
+			Rate:  rate,
+			Burst: burst,
+			Now:   time.Now(),
+			N:     1,
+		})
+		if err == nil && b {
 			allowed++
 		}
 	}
