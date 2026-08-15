@@ -26,7 +26,7 @@ func NewLimitRedisStore(store *redis.Client) *LimitRedisStore {
 func (p *LimitRedisStore) Take(ctx context.Context, v *window_limiter.LimiterTakeRequest) (*window_limiter.LimiterResult, error) {
 	vals, err := p.store.Eval(ctx,
 		redis_script.ScriptSlidingWindowLimiterTake,
-		[]string{v.Key},
+		p.buildKeys(v.Key),
 		[]string{
 			strconv.Itoa(v.Window),
 			strconv.Itoa(v.MaxLimit),
@@ -48,7 +48,7 @@ func (p *LimitRedisStore) Take(ctx context.Context, v *window_limiter.LimiterTak
 func (p *LimitRedisStore) Lock(ctx context.Context, v *window_limiter.LimiterLockRequest) (*window_limiter.LimiterResult, error) {
 	vals, err := p.store.Eval(ctx,
 		redis_script.ScriptSlidingWindowLimiterLock,
-		[]string{v.Key},
+		p.buildKeys(v.Key),
 		[]string{
 			strconv.Itoa(v.Window),
 			strconv.Itoa(v.MaxLimit),
@@ -67,14 +67,14 @@ func (p *LimitRedisStore) Lock(ctx context.Context, v *window_limiter.LimiterLoc
 
 // Reset implements [window_limiter.SlidingWindowLimiterBackend].
 func (p *LimitRedisStore) Reset(ctx context.Context, key string) error {
-	return p.store.Del(ctx, key, key+":_locked").Err()
+	return p.store.Del(ctx, p.buildKeys(key)...).Err()
 }
 
 // Check implements [window_limiter.SlidingWindowLimiterBackend].
 func (p *LimitRedisStore) Check(ctx context.Context, v *window_limiter.LimiterCheckRequest) (*window_limiter.LimiterResult, error) {
 	vals, err := p.store.Eval(ctx,
 		redis_script.ScriptSlidingWindowLimiterCheck,
-		[]string{v.Key},
+		p.buildKeys(v.Key),
 		[]string{
 			strconv.Itoa(v.Window),
 			strconv.Itoa(v.MaxLimit),
@@ -89,4 +89,10 @@ func (p *LimitRedisStore) Check(ctx context.Context, v *window_limiter.LimiterCh
 		Count:    int(vals[2]),
 		MaxLimit: v.MaxLimit,
 	}, nil
+}
+func (p *LimitRedisStore) buildKeys(key string) []string {
+	return []string{
+		key,
+		key + ":_locked",
+	}
 }

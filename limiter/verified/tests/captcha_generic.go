@@ -89,7 +89,7 @@ func (t TestChallenge) GenerateChallenge(ctx context.Context) (*verified.Challen
 }
 
 func GenericTest_Captcha_ImproveCoverage[B verified.StorageBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
-	l := verified.NewCaptcha[string](new(TestCaptchaDriver), backend).
+	l := verified.NewCaptchaRegistry[string](new(TestCaptchaDriver), backend).
 		SetParams(testCaptchaParams)
 	require.Equal(t, testDriverName, l.Name(testDriverName))
 
@@ -101,7 +101,7 @@ func GenericTest_Captcha_ImproveCoverage[B verified.StorageBackend](t *testing.T
 }
 
 func GenericTest_Captcha_UnsupportedChallengeProvider[B verified.StorageBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
-	l := verified.NewCaptcha[string](new(TestCaptchaDriver), backend).
+	l := verified.NewCaptchaRegistry[string](new(TestCaptchaDriver), backend).
 		SetParams(testCaptchaParams)
 
 	_, _, err := l.Generate(context.Background(), unsupportedDriverName, testScene)
@@ -109,7 +109,7 @@ func GenericTest_Captcha_UnsupportedChallengeProvider[B verified.StorageBackend]
 }
 
 func GenericTest_Captcha_InMaxAttempts[B verified.StorageBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
-	l := verified.NewCaptcha[string](new(TestCaptchaDriver), backend).
+	l := verified.NewCaptchaRegistry[string](new(TestCaptchaDriver), backend).
 		SetParams(testCaptchaParams)
 
 	id, _, err := l.Generate(
@@ -133,7 +133,7 @@ func GenericTest_Captcha_InMaxAttempts[B verified.StorageBackend](t *testing.T, 
 }
 
 func GenericTest_Captcha_OverMaxAttempts[B verified.StorageBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
-	l := verified.NewCaptcha[string](new(TestCaptchaDriver), backend).
+	l := verified.NewCaptchaRegistry[string](new(TestCaptchaDriver), backend).
 		SetParams(testCaptchaParams)
 
 	id, _, err := l.Generate(context.Background(), testDriverName, testScene,
@@ -153,7 +153,7 @@ func GenericTest_Captcha_OverMaxAttempts[B verified.StorageBackend](t *testing.T
 }
 
 func GenericTest_Captcha_OneShot[B verified.StorageBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
-	l := verified.NewCaptcha[string](new(TestCaptchaDriver), backend).
+	l := verified.NewCaptchaRegistry[string](new(TestCaptchaDriver), backend).
 		SetParams(testCaptchaParams)
 
 	id, _, err := l.Generate(context.Background(), testDriverName, testScene)
@@ -169,7 +169,7 @@ func GenericTest_Captcha_OneShot[B verified.StorageBackend](t *testing.T, _ *min
 }
 
 func GenericTest_Captcha_OneShot_Timeout[B verified.StorageBackend](t *testing.T, mr *miniredis.Miniredis, backend B) {
-	l := verified.NewCaptcha[string](new(TestCaptchaDriver), backend).
+	l := verified.NewCaptchaRegistry[string](new(TestCaptchaDriver), backend).
 		SetParams(testCaptchaParams)
 
 	id, _, err := l.Generate(context.Background(), testDriverName, testScene, verified.WithKeyExpires(time.Second*1))

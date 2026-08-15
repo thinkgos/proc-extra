@@ -1,8 +1,8 @@
-local key = KEYS[1]                           -- 限制的Key
-local window = tonumber(ARGV[1])              -- 有效时间窗口, 单位: 秒
-local max_failures = tonumber(ARGV[2])        -- 最大允许失败次数
+local key = KEYS[1]                    -- 限制的Key
+local locked_key = KEYS[2]             -- 锁定的Key, 用于标记当前窗口是否被锁定.
+local window = tonumber(ARGV[1])       -- 有效时间窗口, 单位: 秒
+local max_failures = tonumber(ARGV[2]) -- 最大允许失败次数
 
-local locked_key = key .. ":_locked"          -- 锁定的Key, 用于标记当前窗口是否被锁定.
 local time_res = redis.call('TIME')           -- 获取redis节点当前时间.
 local now = tonumber(time_res[1])             -- 当前时间戳, 单位秒
 

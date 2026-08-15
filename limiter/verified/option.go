@@ -15,7 +15,7 @@ type Param struct {
 	MaxAttempts int           // 验证码最大允许尝试次数
 }
 
-func (p *Param) FormatKey(id string) string {
+func (p *Param) formatKey(id string) string {
 	return p.KeyPrefix + id
 }
 

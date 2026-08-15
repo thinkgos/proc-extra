@@ -31,7 +31,7 @@ func (t TestTempGrantProvider) GenerateUniqueId() string {
 }
 
 func GenericTest_TempGrant_ImproveCoverage[B verified.StorageBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
-	l := verified.NewTempGrant[string](new(TestTempGrantProvider), backend).
+	l := verified.NewTempGrantRegistry[string](new(TestTempGrantProvider), backend).
 		SetParams(testTempGrantParams)
 	l.Name()
 	targetId := randString(6)
@@ -43,7 +43,7 @@ func GenericTest_TempGrant_ImproveCoverage[B verified.StorageBackend](t *testing
 }
 
 func GenericTest_TempGrant_InMaxAttempts[B verified.StorageBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
-	l := verified.NewTempGrant[string](new(TestTempGrantProvider), backend).
+	l := verified.NewTempGrantRegistry[string](new(TestTempGrantProvider), backend).
 		SetParams(testTempGrantParams)
 
 	targetId := randString(6)
@@ -72,7 +72,7 @@ func GenericTest_TempGrant_InMaxAttempts[B verified.StorageBackend](t *testing.T
 }
 
 func GenericTest_TempGrant_OverMaxAttempts[B verified.StorageBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
-	l := verified.NewTempGrant[string](new(TestTempGrantProvider), backend).
+	l := verified.NewTempGrantRegistry[string](new(TestTempGrantProvider), backend).
 		SetParams(testTempGrantParams)
 	targetId := randString(6)
 	wantAnswer, err := l.Issue(
@@ -96,7 +96,7 @@ func GenericTest_TempGrant_OverMaxAttempts[B verified.StorageBackend](t *testing
 }
 
 func GenericTest_TempGrant_OneShot[B verified.StorageBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
-	l := verified.NewTempGrant[string](new(TestTempGrantProvider), backend).
+	l := verified.NewTempGrantRegistry[string](new(TestTempGrantProvider), backend).
 		SetParams(testTempGrantParams)
 
 	targetId := randString(6)
@@ -114,7 +114,7 @@ func GenericTest_TempGrant_OneShot[B verified.StorageBackend](t *testing.T, _ *m
 }
 
 func GenericTest_TempGrant_OneShot_Timeout[B verified.StorageBackend](t *testing.T, mr *miniredis.Miniredis, backend B) {
-	l := verified.NewTempGrant[string](new(TestTempGrantProvider), backend).
+	l := verified.NewTempGrantRegistry[string](new(TestTempGrantProvider), backend).
 		SetParams(testTempGrantParams)
 	targetId := randString(6)
 	wantAnswer, err := l.Issue(context.Background(), testScene, targetId, verified.WithKeyExpires(time.Second*1))

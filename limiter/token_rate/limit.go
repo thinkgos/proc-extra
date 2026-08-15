@@ -1,0 +1,44 @@
+package token_rate
+
+import (
+	"errors"
+)
+
+// ErrLimiterReturn indicates that the more than borrowed elements were returned.
+var ErrLimiterReturn = errors.New("limit: discarding limited token, resource pool is full, someone returned multiple times")
+
+// Limiter controls the concurrent requests.
+type Limiter struct {
+	pool chan struct{}
+}
+
+// NewLimit creates a Limit that can borrow n elements from it concurrently.
+func NewLimit(n int) Limiter {
+	return Limiter{make(chan struct{}, n)}
+}
+
+// Borrow an element from Limit in blocking mode.
+func (l Limiter) Borrow() {
+	l.pool <- struct{}{}
+}
+
+// Return the borrowed resource, returns error only if returned more than borrowed.
+func (l Limiter) Return() error {
+	select {
+	case <-l.pool:
+		return nil
+	default:
+		return ErrLimiterReturn
+	}
+}
+
+// TryBorrow tries to borrow an element from Limit, in non-blocking mode.
+// If success, true returned, false for otherwise.
+func (l Limiter) TryBorrow() bool {
+	select {
+	case l.pool <- struct{}{}:
+		return true
+	default:
+		return false
+	}
+}

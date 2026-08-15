@@ -16,8 +16,8 @@ type SendCodeResult = EvaluateResult
 
 type LimitVerifier[S comparable] interface {
 	Name() string
-	SendCode(ctx context.Context, scene S, target, code string) (*SendCodeResult, error)
-	VerifyCode(ctx context.Context, scene S, target, code string) (*VerifyResult, error)
+	SendCode(ctx context.Context, target, code string) (*SendCodeResult, error)
+	VerifyCode(ctx context.Context, target, code string) (*VerifyResult, error)
 }
 
 // LimitVerifiedProvider the provider
@@ -51,59 +51,42 @@ func NewParam(scene string) *Param {
 }
 
 // LimitVerified limit verified code
-type LimitVerified[S comparable, P LimitVerifiedProvider, B LimitVerifiedBackend] struct {
+type LimitVerified[P LimitVerifiedProvider, B LimitVerifiedBackend] struct {
 	p         LimitVerifiedProvider // LimitVerifiedProvider send code
 	backend   LimitVerifiedBackend  // backend client
 	keyPrefix string                // key prefix
-	params    map[S]*Param
+	param     *Param
 }
 
 // NewLimitVerified  new a limit verified
-func NewLimitVerified[S comparable, P LimitVerifiedProvider, B LimitVerifiedBackend](p P, backend B) *LimitVerified[S, P, B] {
-	v := &LimitVerified[S, P, B]{
+func NewLimitVerified[P LimitVerifiedProvider, B LimitVerifiedBackend](p P, backend B, param *Param) LimitVerified[P, B] {
+	return LimitVerified[P, B]{
 		p:         p,
 		backend:   backend,
 		keyPrefix: "limit:verifier:scene:",
-		params:    make(map[S]*Param),
+		param:     param,
 	}
-	return v
 }
-func (v *LimitVerified[S, P, B]) SetKeyPrefix(keyPrefix string) *LimitVerified[S, P, B] {
+func (v LimitVerified[P, B]) SetKeyPrefix(keyPrefix string) LimitVerified[P, B] {
 	v.keyPrefix = keyPrefix
 	return v
 }
 
-func (v *LimitVerified[S, P, B]) SetParams(params map[S]*Param) *LimitVerified[S, P, B] {
-	v.params = params
-	return v
-}
-func (v *LimitVerified[S, P, B]) getParam(scene S) (*Param, error) {
-	param, ok := v.params[scene]
-	if !ok {
-		return nil, ErrSceneParamNotFound
-	}
-	return param, nil
-}
-
 // Name the provider name
-func (v *LimitVerified[S, P, B]) Name() string { return v.p.Name() }
+func (v LimitVerified[P, B]) Name() string { return v.p.Name() }
 
 // SendCode send code and backend.
-func (v *LimitVerified[S, P, B]) SendCode(ctx context.Context, scene S, target, code string) (*EvaluateResult, error) {
-	p, err := v.getParam(scene)
-	if err != nil {
-		return nil, err
-	}
+func (v LimitVerified[P, B]) SendCode(ctx context.Context, target, code string) (*EvaluateResult, error) {
 	uniqueId := UniqueId()
 	result, err := v.backend.Evaluate(ctx, &EvaluateRequest{
 		KeyPrefix:       v.keyPrefix,
-		Scene:           p.Scene,
+		Scene:           v.param.Scene,
 		Target:          target,
-		Window:          p.Window,
-		Quota:           p.Quota,
-		WindowTiers:     p.WindowTiers,
-		CodeExpires:     p.CodeExpires,
-		CodeMaxAttempts: p.CodeMaxAttempts,
+		Window:          v.param.Window,
+		Quota:           v.param.Quota,
+		WindowTiers:     v.param.WindowTiers,
+		CodeExpires:     v.param.CodeExpires,
+		CodeMaxAttempts: v.param.CodeMaxAttempts,
 		Code:            code,
 		UniqueId:        uniqueId,
 	})
@@ -118,7 +101,7 @@ func (v *LimitVerified[S, P, B]) SendCode(ctx context.Context, scene S, target, 
 		if err != nil && !errors.Is(err, ErrReachMaximumQuota) {
 			_ = v.backend.Rollback(ctx, &RollbackRequest{
 				KeyPrefix: v.keyPrefix,
-				Scene:     p.Scene,
+				Scene:     v.param.Scene,
 				Target:    target,
 				UniqueId:  uniqueId,
 			})
@@ -132,14 +115,10 @@ func (v *LimitVerified[S, P, B]) SendCode(ctx context.Context, scene S, target, 
 }
 
 // VerifyCode verify code from cache.
-func (v *LimitVerified[S, P, B]) VerifyCode(ctx context.Context, scene S, target, code string) (*VerifyResult, error) {
-	p, err := v.getParam(scene)
-	if err != nil {
-		return nil, err
-	}
+func (v LimitVerified[P, B]) VerifyCode(ctx context.Context, target, code string) (*VerifyResult, error) {
 	return v.backend.Verify(ctx, &VerifyRequest{
 		KeyPrefix: v.keyPrefix,
-		Scene:     p.Scene,
+		Scene:     v.param.Scene,
 		Target:    target,
 		Code:      code,
 	})
