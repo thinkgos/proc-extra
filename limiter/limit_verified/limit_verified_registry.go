@@ -32,26 +32,26 @@ func NewLimitVerifiedRegistry[S comparable, P LimitVerifiedProvider, B LimitVeri
 
 // SetKeyPrefix sets the key prefix for the limit verified registry.
 // NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
-func (v *LimitVerifiedRegistry[S, P, B]) SetKeyPrefix(keyPrefix string) *LimitVerifiedRegistry[S, P, B] {
-	v.keyPrefix = keyPrefix
-	return v
+func (r *LimitVerifiedRegistry[S, P, B]) SetKeyPrefix(keyPrefix string) *LimitVerifiedRegistry[S, P, B] {
+	r.keyPrefix = keyPrefix
+	return r
 }
 
 // RegistersParams sets all scene params at once.
 // NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
-func (v *LimitVerifiedRegistry[S, P, B]) RegistersParams(params map[S]*Param) *LimitVerifiedRegistry[S, P, B] {
-	maps.Copy(v.params, params)
-	return v
+func (r *LimitVerifiedRegistry[S, P, B]) RegistersParams(params map[S]*Param) *LimitVerifiedRegistry[S, P, B] {
+	maps.Copy(r.params, params)
+	return r
 }
 
 // RegisterParam sets the param for a specific scene.
 // NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
-func (v *LimitVerifiedRegistry[S, P, B]) RegisterParam(scene S, param *Param) *LimitVerifiedRegistry[S, P, B] {
-	v.params[scene] = param
-	return v
+func (r *LimitVerifiedRegistry[S, P, B]) RegisterParam(scene S, param *Param) *LimitVerifiedRegistry[S, P, B] {
+	r.params[scene] = param
+	return r
 }
-func (v *LimitVerifiedRegistry[S, P, B]) getParam(scene S) (*Param, error) {
-	param, ok := v.params[scene]
+func (r *LimitVerifiedRegistry[S, P, B]) getParam(scene S) (*Param, error) {
+	param, ok := r.params[scene]
 	if !ok {
 		return nil, ErrSceneParamNotFound
 	}
@@ -59,26 +59,26 @@ func (v *LimitVerifiedRegistry[S, P, B]) getParam(scene S) (*Param, error) {
 }
 
 // Name the provider name
-func (v *LimitVerifiedRegistry[S, P, B]) Name() string { return v.p.Name() }
+func (r *LimitVerifiedRegistry[S, P, B]) Name() string { return r.p.Name() }
 
 // SendCode send code and backend.
-func (v *LimitVerifiedRegistry[S, P, B]) SendCode(ctx context.Context, scene S, target, code string) (*EvaluateResult, error) {
-	p, err := v.getParam(scene)
+func (r *LimitVerifiedRegistry[S, P, B]) SendCode(ctx context.Context, scene S, target, code string) (*EvaluateResult, error) {
+	p, err := r.getParam(scene)
 	if err != nil {
 		return nil, err
 	}
-	return NewLimitVerified(v.p, v.backend, p).
-		SetKeyPrefix(v.keyPrefix).
+	return NewLimitVerified(r.p, r.backend, p).
+		SetKeyPrefix(r.keyPrefix).
 		SendCode(ctx, target, code)
 }
 
 // VerifyCode verify code from cache.
-func (v *LimitVerifiedRegistry[S, P, B]) VerifyCode(ctx context.Context, scene S, target, code string) (*VerifyResult, error) {
-	p, err := v.getParam(scene)
+func (r *LimitVerifiedRegistry[S, P, B]) VerifyCode(ctx context.Context, scene S, target, code string) (*VerifyResult, error) {
+	p, err := r.getParam(scene)
 	if err != nil {
 		return nil, err
 	}
-	return NewLimitVerified(v.p, v.backend, p).
-		SetKeyPrefix(v.keyPrefix).
+	return NewLimitVerified(r.p, r.backend, p).
+		SetKeyPrefix(r.keyPrefix).
 		VerifyCode(ctx, target, code)
 }

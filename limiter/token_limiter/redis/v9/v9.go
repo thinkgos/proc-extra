@@ -10,27 +10,26 @@ import (
 	redis_script "github.com/thinkgos/proc-extra/limiter/token_limiter/redis"
 )
 
-var _ token_limiter.TokenRateBackend = (*TokenRateStore)(nil)
+var _ token_limiter.TokenLimiterBackend = (*TokenLimiterStore)(nil)
 
-// TokenRateStore controls how frequently events are allowed to happen with in one second.
-type TokenRateStore struct {
+// TokenLimiterStore controls how frequently events are allowed to happen with in one second.
+type TokenLimiterStore struct {
 	client *redis.Client
 }
 
-// NewTokenRateStore returns a new TokenLimit that allows events up to rate and permits
+// NewTokenLimiterStore returns a new TokenLimit that allows events up to rate and permits
 // bursts of at most burst tokens.
-func NewTokenRateStore(client *redis.Client) *TokenRateStore {
-	return &TokenRateStore{
+func NewTokenLimiterStore(client *redis.Client) *TokenLimiterStore {
+	return &TokenLimiterStore{
 		client: client,
 	}
 }
 
 // AllowN reports whether n events may happen at time now.
 // Use this method if you intend to drop / skip events that exceed the rate.
-// Otherwise, use Reserve or Wait.
-func (t *TokenRateStore) AllowN(ctx context.Context, r *token_limiter.AllowNRequest) (bool, error) {
+func (t *TokenLimiterStore) AllowN(ctx context.Context, r *token_limiter.AllowNRequest) (bool, error) {
 	resp, err := t.client.Eval(ctx,
-		redis_script.ScriptTokenRate,
+		redis_script.ScriptTokenLimiter,
 		[]string{
 			r.Key,
 		},

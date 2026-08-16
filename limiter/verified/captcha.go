@@ -36,8 +36,10 @@ type Captcha[P CaptchaDriver, B StorageBackend] struct {
 }
 
 // NewCaptcha new captcha instance.
-func NewCaptcha[P CaptchaDriver, B StorageBackend](p P, backend B, param *Param) Captcha[P, B] {
-	return Captcha[P, B]{
+//
+//go:inline
+func NewCaptcha[P CaptchaDriver, B StorageBackend](p P, backend B, param *Param) *Captcha[P, B] {
+	return &Captcha[P, B]{
 		p:       p,
 		backend: backend,
 		param:   param,
@@ -45,12 +47,12 @@ func NewCaptcha[P CaptchaDriver, B StorageBackend](p P, backend B, param *Param)
 }
 
 // Name the provider name
-func (c Captcha[P, B]) Name(driverName string) string {
+func (c *Captcha[P, B]) Name(driverName string) string {
 	return c.p.Driver(driverName).Name()
 }
 
 // Generate generate id, question.
-func (c Captcha[P, B]) Generate(ctx context.Context, driverName string, opts ...Option) (id, question string, err error) {
+func (c *Captcha[P, B]) Generate(ctx context.Context, driverName string, opts ...Option) (id, question string, err error) {
 	qa, err := c.p.Driver(driverName).GenerateChallenge(ctx)
 	if err != nil {
 		return "", "", err
@@ -69,7 +71,7 @@ func (c Captcha[P, B]) Generate(ctx context.Context, driverName string, opts ...
 }
 
 // Verify the answer.
-func (c Captcha[P, B]) Verify(ctx context.Context, id, answer string) (bool, error) {
+func (c *Captcha[P, B]) Verify(ctx context.Context, id, answer string) (bool, error) {
 	return c.backend.Verify(ctx, &VerifyArgs{
 		Key:    c.param.formatKey(id),
 		Answer: answer,

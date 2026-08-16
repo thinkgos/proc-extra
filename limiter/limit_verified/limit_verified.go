@@ -59,8 +59,10 @@ type LimitVerified[P LimitVerifiedProvider, B LimitVerifiedBackend] struct {
 }
 
 // NewLimitVerified  new a limit verified
-func NewLimitVerified[P LimitVerifiedProvider, B LimitVerifiedBackend](p P, backend B, param *Param) LimitVerified[P, B] {
-	return LimitVerified[P, B]{
+//
+//go:inline
+func NewLimitVerified[P LimitVerifiedProvider, B LimitVerifiedBackend](p P, backend B, param *Param) *LimitVerified[P, B] {
+	return &LimitVerified[P, B]{
 		p:         p,
 		backend:   backend,
 		keyPrefix: "limit:verifier:scene:",
@@ -70,16 +72,18 @@ func NewLimitVerified[P LimitVerifiedProvider, B LimitVerifiedBackend](p P, back
 
 // SetKeyPrefix sets the key prefix for the limit verified registry.
 // NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
-func (v LimitVerified[P, B]) SetKeyPrefix(keyPrefix string) LimitVerified[P, B] {
+//
+//go:inline
+func (v *LimitVerified[P, B]) SetKeyPrefix(keyPrefix string) *LimitVerified[P, B] {
 	v.keyPrefix = keyPrefix
 	return v
 }
 
 // Name the provider name
-func (v LimitVerified[P, B]) Name() string { return v.p.Name() }
+func (v *LimitVerified[P, B]) Name() string { return v.p.Name() }
 
 // SendCode send code and backend.
-func (v LimitVerified[P, B]) SendCode(ctx context.Context, target, code string) (*EvaluateResult, error) {
+func (v *LimitVerified[P, B]) SendCode(ctx context.Context, target, code string) (*EvaluateResult, error) {
 	uniqueId := UniqueId()
 	result, err := v.backend.Evaluate(ctx, &EvaluateRequest{
 		Key:             v.formatKey(target),
@@ -117,7 +121,7 @@ func (v LimitVerified[P, B]) SendCode(ctx context.Context, target, code string) 
 }
 
 // VerifyCode verify code from cache.
-func (v LimitVerified[P, B]) VerifyCode(ctx context.Context, target, code string) (*VerifyResult, error) {
+func (v *LimitVerified[P, B]) VerifyCode(ctx context.Context, target, code string) (*VerifyResult, error) {
 	return v.backend.Verify(ctx, &VerifyRequest{
 		Key:     v.formatKey(target),
 		CodeKey: v.formatCodeKey(target),
@@ -125,10 +129,10 @@ func (v LimitVerified[P, B]) VerifyCode(ctx context.Context, target, code string
 	})
 }
 
-func (v LimitVerified[P, B]) formatKey(target string) string {
+func (v *LimitVerified[P, B]) formatKey(target string) string {
 	return v.keyPrefix + target
 }
-func (v LimitVerified[P, B]) formatCodeKey(target string) string {
+func (v *LimitVerified[P, B]) formatCodeKey(target string) string {
 	return v.keyPrefix + target + ":_code_:" + v.param.Scene
 }
 

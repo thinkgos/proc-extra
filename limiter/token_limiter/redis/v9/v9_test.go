@@ -22,7 +22,7 @@ func Test_TokenRate_Take(t *testing.T) {
 		burst = 10
 	)
 
-	l := NewTokenRateStore(redis.NewClient(&redis.Options{Addr: mr.Addr()}))
+	l := NewTokenLimiterStore(redis.NewClient(&redis.Options{Addr: mr.Addr()}))
 	var allowed int
 	for range total {
 		time.Sleep(time.Second / time.Duration(total))
@@ -51,7 +51,7 @@ func Test_TokenRate_TakeBurst(t *testing.T) {
 		rate  = 5
 		burst = 10
 	)
-	l := NewTokenRateStore(redis.NewClient(&redis.Options{Addr: mr.Addr()}))
+	l := NewTokenLimiterStore(redis.NewClient(&redis.Options{Addr: mr.Addr()}))
 	var allowed int
 	for range total {
 		b, err := l.AllowN(context.Background(), &token_limiter.AllowNRequest{

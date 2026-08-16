@@ -34,8 +34,11 @@ type SlidingWindowLimiter[B SlidingWindowLimiterBackend] struct {
 	param   *SlidingWindowLimiterParam
 }
 
-func NewSlidingWindowLimiter[B SlidingWindowLimiterBackend](backend B, param *SlidingWindowLimiterParam) SlidingWindowLimiter[B] {
-	return SlidingWindowLimiter[B]{
+// NewSlidingWindowLimiter new sliding window limiter instance.
+//
+//go:inline
+func NewSlidingWindowLimiter[B SlidingWindowLimiterBackend](backend B, param *SlidingWindowLimiterParam) *SlidingWindowLimiter[B] {
+	return &SlidingWindowLimiter[B]{
 		backend: backend,
 		param:   param,
 	}
@@ -44,7 +47,7 @@ func NewSlidingWindowLimiter[B SlidingWindowLimiterBackend](backend B, param *Sl
 // Take 尝试获取一个请求的配额单位.
 // 如果有可用配额, 则请求被允许, 并且增加一次配额消费.
 // 如果没有配额, 则请求被拒绝.
-func (l SlidingWindowLimiter[B]) Take(ctx context.Context, id string) (*LimiterResult, error) {
+func (l *SlidingWindowLimiter[B]) Take(ctx context.Context, id string) (*LimiterResult, error) {
 	return l.backend.Take(ctx, &LimiterTakeRequest{
 		Key:       l.param.formatKey(id),
 		LockedKey: l.param.formatLockedKey(id),
@@ -55,7 +58,7 @@ func (l SlidingWindowLimiter[B]) Take(ctx context.Context, id string) (*LimiterR
 }
 
 // Check 检查下一个请求是否被允许, 不修改任何数据.
-func (l SlidingWindowLimiter[B]) Check(ctx context.Context, id string) (*LimiterResult, error) {
+func (l *SlidingWindowLimiter[B]) Check(ctx context.Context, id string) (*LimiterResult, error) {
 	return l.backend.Check(ctx, &LimiterCheckRequest{
 		Key:       l.param.formatKey(id),
 		LockedKey: l.param.formatLockedKey(id),
@@ -65,7 +68,7 @@ func (l SlidingWindowLimiter[B]) Check(ctx context.Context, id string) (*Limiter
 }
 
 // Lock 锁定 key, 在滑动窗口内将拒绝所有请求.
-func (l SlidingWindowLimiter[B]) Lock(ctx context.Context, id string) (*LimiterResult, error) {
+func (l *SlidingWindowLimiter[B]) Lock(ctx context.Context, id string) (*LimiterResult, error) {
 	return l.backend.Lock(ctx, &LimiterLockRequest{
 		Key:       l.param.formatKey(id),
 		LockedKey: l.param.formatLockedKey(id),
@@ -75,7 +78,7 @@ func (l SlidingWindowLimiter[B]) Lock(ctx context.Context, id string) (*LimiterR
 }
 
 // Reset 清除 key的所有限制.
-func (l SlidingWindowLimiter[B]) Reset(ctx context.Context, id string) error {
+func (l *SlidingWindowLimiter[B]) Reset(ctx context.Context, id string) error {
 	return l.backend.Reset(ctx, &LimiterResetRequest{
 		Key:       l.param.formatKey(id),
 		LockedKey: l.param.formatLockedKey(id),

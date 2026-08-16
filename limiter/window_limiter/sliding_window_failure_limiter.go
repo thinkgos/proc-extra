@@ -39,21 +39,23 @@ type SlidingWindowFailureLimiter[B SlidingWindowFailureLimiterBackend] struct {
 	param   *SlidingWindowFailureLimiterParam
 }
 
-// NewSlidingWindowFailureLimiter 创建新的 SlidingWindowFailureLimiter 实例.
-func NewSlidingWindowFailureLimiter[B SlidingWindowFailureLimiterBackend](backend B, param *SlidingWindowFailureLimiterParam) SlidingWindowFailureLimiter[B] {
-	return SlidingWindowFailureLimiter[B]{
+// NewSlidingWindowFailureLimiter new a SlidingWindowFailureLimiter instance.
+//
+//go:inline
+func NewSlidingWindowFailureLimiter[B SlidingWindowFailureLimiterBackend](backend B, param *SlidingWindowFailureLimiterParam) *SlidingWindowFailureLimiter[B] {
+	return &SlidingWindowFailureLimiter[B]{
 		backend: backend,
 		param:   param,
 	}
 }
 
 // EvaluateErr see [Evaluate]
-func (l SlidingWindowFailureLimiter[B]) EvaluateErr(ctx context.Context, id string, err error) (*FailureLimiterResult, error) {
+func (l *SlidingWindowFailureLimiter[B]) EvaluateErr(ctx context.Context, id string, err error) (*FailureLimiterResult, error) {
 	return l.Evaluate(ctx, id, err != nil)
 }
 
 // Evaluate 评估本次操作.
-func (l SlidingWindowFailureLimiter[B]) Evaluate(ctx context.Context, id string, isFailure bool) (*FailureLimiterResult, error) {
+func (l *SlidingWindowFailureLimiter[B]) Evaluate(ctx context.Context, id string, isFailure bool) (*FailureLimiterResult, error) {
 	return l.backend.Evaluate(ctx, &FailureLimiterEvaluateRequest{
 		Key:         l.param.formatKey(id),
 		LockedKey:   l.param.formatLockedKey(id),
@@ -65,7 +67,7 @@ func (l SlidingWindowFailureLimiter[B]) Evaluate(ctx context.Context, id string,
 }
 
 // Check 检查下一个操作是否被允许, 不修改任何数据.
-func (l SlidingWindowFailureLimiter[B]) Check(ctx context.Context, id string) (*FailureLimiterResult, error) {
+func (l *SlidingWindowFailureLimiter[B]) Check(ctx context.Context, id string) (*FailureLimiterResult, error) {
 	return l.backend.Check(ctx, &FailureLimiterCheckRequest{
 		Key:         l.param.formatKey(id),
 		LockedKey:   l.param.formatLockedKey(id),
@@ -75,7 +77,7 @@ func (l SlidingWindowFailureLimiter[B]) Check(ctx context.Context, id string) (*
 }
 
 // Lock 锁定 key, 在滑动窗口内将拒绝所有操作.
-func (l SlidingWindowFailureLimiter[B]) Lock(ctx context.Context, id string) (*FailureLimiterResult, error) {
+func (l *SlidingWindowFailureLimiter[B]) Lock(ctx context.Context, id string) (*FailureLimiterResult, error) {
 	return l.backend.Lock(ctx, &FailureLimiterLockRequest{
 		Key:         l.param.formatKey(id),
 		LockedKey:   l.param.formatLockedKey(id),
@@ -85,7 +87,7 @@ func (l SlidingWindowFailureLimiter[B]) Lock(ctx context.Context, id string) (*F
 }
 
 // Reset 清除 key的所有限制, 包括失败记录和锁定.
-func (l SlidingWindowFailureLimiter[B]) Reset(ctx context.Context, id string) error {
+func (l *SlidingWindowFailureLimiter[B]) Reset(ctx context.Context, id string) error {
 	return l.backend.Reset(ctx, &FailureLimiterResetRequest{
 		Key:       l.param.formatKey(id),
 		LockedKey: l.param.formatLockedKey(id),

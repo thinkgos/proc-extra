@@ -4,5 +4,5 @@ import (
 	_ "embed"
 )
 
-//go:embed token_rate.lua
-var ScriptTokenRate string
+//go:embed token_limiter.lua
+var ScriptTokenLimiter string

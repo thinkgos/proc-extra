@@ -12,7 +12,7 @@ import (
 	v9 "github.com/thinkgos/proc-extra/limiter/token_limiter/redis/v9"
 )
 
-func Test_TokenRate_Take(t *testing.T) {
+func Test_TokenLimiter_Take(t *testing.T) {
 	mr, err := miniredis.Run()
 	assert.Nil(t, err)
 	defer mr.Close()
@@ -24,7 +24,7 @@ func Test_TokenRate_Take(t *testing.T) {
 	)
 
 	l := token_limiter.NewTokenLimiter(
-		v9.NewTokenRateStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
+		v9.NewTokenLimiterStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
 		"tokenlimit:",
 		rate,
 		burst,
@@ -40,7 +40,7 @@ func Test_TokenRate_Take(t *testing.T) {
 	assert.True(t, allowed >= burst+rate)
 }
 
-func Test_TokenRate_TakeBurst(t *testing.T) {
+func Test_TokenLimiter_TakeBurst(t *testing.T) {
 	mr, err := miniredis.Run()
 	assert.Nil(t, err)
 	defer mr.Close()
@@ -51,7 +51,7 @@ func Test_TokenRate_TakeBurst(t *testing.T) {
 		burst = 10
 	)
 	l := token_limiter.NewTokenLimiter(
-		v9.NewTokenRateStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
+		v9.NewTokenLimiterStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
 		"tokenlimit:",
 		rate,
 		burst,

@@ -11,16 +11,18 @@ type Rate interface {
 }
 
 // TokenLimiter controls how frequently events are allowed to happen with in one second.
-type TokenLimiter[B TokenRateBackend] struct {
-	backend   TokenRateBackend
+type TokenLimiter[B TokenLimiterBackend] struct {
+	backend   TokenLimiterBackend
 	keyPrefix string
 	burst     int
 	rate      int
 }
 
 // NewTokenLimiter returns a new TokenRate that allows events up to rate and permits bursts of at most burst tokens.
-func NewTokenLimiter[B TokenRateBackend](backend B, keyPrefix string, rate, burst int) TokenLimiter[B] {
-	return TokenLimiter[B]{
+//
+//go:inline
+func NewTokenLimiter[B TokenLimiterBackend](backend B, keyPrefix string, rate, burst int) *TokenLimiter[B] {
+	return &TokenLimiter[B]{
 		backend:   backend,
 		keyPrefix: keyPrefix,
 		rate:      rate,
@@ -28,11 +30,11 @@ func NewTokenLimiter[B TokenRateBackend](backend B, keyPrefix string, rate, burs
 	}
 }
 
-func (t TokenLimiter[B]) Allow(ctx context.Context, id string) bool {
+func (t *TokenLimiter[B]) Allow(ctx context.Context, id string) bool {
 	return t.AllowN(ctx, id, time.Now(), 1)
 }
 
-func (t TokenLimiter[B]) AllowN(ctx context.Context, id string, now time.Time, n int) bool {
+func (t *TokenLimiter[B]) AllowN(ctx context.Context, id string, now time.Time, n int) bool {
 	allow, err := t.backend.AllowN(ctx, &AllowNRequest{
 		Key:   t.keyPrefix + id,
 		Rate:  t.rate,
