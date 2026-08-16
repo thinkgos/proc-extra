@@ -79,9 +79,8 @@ func (v LimitVerified[P, B]) Name() string { return v.p.Name() }
 func (v LimitVerified[P, B]) SendCode(ctx context.Context, target, code string) (*EvaluateResult, error) {
 	uniqueId := UniqueId()
 	result, err := v.backend.Evaluate(ctx, &EvaluateRequest{
-		KeyPrefix:       v.keyPrefix,
-		Scene:           v.param.Scene,
-		Target:          target,
+		Key:             v.formatKey(target),
+		CodeKey:         v.formatCodeKey(target),
 		Window:          v.param.Window,
 		Quota:           v.param.Quota,
 		WindowTiers:     v.param.WindowTiers,
@@ -100,10 +99,9 @@ func (v LimitVerified[P, B]) SendCode(ctx context.Context, target, code string) 
 	defer func() {
 		if err != nil && !errors.Is(err, ErrReachMaximumQuota) {
 			_ = v.backend.Rollback(ctx, &RollbackRequest{
-				KeyPrefix: v.keyPrefix,
-				Scene:     v.param.Scene,
-				Target:    target,
-				UniqueId:  uniqueId,
+				Key:      v.formatKey(target),
+				CodeKey:  v.formatCodeKey(target),
+				UniqueId: uniqueId,
 			})
 		}
 	}()
@@ -117,11 +115,17 @@ func (v LimitVerified[P, B]) SendCode(ctx context.Context, target, code string) 
 // VerifyCode verify code from cache.
 func (v LimitVerified[P, B]) VerifyCode(ctx context.Context, target, code string) (*VerifyResult, error) {
 	return v.backend.Verify(ctx, &VerifyRequest{
-		KeyPrefix: v.keyPrefix,
-		Scene:     v.param.Scene,
-		Target:    target,
-		Code:      code,
+		Key:     v.formatKey(target),
+		CodeKey: v.formatCodeKey(target),
+		Code:    code,
 	})
+}
+
+func (v LimitVerified[P, B]) formatKey(target string) string {
+	return v.keyPrefix + target
+}
+func (v LimitVerified[P, B]) formatCodeKey(target string) string {
+	return v.keyPrefix + target + ":_code_:" + v.param.Scene
 }
 
 // UniqueId 生成一个唯一的id.

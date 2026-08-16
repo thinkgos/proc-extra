@@ -26,7 +26,12 @@ type SlidingWindowFailureLimiterParam struct {
 	MaxFailures int    // max failures in the sliding window
 }
 
-func (p *SlidingWindowFailureLimiterParam) formatKey(id string) string { return p.KeyPrefix + id }
+func (p *SlidingWindowFailureLimiterParam) formatKey(id string) string {
+	return p.KeyPrefix + id
+}
+func (p *SlidingWindowFailureLimiterParam) formatLockedKey(id string) string {
+	return p.KeyPrefix + id + ":_locked"
+}
 
 // SlidingWindowFailureLimiter 滑动窗口失败限制器.
 type SlidingWindowFailureLimiter[B SlidingWindowFailureLimiterBackend] struct {
@@ -51,6 +56,7 @@ func (l SlidingWindowFailureLimiter[B]) EvaluateErr(ctx context.Context, id stri
 func (l SlidingWindowFailureLimiter[B]) Evaluate(ctx context.Context, id string, isFailure bool) (*FailureLimiterResult, error) {
 	return l.backend.Evaluate(ctx, &FailureLimiterEvaluateRequest{
 		Key:         l.param.formatKey(id),
+		LockedKey:   l.param.formatLockedKey(id),
 		Window:      l.param.Window,
 		MaxFailures: l.param.MaxFailures,
 		UniqueId:    UniqueId(),
@@ -62,6 +68,7 @@ func (l SlidingWindowFailureLimiter[B]) Evaluate(ctx context.Context, id string,
 func (l SlidingWindowFailureLimiter[B]) Check(ctx context.Context, id string) (*FailureLimiterResult, error) {
 	return l.backend.Check(ctx, &FailureLimiterCheckRequest{
 		Key:         l.param.formatKey(id),
+		LockedKey:   l.param.formatLockedKey(id),
 		Window:      l.param.Window,
 		MaxFailures: l.param.MaxFailures,
 	})
@@ -71,6 +78,7 @@ func (l SlidingWindowFailureLimiter[B]) Check(ctx context.Context, id string) (*
 func (l SlidingWindowFailureLimiter[B]) Lock(ctx context.Context, id string) (*FailureLimiterResult, error) {
 	return l.backend.Lock(ctx, &FailureLimiterLockRequest{
 		Key:         l.param.formatKey(id),
+		LockedKey:   l.param.formatLockedKey(id),
 		Window:      l.param.Window,
 		MaxFailures: l.param.MaxFailures,
 	})
@@ -78,5 +86,8 @@ func (l SlidingWindowFailureLimiter[B]) Lock(ctx context.Context, id string) (*F
 
 // Reset 清除 key的所有限制, 包括失败记录和锁定.
 func (l SlidingWindowFailureLimiter[B]) Reset(ctx context.Context, id string) error {
-	return l.backend.Reset(ctx, l.param.formatKey(id))
+	return l.backend.Reset(ctx, &FailureLimiterResetRequest{
+		Key:       l.param.formatKey(id),
+		LockedKey: l.param.formatLockedKey(id),
+	})
 }

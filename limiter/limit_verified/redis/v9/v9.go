@@ -22,7 +22,6 @@ func NewRedisStore(store *redis.Client) *RedisStore {
 }
 
 func (v *RedisStore) Evaluate(ctx context.Context, p *limit_verified.EvaluateRequest) (*limit_verified.EvaluateResult, error) {
-	keys := v.buildKeys(p.KeyPrefix, p.Target, p.Scene)
 	args := []string{
 		strconv.FormatInt(int64(p.Window/time.Second), 10),
 		strconv.Itoa(p.Quota),
@@ -42,7 +41,10 @@ func (v *RedisStore) Evaluate(ctx context.Context, p *limit_verified.EvaluateReq
 	sts, err := v.store.Eval(
 		ctx,
 		redis_script.ScriptLimitVerifiedEvaluate,
-		keys,
+		[]string{
+			p.Key,
+			p.CodeKey,
+		},
 		args,
 	).Int64()
 	if err != nil {
@@ -54,22 +56,26 @@ func (v *RedisStore) Evaluate(ctx context.Context, p *limit_verified.EvaluateReq
 }
 
 func (v *RedisStore) Rollback(ctx context.Context, p *limit_verified.RollbackRequest) error {
-	keys := v.buildKeys(p.KeyPrefix, p.Target, p.Scene)
 	return v.store.Eval(
 		ctx,
 		redis_script.ScriptLimitVerifiedRollback,
-		keys,
+		[]string{
+			p.Key,
+			p.CodeKey,
+		},
 		[]string{p.UniqueId},
 	).Err()
 }
 
 // VerifyCode verify code from redis cache.
 func (v *RedisStore) Verify(ctx context.Context, p *limit_verified.VerifyRequest) (*limit_verified.VerifyResult, error) {
-	keys := v.buildKeys(p.KeyPrefix, p.Target, p.Scene)
 	sts, err := v.store.Eval(
 		ctx,
 		redis_script.ScriptLimitVerifiedVerifyCode,
-		keys,
+		[]string{
+			p.Key,
+			p.CodeKey,
+		},
 		[]string{p.Code},
 	).Int64()
 	if err != nil {
@@ -78,11 +84,4 @@ func (v *RedisStore) Verify(ctx context.Context, p *limit_verified.VerifyRequest
 	return &limit_verified.VerifyResult{
 		Status: limit_verified.VerifyStatus(sts),
 	}, nil
-}
-
-func (*RedisStore) buildKeys(keyPrefix, target, scene string) []string {
-	return []string{
-		keyPrefix + target,
-		keyPrefix + target + ":" + scene + ":code",
-	}
 }

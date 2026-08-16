@@ -21,7 +21,13 @@ type SlidingWindowLimiterParam struct {
 	MaxLimit  int    // max limit requests in the sliding window
 }
 
-func (p *SlidingWindowLimiterParam) formatKey(id string) string { return p.KeyPrefix + id }
+func (p *SlidingWindowLimiterParam) formatKey(id string) string {
+	return p.KeyPrefix + id
+}
+
+func (p *SlidingWindowLimiterParam) formatLockedKey(id string) string {
+	return p.KeyPrefix + id + ":_locked"
+}
 
 type SlidingWindowLimiter[B SlidingWindowLimiterBackend] struct {
 	backend B
@@ -40,32 +46,38 @@ func NewSlidingWindowLimiter[B SlidingWindowLimiterBackend](backend B, param *Sl
 // 如果没有配额, 则请求被拒绝.
 func (l SlidingWindowLimiter[B]) Take(ctx context.Context, id string) (*LimiterResult, error) {
 	return l.backend.Take(ctx, &LimiterTakeRequest{
-		Key:      l.param.formatKey(id),
-		Window:   l.param.Window,
-		MaxLimit: l.param.MaxLimit,
-		UniqueId: UniqueId(),
+		Key:       l.param.formatKey(id),
+		LockedKey: l.param.formatLockedKey(id),
+		Window:    l.param.Window,
+		MaxLimit:  l.param.MaxLimit,
+		UniqueId:  UniqueId(),
 	})
 }
 
 // Check 检查下一个请求是否被允许, 不修改任何数据.
 func (l SlidingWindowLimiter[B]) Check(ctx context.Context, id string) (*LimiterResult, error) {
 	return l.backend.Check(ctx, &LimiterCheckRequest{
-		Key:      l.param.formatKey(id),
-		Window:   l.param.Window,
-		MaxLimit: l.param.MaxLimit,
+		Key:       l.param.formatKey(id),
+		LockedKey: l.param.formatLockedKey(id),
+		Window:    l.param.Window,
+		MaxLimit:  l.param.MaxLimit,
 	})
 }
 
 // Lock 锁定 key, 在滑动窗口内将拒绝所有请求.
 func (l SlidingWindowLimiter[B]) Lock(ctx context.Context, id string) (*LimiterResult, error) {
 	return l.backend.Lock(ctx, &LimiterLockRequest{
-		Key:      l.param.formatKey(id),
-		Window:   l.param.Window,
-		MaxLimit: l.param.MaxLimit,
+		Key:       l.param.formatKey(id),
+		LockedKey: l.param.formatLockedKey(id),
+		Window:    l.param.Window,
+		MaxLimit:  l.param.MaxLimit,
 	})
 }
 
 // Reset 清除 key的所有限制.
 func (l SlidingWindowLimiter[B]) Reset(ctx context.Context, id string) error {
-	return l.backend.Reset(ctx, l.param.formatKey(id))
+	return l.backend.Reset(ctx, &LimiterResetRequest{
+		Key:       l.param.formatKey(id),
+		LockedKey: l.param.formatLockedKey(id),
+	})
 }

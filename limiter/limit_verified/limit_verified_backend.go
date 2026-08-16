@@ -29,9 +29,8 @@ const (
 
 // EvaluateRequest store arguments
 type EvaluateRequest struct {
-	KeyPrefix       string        // 验证码键前缀
-	Target          string        // 目标
-	Scene           string        // 场景
+	Key             string        // 目标键
+	CodeKey         string        // 验证码键
 	Window          time.Duration // 验证码最大滚动窗口时间, 24小时
 	Quota           int           // 验证码最大滚动窗口内配额, 30次
 	WindowTiers     []WindowTier  // 子窗口限制
@@ -45,17 +44,15 @@ type EvaluateResult struct {
 }
 
 type RollbackRequest struct {
-	KeyPrefix string // 验证码键前缀
-	Target    string // 目标
-	Scene     string // 场景
-	UniqueId  string // 唯一id
+	Key      string // 目标键
+	CodeKey  string // 验证码键
+	UniqueId string // 唯一id
 }
 
 type VerifyRequest struct {
-	KeyPrefix string // 验证码键前缀
-	Target    string // 目标
-	Scene     string // 场景
-	Code      string // 验证码
+	Key     string // 验证码键
+	CodeKey string // 验证码键
+	Code    string // 验证码
 }
 type VerifyResult struct {
 	Status VerifyStatus

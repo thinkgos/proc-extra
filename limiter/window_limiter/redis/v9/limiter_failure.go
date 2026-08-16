@@ -26,7 +26,10 @@ func NewLimitFailureRedisStore(store *redis.Client) *LimitFailureRedisStore {
 func (p *LimitFailureRedisStore) Evaluate(ctx context.Context, v *window_limiter.FailureLimiterEvaluateRequest) (*window_limiter.FailureLimiterResult, error) {
 	vals, err := p.store.Eval(ctx,
 		redis_script.ScriptSlidingWindowFailureLimiterEvaluate,
-		p.buildKeys(v.Key),
+		[]string{
+			v.Key,
+			v.LockedKey,
+		},
 		[]string{
 			strconv.Itoa(v.Window),
 			strconv.Itoa(v.MaxFailures),
@@ -49,7 +52,10 @@ func (p *LimitFailureRedisStore) Evaluate(ctx context.Context, v *window_limiter
 func (p *LimitFailureRedisStore) Lock(ctx context.Context, v *window_limiter.FailureLimiterLockRequest) (*window_limiter.FailureLimiterResult, error) {
 	vals, err := p.store.Eval(ctx,
 		redis_script.ScriptSlidingWindowFailureLimiterLock,
-		p.buildKeys(v.Key),
+		[]string{
+			v.Key,
+			v.LockedKey,
+		},
 		[]string{
 			strconv.Itoa(v.Window),
 			strconv.Itoa(v.MaxFailures),
@@ -67,15 +73,18 @@ func (p *LimitFailureRedisStore) Lock(ctx context.Context, v *window_limiter.Fai
 }
 
 // Reset implements [window_limiter.SlidingWindowLimiterBackend].
-func (p *LimitFailureRedisStore) Reset(ctx context.Context, key string) error {
-	return p.store.Del(ctx, p.buildKeys(key)...).Err()
+func (p *LimitFailureRedisStore) Reset(ctx context.Context, v *window_limiter.FailureLimiterResetRequest) error {
+	return p.store.Del(ctx, v.Key, v.LockedKey).Err()
 }
 
 // Check implements [window_limiter.SlidingWindowLimiterBackend].
 func (p *LimitFailureRedisStore) Check(ctx context.Context, v *window_limiter.FailureLimiterCheckRequest) (*window_limiter.FailureLimiterResult, error) {
 	vals, err := p.store.Eval(ctx,
 		redis_script.ScriptSlidingWindowFailureLimiterCheck,
-		p.buildKeys(v.Key),
+		[]string{
+			v.Key,
+			v.LockedKey,
+		},
 		[]string{
 			strconv.Itoa(v.Window),
 			strconv.Itoa(v.MaxFailures),
@@ -90,12 +99,6 @@ func (p *LimitFailureRedisStore) Check(ctx context.Context, v *window_limiter.Fa
 		Failures:    int(vals[2]),
 		MaxFailures: v.MaxFailures,
 	}, nil
-}
-func (p *LimitFailureRedisStore) buildKeys(key string) []string {
-	return []string{
-		key,
-		key + ":_locked",
-	}
 }
 
 func formatBoolString(b bool) string {

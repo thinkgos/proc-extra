@@ -3,22 +3,28 @@ package window_limiter
 import "context"
 
 type LimiterTakeRequest struct {
-	Key      string // key
-	Window   int    // sliding window size in seconds
-	MaxLimit int    // max limit requests in the sliding window
-	UniqueId string // unique id.
+	Key       string // key
+	LockedKey string // locked key
+	Window    int    // sliding window size in seconds
+	MaxLimit  int    // max limit requests in the sliding window
+	UniqueId  string // unique id.
 }
 type LimiterCheckRequest struct {
-	Key      string // key
-	Window   int    // sliding window size in seconds
-	MaxLimit int    // max limit requests in the sliding window
+	Key       string // key
+	LockedKey string // locked key
+	Window    int    // sliding window size in seconds
+	MaxLimit  int    // max limit requests in the sliding window
 }
 type LimiterLockRequest struct {
-	Key      string // key
-	Window   int    // sliding window size in seconds
-	MaxLimit int    // max limit requests in the sliding window
+	Key       string // key
+	LockedKey string // locked key
+	Window    int    // sliding window size in seconds
+	MaxLimit  int    // max limit requests in the sliding window
 }
-
+type LimiterResetRequest struct {
+	Key       string // key
+	LockedKey string // locked key
+}
 type LimiterResult struct {
 	// whether the request is allowed or not.
 	// Take: whether current request is allowed or not.
@@ -32,5 +38,5 @@ type SlidingWindowLimiterBackend interface {
 	Take(ctx context.Context, v *LimiterTakeRequest) (*LimiterResult, error)
 	Check(ctx context.Context, v *LimiterCheckRequest) (*LimiterResult, error)
 	Lock(ctx context.Context, v *LimiterLockRequest) (*LimiterResult, error)
-	Reset(ctx context.Context, key string) error
+	Reset(ctx context.Context, v *LimiterResetRequest) error
 }

@@ -4,6 +4,7 @@ import "context"
 
 type FailureLimiterEvaluateRequest struct {
 	Key         string // key
+	LockedKey   string // locked key
 	Window      int    // sliding window size in seconds
 	MaxFailures int    // max failures in the sliding window
 	UniqueId    string // unique id.
@@ -11,13 +12,19 @@ type FailureLimiterEvaluateRequest struct {
 }
 type FailureLimiterCheckRequest struct {
 	Key         string // key
+	LockedKey   string // locked key
 	Window      int    // sliding window size in seconds
 	MaxFailures int    // max failures in the sliding window
 }
 type FailureLimiterLockRequest struct {
 	Key         string // key
+	LockedKey   string // locked key
 	Window      int    // sliding window size in seconds
 	MaxFailures int    // max failures in the sliding window
+}
+type FailureLimiterResetRequest struct {
+	Key       string // key
+	LockedKey string // locked key
 }
 type FailureLimiterResult struct {
 	// whether the operation is allowed or not.
@@ -34,5 +41,5 @@ type SlidingWindowFailureLimiterBackend interface {
 	Evaluate(ctx context.Context, v *FailureLimiterEvaluateRequest) (*FailureLimiterResult, error)
 	Check(ctx context.Context, v *FailureLimiterCheckRequest) (*FailureLimiterResult, error)
 	Lock(ctx context.Context, v *FailureLimiterLockRequest) (*FailureLimiterResult, error)
-	Reset(ctx context.Context, key string) error
+	Reset(ctx context.Context, v *FailureLimiterResetRequest) error
 }
