@@ -25,7 +25,7 @@ func Test_Captcha_UnsupportedChallengeProvider(t *testing.T) {
 	mr, err := miniredis.Run()
 	require.Nil(t, err)
 	addr := mr.Addr()
-	mr.Close()
+	defer mr.Close()
 	tests.GenericTest_Captcha_UnsupportedChallengeProvider(
 		t,
 		mr,

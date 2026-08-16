@@ -28,27 +28,31 @@ func NewTempGrantRegistry[S comparable, P TempGrantGenerator, B StorageBackend](
 // Name the provider name
 func (t *TempGrantRegistry[S, P, B]) Name() string { return t.p.Name() }
 
+// SetParams sets all scene params at once.
+// NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
 func (t *TempGrantRegistry[S, P, B]) SetParams(params map[S]*Param) *TempGrantRegistry[S, P, B] {
 	t.params = params
 	return t
 }
 
+// RegisterParam sets the param for a specific scene.
+// NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
 func (t *TempGrantRegistry[S, P, B]) SetParam(scene S, param *Param) *TempGrantRegistry[S, P, B] {
 	t.params[scene] = param
 	return t
 }
 
-func (t *TempGrantRegistry[S, P, B]) getParam(scene S, opts ...Option) (*Param, error) {
+func (t *TempGrantRegistry[S, P, B]) getParam(scene S) (*Param, error) {
 	p, ok := t.params[scene]
 	if !ok {
 		return nil, ErrSceneParamNotFound
 	}
-	return p.clone().apply(opts...), nil
+	return p, nil
 }
 
 // Issue a temp grant token. use option overwrite default param.
 func (t *TempGrantRegistry[S, P, B]) Issue(ctx context.Context, scene S, id string, opts ...Option) (string, error) {
-	p, err := t.getParam(scene, opts...)
+	p, err := t.getParam(scene)
 	if err != nil {
 		return "", err
 	}

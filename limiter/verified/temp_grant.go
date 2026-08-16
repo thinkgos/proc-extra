@@ -19,7 +19,7 @@ type TempGrantGenerator interface {
 type TempGrant[P TempGrantGenerator, B StorageBackend] struct {
 	p       P      // temp grant provider
 	backend B      // store backend
-	param   *Param // param set, scene -> 临时授权码参数
+	param   *Param // 临时授权码参数
 }
 
 // NewTempGrant new temp grant verifier instance.
@@ -36,11 +36,12 @@ func (t TempGrant[P, B]) Name() string { return t.p.Name() }
 
 // Issue a temp grant token. use option overwrite default param.
 func (t TempGrant[P, B]) Issue(ctx context.Context, id string, opts ...Option) (string, error) {
+	p := t.param.clone().apply(opts...)
 	answer := t.p.GenerateUniqueId()
 	err := t.backend.Save(ctx, &SaveArgs{
-		Key:         t.param.formatKey(id),
-		KeyExpires:  t.param.KeyExpires,
-		MaxAttempts: t.param.MaxAttempts,
+		Key:         p.formatKey(id),
+		KeyExpires:  p.KeyExpires,
+		MaxAttempts: p.MaxAttempts,
 		Answer:      answer,
 	})
 	if err != nil {

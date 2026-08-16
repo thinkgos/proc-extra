@@ -55,10 +55,11 @@ func (c Captcha[P, B]) Generate(ctx context.Context, driverName string, opts ...
 	if err != nil {
 		return "", "", err
 	}
+	p := c.param.clone().apply(opts...)
 	err = c.backend.Save(ctx, &SaveArgs{
-		Key:         c.param.formatKey(qa.Id),
-		KeyExpires:  c.param.KeyExpires,
-		MaxAttempts: c.param.MaxAttempts,
+		Key:         p.formatKey(qa.Id),
+		KeyExpires:  p.KeyExpires,
+		MaxAttempts: p.MaxAttempts,
 		Answer:      qa.Answer,
 	})
 	if err != nil {

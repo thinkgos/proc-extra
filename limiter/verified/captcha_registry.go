@@ -25,22 +25,26 @@ func NewCaptchaRegistry[S comparable, P CaptchaDriver, B StorageBackend](p P, ba
 	}
 }
 
+// SetParams sets all scene params at once.
+// NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
 func (c *CaptchaRegistry[S, P, B]) SetParams(params map[S]*Param) *CaptchaRegistry[S, P, B] {
 	c.params = params
 	return c
 }
 
-func (c *CaptchaRegistry[S, P, B]) SetParam(scene S, param *Param) *CaptchaRegistry[S, P, B] {
+// RegisterParam sets the param for a specific scene.
+// NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
+func (c *CaptchaRegistry[S, P, B]) RegisterParam(scene S, param *Param) *CaptchaRegistry[S, P, B] {
 	c.params[scene] = param
 	return c
 }
 
-func (c *CaptchaRegistry[S, P, B]) getParam(scene S, opts ...Option) (*Param, error) {
+func (c *CaptchaRegistry[S, P, B]) getParam(scene S) (*Param, error) {
 	p, ok := c.params[scene]
 	if !ok {
 		return nil, ErrSceneParamNotFound
 	}
-	return p.clone().apply(opts...), nil
+	return p, nil
 }
 
 // Name the provider name
@@ -50,7 +54,7 @@ func (c *CaptchaRegistry[S, P, B]) Name(driverName string) string {
 
 // Generate generate id, question.
 func (c *CaptchaRegistry[S, P, B]) Generate(ctx context.Context, driverName string, scene S, opts ...Option) (id, question string, err error) {
-	p, err := c.getParam(scene, opts...)
+	p, err := c.getParam(scene)
 	if err != nil {
 		return "", "", err
 	}
