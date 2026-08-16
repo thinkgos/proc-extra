@@ -2,6 +2,7 @@ package limit_verified
 
 import (
 	"context"
+	"maps"
 )
 
 type LimitVerifierRegistry[S comparable] interface {
@@ -36,10 +37,10 @@ func (v *LimitVerifiedRegistry[S, P, B]) SetKeyPrefix(keyPrefix string) *LimitVe
 	return v
 }
 
-// SetParams sets all scene params at once.
+// RegistersParams sets all scene params at once.
 // NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
-func (v *LimitVerifiedRegistry[S, P, B]) SetParams(params map[S]*Param) *LimitVerifiedRegistry[S, P, B] {
-	v.params = params
+func (v *LimitVerifiedRegistry[S, P, B]) RegistersParams(params map[S]*Param) *LimitVerifiedRegistry[S, P, B] {
+	maps.Copy(v.params, params)
 	return v
 }
 

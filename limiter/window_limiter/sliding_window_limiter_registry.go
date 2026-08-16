@@ -2,6 +2,7 @@ package window_limiter
 
 import (
 	"context"
+	"maps"
 )
 
 type SlidingWindowLimiterRegistry[S comparable, B SlidingWindowLimiterBackend] struct {
@@ -16,10 +17,10 @@ func NewSlidingWindowLimiterRegistry[S comparable, B SlidingWindowLimiterBackend
 	}
 }
 
-// SetParams sets all scene params at once.
+// RegistersParams sets all scene params at once.
 // NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
-func (r *SlidingWindowLimiterRegistry[S, B]) SetParams(params map[S]*SlidingWindowLimiterParam) *SlidingWindowLimiterRegistry[S, B] {
-	r.params = params
+func (r *SlidingWindowLimiterRegistry[S, B]) RegistersParams(params map[S]*SlidingWindowLimiterParam) *SlidingWindowLimiterRegistry[S, B] {
+	maps.Copy(r.params, params)
 	return r
 }
 

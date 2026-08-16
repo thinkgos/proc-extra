@@ -2,6 +2,7 @@ package verified
 
 import (
 	"context"
+	"maps"
 )
 
 type CaptchaVerifierRegistry[S comparable] interface {
@@ -25,10 +26,10 @@ func NewCaptchaRegistry[S comparable, P CaptchaDriver, B StorageBackend](p P, ba
 	}
 }
 
-// SetParams sets all scene params at once.
+// RegistersParams sets all scene params at once.
 // NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
-func (c *CaptchaRegistry[S, P, B]) SetParams(params map[S]*Param) *CaptchaRegistry[S, P, B] {
-	c.params = params
+func (c *CaptchaRegistry[S, P, B]) RegistersParams(params map[S]*Param) *CaptchaRegistry[S, P, B] {
+	maps.Copy(c.params, params)
 	return c
 }
 

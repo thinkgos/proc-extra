@@ -31,7 +31,7 @@ var testSlidingWindowLimiterParams = map[string]*window_limiter.SlidingWindowLim
 
 func GenericTest_SlidingWindowLimiter_InvalidScene[B window_limiter.SlidingWindowLimiterBackend](t *testing.T, mr *miniredis.Miniredis, backend B) {
 	l := window_limiter.NewSlidingWindowLimiterRegistry[string](backend).
-		SetParams(testSlidingWindowLimiterParams)
+		RegistersParams(testSlidingWindowLimiterParams)
 
 	_, err := l.Take(context.Background(), testSlidingWindowLimiterScene_Invalid, testSlidingWindowLimiterId1)
 	require.ErrorIs(t, window_limiter.ErrSceneParamNotFound, err)
@@ -48,7 +48,7 @@ func GenericTest_SlidingWindowLimiter_InvalidScene[B window_limiter.SlidingWindo
 
 func GenericTest_SlidingWindowLimiter_Work[B window_limiter.SlidingWindowLimiterBackend](t *testing.T, mr *miniredis.Miniredis, backend B) {
 	l := window_limiter.NewSlidingWindowLimiterRegistry[string](backend).
-		SetParams(testSlidingWindowLimiterParams)
+		RegistersParams(testSlidingWindowLimiterParams)
 
 		// peek the sliding window first
 	pv1, err := l.Check(context.Background(), testSlidingWindowLimiterScene, testSlidingWindowLimiterId1)
@@ -115,7 +115,7 @@ func GenericTest_SlidingWindowLimiter_Work[B window_limiter.SlidingWindowLimiter
 
 func GenericTest_SlidingWindowLimiter_Lock[B window_limiter.SlidingWindowLimiterBackend](t *testing.T, mr *miniredis.Miniredis, backend B) {
 	l := window_limiter.NewSlidingWindowLimiterRegistry[string](backend).
-		SetParams(testSlidingWindowLimiterParams)
+		RegistersParams(testSlidingWindowLimiterParams)
 
 		// take requests
 	v, err := l.Take(context.Background(), testSlidingWindowLimiterScene, testSlidingWindowLimiterId1)

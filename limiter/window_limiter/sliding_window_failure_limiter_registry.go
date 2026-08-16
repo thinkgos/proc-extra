@@ -1,6 +1,9 @@
 package window_limiter
 
-import "context"
+import (
+	"context"
+	"maps"
+)
 
 type WindowFailureLimiterRegistry[S comparable] interface {
 	// EvaluateErr see [Evaluate]
@@ -33,11 +36,10 @@ func NewSlidingWindowFailureLimiterRegistry[S comparable, B SlidingWindowFailure
 	}
 }
 
-// SetParams 设置参数.
-// SetParams sets all scene params at once.
+// RegistersParams sets all scene params at once.
 // NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
-func (r *SlidingWindowFailureLimiterRegistry[S, B]) SetParams(params map[S]*SlidingWindowFailureLimiterParam) *SlidingWindowFailureLimiterRegistry[S, B] {
-	r.params = params
+func (r *SlidingWindowFailureLimiterRegistry[S, B]) RegistersParams(params map[S]*SlidingWindowFailureLimiterParam) *SlidingWindowFailureLimiterRegistry[S, B] {
+	maps.Copy(r.params, params)
 	return r
 }
 

@@ -2,6 +2,7 @@ package verified
 
 import (
 	"context"
+	"maps"
 )
 
 type TempGranterRegistry[S comparable] interface {
@@ -28,16 +29,16 @@ func NewTempGrantRegistry[S comparable, P TempGrantGenerator, B StorageBackend](
 // Name the provider name
 func (t *TempGrantRegistry[S, P, B]) Name() string { return t.p.Name() }
 
-// SetParams sets all scene params at once.
+// RegistersParams sets all scene params at once.
 // NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
-func (t *TempGrantRegistry[S, P, B]) SetParams(params map[S]*Param) *TempGrantRegistry[S, P, B] {
-	t.params = params
+func (t *TempGrantRegistry[S, P, B]) RegistersParams(params map[S]*Param) *TempGrantRegistry[S, P, B] {
+	maps.Copy(t.params, params)
 	return t
 }
 
 // RegisterParam sets the param for a specific scene.
 // NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
-func (t *TempGrantRegistry[S, P, B]) SetParam(scene S, param *Param) *TempGrantRegistry[S, P, B] {
+func (t *TempGrantRegistry[S, P, B]) RegisterParam(scene S, param *Param) *TempGrantRegistry[S, P, B] {
 	t.params[scene] = param
 	return t
 }
