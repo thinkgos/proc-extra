@@ -35,7 +35,7 @@ type Param struct {
 	Scene           string        // 验证码场景
 	Window          time.Duration // 验证码最大滚动窗口时间, 24小时
 	Quota           int           // 验证码最大滚动窗口内配额, 30次
-	WindowTiers     []WindowTier  // 子窗口限制, 从大到小排列, 如 [{4h,15}, {1min,3}]
+	WindowTiers     []WindowTier  // 子窗口限制, 从小到大排列, 如 [{1min,3}, {4h,15}]
 	CodeExpires     int           // 验证码有效期, 300秒
 	CodeMaxAttempts int           // 验证码最大尝试次数, 3次
 }
@@ -67,6 +67,9 @@ func NewLimitVerified[P LimitVerifiedProvider, B LimitVerifiedBackend](p P, back
 		param:     param,
 	}
 }
+
+// SetKeyPrefix sets the key prefix for the limit verified registry.
+// NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
 func (v LimitVerified[P, B]) SetKeyPrefix(keyPrefix string) LimitVerified[P, B] {
 	v.keyPrefix = keyPrefix
 	return v
@@ -96,6 +99,7 @@ func (v LimitVerified[P, B]) SendCode(ctx context.Context, target, code string) 
 		return result, nil
 	}
 	// 发送失败, 回滚发送次数
+	// 当 provider 达到最大配额时返回 ErrReachMaximumQuota, 此时不需要回滚
 	defer func() {
 		if err != nil && !errors.Is(err, ErrReachMaximumQuota) {
 			_ = v.backend.Rollback(ctx, &RollbackRequest{

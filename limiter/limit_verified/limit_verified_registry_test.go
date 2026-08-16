@@ -11,18 +11,24 @@ import (
 )
 
 func Test_LimitVerifiedName(t *testing.T) {
+	mr, err := miniredis.Run()
+	require.Nil(t, err)
+	defer mr.Close()
 	tests.GenericTest_Name(
 		t,
 		nil,
-		redisV9.NewRedisStore(redis.NewClient(&redis.Options{Addr: "127.0.0.1:6379"})),
+		redisV9.NewRedisStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
 	)
 }
 
 func Test_LimitVerifiedInvalidScene(t *testing.T) {
+	mr, err := miniredis.Run()
+	require.Nil(t, err)
+	defer mr.Close()
 	tests.GenericTest_InvalidScene(
 		t,
 		nil,
-		redisV9.NewRedisStore(redis.NewClient(&redis.Options{Addr: "127.0.0.1:6379"})),
+		redisV9.NewRedisStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
 	)
 }
 

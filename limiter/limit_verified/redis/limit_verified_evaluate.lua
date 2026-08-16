@@ -1,4 +1,4 @@
-local key = KEYS[1]                         -- 验证目标key (keyPrefix + target)
+local key = KEYS[1]                         -- 滑动窗口配额key (keyPrefix + target)
 local code_key = KEYS[2]                    -- 验证码key (keyPrefix + target + ":" + scene + ":code")
 local window = tonumber(ARGV[1])            -- 最大滚动窗口时间, 单位: 秒
 local quota = tonumber(ARGV[2])             -- 最大滚动窗口内配额
@@ -7,6 +7,7 @@ local code_max_attempts = tonumber(ARGV[4]) -- 验证码最大允许尝试次数
 local code = ARGV[5]                        -- 验证码
 local unique_id = ARGV[6]                   -- 唯一id
 local tier_count = tonumber(ARGV[7])        -- 子窗口数量
+
 local time_res = redis.call('TIME')         -- 获取redis节点当前时间.
 local now = tonumber(time_res[1])           -- 当前时间戳, 单位秒
 

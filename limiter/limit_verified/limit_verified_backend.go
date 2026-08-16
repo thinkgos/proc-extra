@@ -29,12 +29,12 @@ const (
 
 // EvaluateRequest store arguments
 type EvaluateRequest struct {
-	Key             string        // 目标键
+	Key             string        // 滑动窗口配额key
 	CodeKey         string        // 验证码键
 	Window          time.Duration // 验证码最大滚动窗口时间, 24小时
 	Quota           int           // 验证码最大滚动窗口内配额, 30次
-	WindowTiers     []WindowTier  // 子窗口限制
-	CodeExpires     int           // 验证码有效期, 180秒
+	WindowTiers     []WindowTier  // 子窗口限制, 从小到大排列, 如 [{1min,3}, {4h,15}]
+	CodeExpires     int           // 验证码有效期, 300秒
 	CodeMaxAttempts int           // 验证码最大允许尝试次数, 3次
 	Code            string        // 验证码
 	UniqueId        string        // 唯一id
@@ -44,13 +44,13 @@ type EvaluateResult struct {
 }
 
 type RollbackRequest struct {
-	Key      string // 目标键
+	Key      string // 滑动窗口配额key
 	CodeKey  string // 验证码键
 	UniqueId string // 唯一id
 }
 
 type VerifyRequest struct {
-	Key     string // 验证码键
+	Key     string // 滑动窗口配额key
 	CodeKey string // 验证码键
 	Code    string // 验证码
 }

@@ -28,16 +28,24 @@ func NewLimitVerifiedRegistry[S comparable, P LimitVerifiedProvider, B LimitVeri
 	}
 	return v
 }
+
+// SetKeyPrefix sets the key prefix for the limit verified registry.
+// NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
 func (v *LimitVerifiedRegistry[S, P, B]) SetKeyPrefix(keyPrefix string) *LimitVerifiedRegistry[S, P, B] {
 	v.keyPrefix = keyPrefix
 	return v
 }
 
+// SetParams sets all scene params at once.
+// NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
 func (v *LimitVerifiedRegistry[S, P, B]) SetParams(params map[S]*Param) *LimitVerifiedRegistry[S, P, B] {
 	v.params = params
 	return v
 }
-func (v *LimitVerifiedRegistry[S, P, B]) SetParam(scene S, param *Param) *LimitVerifiedRegistry[S, P, B] {
+
+// RegisterParam sets the param for a specific scene.
+// NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
+func (v *LimitVerifiedRegistry[S, P, B]) RegisterParam(scene S, param *Param) *LimitVerifiedRegistry[S, P, B] {
 	v.params[scene] = param
 	return v
 }
