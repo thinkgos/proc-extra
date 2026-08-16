@@ -59,8 +59,6 @@ type LimitVerified[P LimitVerifiedProvider, B LimitVerifiedBackend] struct {
 }
 
 // NewLimitVerified  new a limit verified
-//
-//go:inline
 func NewLimitVerified[P LimitVerifiedProvider, B LimitVerifiedBackend](p P, backend B, param *Param) *LimitVerified[P, B] {
 	return &LimitVerified[P, B]{
 		p:         p,
@@ -72,8 +70,6 @@ func NewLimitVerified[P LimitVerifiedProvider, B LimitVerifiedBackend](p P, back
 
 // SetKeyPrefix sets the key prefix for the limit verified registry.
 // NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
-//
-//go:inline
 func (v *LimitVerified[P, B]) SetKeyPrefix(keyPrefix string) *LimitVerified[P, B] {
 	v.keyPrefix = keyPrefix
 	return v

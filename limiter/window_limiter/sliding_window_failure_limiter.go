@@ -40,8 +40,6 @@ type SlidingWindowFailureLimiter[B SlidingWindowFailureLimiterBackend] struct {
 }
 
 // NewSlidingWindowFailureLimiter new a SlidingWindowFailureLimiter instance.
-//
-//go:inline
 func NewSlidingWindowFailureLimiter[B SlidingWindowFailureLimiterBackend](backend B, param *SlidingWindowFailureLimiterParam) *SlidingWindowFailureLimiter[B] {
 	return &SlidingWindowFailureLimiter[B]{
 		backend: backend,

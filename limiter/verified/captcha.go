@@ -36,8 +36,6 @@ type Captcha[P CaptchaDriver, B StorageBackend] struct {
 }
 
 // NewCaptcha new captcha instance.
-//
-//go:inline
 func NewCaptcha[P CaptchaDriver, B StorageBackend](p P, backend B, param *Param) *Captcha[P, B] {
 	return &Captcha[P, B]{
 		p:       p,

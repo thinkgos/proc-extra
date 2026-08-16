@@ -1,4 +1,4 @@
-package token_limiter
+package limiter
 
 import (
 	"errors"

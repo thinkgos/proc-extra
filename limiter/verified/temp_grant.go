@@ -23,8 +23,6 @@ type TempGrant[P TempGrantGenerator, B StorageBackend] struct {
 }
 
 // NewTempGrant new temp grant verifier instance.
-//
-//go:inline
 func NewTempGrant[P TempGrantGenerator, B StorageBackend](p P, b B, param *Param) *TempGrant[P, B] {
 	return &TempGrant[P, B]{
 		p:       p,

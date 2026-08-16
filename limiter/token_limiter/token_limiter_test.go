@@ -14,8 +14,8 @@ import (
 
 func Test_TokenLimiter_Take(t *testing.T) {
 	mr, err := miniredis.Run()
-	assert.Nil(t, err)
-	defer mr.Close()
+	assert.NoError(t, err)
+	t.Cleanup(mr.Close)
 
 	const (
 		total = 100
@@ -25,9 +25,11 @@ func Test_TokenLimiter_Take(t *testing.T) {
 
 	l := token_limiter.NewTokenLimiter(
 		v9.NewTokenLimiterStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
-		"tokenlimit:",
-		rate,
-		burst,
+		&token_limiter.Param{
+			KeyPrefix: "tokenlimit:",
+			Rate:      rate,
+			Burst:     burst,
+		},
 	)
 	var allowed int
 	for range total {
@@ -42,8 +44,8 @@ func Test_TokenLimiter_Take(t *testing.T) {
 
 func Test_TokenLimiter_TakeBurst(t *testing.T) {
 	mr, err := miniredis.Run()
-	assert.Nil(t, err)
-	defer mr.Close()
+	assert.NoError(t, err)
+	t.Cleanup(mr.Close)
 
 	const (
 		total = 100
@@ -52,9 +54,11 @@ func Test_TokenLimiter_TakeBurst(t *testing.T) {
 	)
 	l := token_limiter.NewTokenLimiter(
 		v9.NewTokenLimiterStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
-		"tokenlimit:",
-		rate,
-		burst,
+		&token_limiter.Param{
+			KeyPrefix: "tokenlimit:",
+			Rate:      rate,
+			Burst:     burst,
+		},
 	)
 	var allowed int
 	for range total {
