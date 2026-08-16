@@ -17,4 +17,4 @@ local ttl = redis.call('TTL', key)
 if ttl < 0 then
     ttl = window
 end
-return { current_count + 1 < max_limit and 0 or 1, now + ttl, current_count }
+return { current_count + 1 <= max_limit and 0 or 1, now + ttl, current_count }

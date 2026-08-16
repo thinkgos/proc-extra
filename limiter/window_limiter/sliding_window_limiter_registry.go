@@ -16,12 +16,16 @@ func NewSlidingWindowLimiterRegistry[S comparable, B SlidingWindowLimiterBackend
 	}
 }
 
+// SetParams sets all scene params at once.
+// NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
 func (r *SlidingWindowLimiterRegistry[S, B]) SetParams(params map[S]*SlidingWindowLimiterParam) *SlidingWindowLimiterRegistry[S, B] {
 	r.params = params
 	return r
 }
 
-func (r *SlidingWindowLimiterRegistry[S, B]) SetParam(scene S, param *SlidingWindowLimiterParam) *SlidingWindowLimiterRegistry[S, B] {
+// RegisterParam sets the param for a specific scene.
+// NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
+func (r *SlidingWindowLimiterRegistry[S, B]) RegisterParam(scene S, param *SlidingWindowLimiterParam) *SlidingWindowLimiterRegistry[S, B] {
 	r.params[scene] = param
 	return r
 }
