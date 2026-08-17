@@ -14,7 +14,7 @@ var ErrReachMaximumQuota = errors.New("limit: reach the maximum quota")
 
 type SendCodeResult = EvaluateResult
 
-type LimitVerifier[S comparable] interface {
+type LimitVerifier interface {
 	Name() string
 	SendCode(ctx context.Context, target, code string) (*SendCodeResult, error)
 	VerifyCode(ctx context.Context, target, code string) (*VerifyResult, error)

@@ -5,6 +5,19 @@ import (
 	"maps"
 )
 
+type WindowLimiterRegistry[S comparable] interface {
+	// Take 尝试获取一个请求的配额单位.
+	// 如果有可用配额, 则请求被允许, 并且增加一次配额消费.
+	// 如果没有配额, 则请求被拒绝.
+	Take(ctx context.Context, scene S, id string) (*LimiterResult, error)
+	// Check 检查下一个请求是否被允许, 不修改任何数据.
+	Check(ctx context.Context, scene S, id string) (*LimiterResult, error)
+	// Lock 锁定 key, 在滑动窗口内将拒绝所有请求.
+	Lock(ctx context.Context, scene S, id string) (*LimiterResult, error)
+	// Reset 清除 key的所有限制.
+	Reset(ctx context.Context, scene S, id string) error
+}
+
 type SlidingWindowLimiterRegistry[S comparable, B SlidingWindowLimiterBackend] struct {
 	backend B
 	params  map[S]*SlidingWindowLimiterParam

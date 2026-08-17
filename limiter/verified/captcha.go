@@ -5,7 +5,7 @@ import (
 	"errors"
 )
 
-type CaptchaVerifier[S comparable] interface {
+type CaptchaVerifier interface {
 	Generate(ctx context.Context, driverName string, opts ...Option) (id, question string, err error)
 	Verify(ctx context.Context, id, answer string) (bool, error)
 }

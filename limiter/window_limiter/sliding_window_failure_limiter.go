@@ -2,7 +2,7 @@ package window_limiter
 
 import "context"
 
-type WindowFailureLimiter[S comparable] interface {
+type WindowFailureLimiter interface {
 	// EvaluateErr see [Evaluate]
 	EvaluateErr(ctx context.Context, id string, err error) (*FailureLimiterResult, error)
 	// Evaluate  评估本次操作.

@@ -37,9 +37,9 @@ func (r *LimitVerifiedRegistry[S, P, B]) SetKeyPrefix(keyPrefix string) *LimitVe
 	return r
 }
 
-// RegistersParams sets all scene params at once.
+// RegisterParams sets all scene params at once.
 // NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
-func (r *LimitVerifiedRegistry[S, P, B]) RegistersParams(params map[S]*Param) *LimitVerifiedRegistry[S, P, B] {
+func (r *LimitVerifiedRegistry[S, P, B]) RegisterParams(params map[S]*Param) *LimitVerifiedRegistry[S, P, B] {
 	maps.Copy(r.params, params)
 	return r
 }

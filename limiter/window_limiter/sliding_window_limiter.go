@@ -2,7 +2,7 @@ package window_limiter
 
 import "context"
 
-type WindowLimiter[S comparable] interface {
+type WindowLimiter interface {
 	// Take 尝试获取一个请求的配额单位.
 	// 如果有可用配额, 则请求被允许, 并且增加一次配额消费.
 	// 如果没有配额, 则请求被拒绝.
