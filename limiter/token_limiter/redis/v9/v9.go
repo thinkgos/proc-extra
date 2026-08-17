@@ -28,6 +28,12 @@ func NewTokenLimiterStore(client *redis.Client) *TokenLimiterStore {
 // AllowN reports whether n events may happen at time now.
 // Use this method if you intend to drop / skip events that exceed the rate.
 func (t *TokenLimiterStore) AllowN(ctx context.Context, r *token_limiter.AllowNRequest) (bool, error) {
+	var nowArg string
+	if r.Now.IsZero() {
+		nowArg = "0" // Lua 侧会用 redis.call('TIME')
+	} else {
+		nowArg = strconv.FormatInt(r.Now.Unix(), 10)
+	}
 	resp, err := t.client.Eval(ctx,
 		redis_script.ScriptTokenLimiter,
 		[]string{
@@ -36,7 +42,7 @@ func (t *TokenLimiterStore) AllowN(ctx context.Context, r *token_limiter.AllowNR
 		[]string{
 			strconv.Itoa(r.Rate),
 			strconv.Itoa(r.Burst),
-			strconv.FormatInt(r.Now.Unix(), 10),
+			nowArg,
 			strconv.Itoa(r.N),
 		}).Result()
 	// redis allowed == false

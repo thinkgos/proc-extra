@@ -140,3 +140,10 @@ func UniqueId() string {
 	b = strconv.AppendUint(b, uint64(rand.Uint32()), 36)
 	return string(b)
 }
+
+var _ LimitVerifiedProvider = DummyDriver{}
+
+type DummyDriver struct{}
+
+func (DummyDriver) Name() string                                            { return "limit-verified-dummy-provider" }
+func (DummyDriver) SendCode(ctx context.Context, target, code string) error { return nil }

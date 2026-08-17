@@ -137,7 +137,7 @@ func Test_Allow_BurstExhausted(t *testing.T) {
 func Test_AllowN_SceneNotFound(t *testing.T) {
 	registry, _ := setupRegistry(t)
 
-	ok := registry.AllowN(context.Background(), "nonexistent", "id1", time.Now(), 1)
+	ok := registry.AllowN(context.Background(), "nonexistent", "id1", 1)
 	assert.False(t, ok)
 }
 
@@ -150,8 +150,7 @@ func Test_AllowN_ValidScene(t *testing.T) {
 		Burst:     10,
 	})
 
-	now := time.Now()
-	ok := registry.AllowN(context.Background(), "scene1", "user1", now, 1)
+	ok := registry.AllowN(context.Background(), "scene1", "user1", 1)
 	assert.True(t, ok)
 }
 
@@ -164,12 +163,11 @@ func Test_AllowN_BurstExhausted(t *testing.T) {
 		Burst:     5,
 	})
 
-	now := time.Now()
 	// 一次请求 5 个令牌，耗尽 burst
-	ok := registry.AllowN(context.Background(), "scene1", "user1", now, 5)
+	ok := registry.AllowN(context.Background(), "scene1", "user1", 5)
 	assert.True(t, ok)
 	// 再请求 1 个应拒绝
-	ok = registry.AllowN(context.Background(), "scene1", "user1", now, 1)
+	ok = registry.AllowN(context.Background(), "scene1", "user1", 1)
 	assert.False(t, ok)
 }
 
@@ -182,9 +180,8 @@ func Test_AllowN_ExceedBurst(t *testing.T) {
 		Burst:     3,
 	})
 
-	now := time.Now()
 	// 请求数超过 burst
-	ok := registry.AllowN(context.Background(), "scene1", "user1", now, 10)
+	ok := registry.AllowN(context.Background(), "scene1", "user1", 10)
 	assert.False(t, ok)
 }
 
@@ -283,7 +280,7 @@ func Test_TryAllow_BurstExhausted(t *testing.T) {
 func Test_TryAllowN_SceneNotFound(t *testing.T) {
 	registry, _ := setupRegistry(t)
 
-	ok, err := registry.TryAllowN(context.Background(), "nonexistent", "id1", time.Now(), 1)
+	ok, err := registry.TryAllowN(context.Background(), "nonexistent", "id1", 1)
 	assert.False(t, ok)
 	assert.ErrorIs(t, err, token_limiter.ErrSceneParamNotFound)
 }
@@ -297,7 +294,7 @@ func Test_TryAllowN_ValidScene(t *testing.T) {
 		Burst:     10,
 	})
 
-	ok, err := registry.TryAllowN(context.Background(), "scene1", "user1", time.Now(), 1)
+	ok, err := registry.TryAllowN(context.Background(), "scene1", "user1", 1)
 	assert.True(t, ok)
 	assert.NoError(t, err)
 }
@@ -312,7 +309,62 @@ func Test_TryAllowN_ExceedBurst(t *testing.T) {
 	})
 
 	// 请求数超过 burst
-	ok, err := registry.TryAllowN(context.Background(), "scene1", "user1", time.Now(), 10)
+	ok, err := registry.TryAllowN(context.Background(), "scene1", "user1", 10)
+	assert.False(t, ok)
+	assert.NoError(t, err)
+}
+
+func Test_AllowNAt_BurstExhausted(t *testing.T) {
+	registry, _ := setupRegistry(t)
+
+	registry.RegisterParam("scene1", &token_limiter.Param{
+		KeyPrefix: "tokenlimit:",
+		Rate:      1,
+		Burst:     5,
+	})
+
+	now := time.Now()
+	// 一次请求 5 个令牌，耗尽 burst
+	ok := registry.AllowNAt(context.Background(), "scene1", "user1", 5, now)
+	assert.True(t, ok)
+	// 再请求 1 个应拒绝
+	ok = registry.AllowNAt(context.Background(), "scene1", "user1", 1, now)
+	assert.False(t, ok)
+}
+
+func Test_TryAllowNAt_SceneNotFound(t *testing.T) {
+	registry, _ := setupRegistry(t)
+
+	ok, err := registry.TryAllowNAt(context.Background(), "nonexistent", "id1", 1, time.Now())
+	assert.False(t, ok)
+	assert.ErrorIs(t, err, token_limiter.ErrSceneParamNotFound)
+}
+
+func Test_TryAllowNAt_ValidScene(t *testing.T) {
+	registry, _ := setupRegistry(t)
+
+	registry.RegisterParam("scene1", &token_limiter.Param{
+		KeyPrefix: "tokenlimit:",
+		Rate:      5,
+		Burst:     10,
+	})
+
+	ok, err := registry.TryAllowNAt(context.Background(), "scene1", "user1", 1, time.Now())
+	assert.True(t, ok)
+	assert.NoError(t, err)
+}
+
+func Test_TryAllowNAt_ExceedBurst(t *testing.T) {
+	registry, _ := setupRegistry(t)
+
+	registry.RegisterParam("scene1", &token_limiter.Param{
+		KeyPrefix: "tokenlimit:",
+		Rate:      5,
+		Burst:     3,
+	})
+
+	// 请求数超过 burst
+	ok, err := registry.TryAllowNAt(context.Background(), "scene1", "user1", 10, time.Now())
 	assert.False(t, ok)
 	assert.NoError(t, err)
 }

@@ -11,10 +11,14 @@ import (
 var ErrSceneParamNotFound = errors.New("token_limiter: the scene's param not found")
 
 type RateRegistry[S comparable] interface {
-	AllowN(ctx context.Context, scene S, id string, now time.Time, n int) bool
 	Allow(ctx context.Context, scene S, id string) bool
+	AllowN(ctx context.Context, scene S, id string, n int) bool
 	TryAllow(ctx context.Context, scene S, id string) (bool, error)
-	TryAllowN(ctx context.Context, scene S, id string, now time.Time, n int) (bool, error)
+	TryAllowN(ctx context.Context, scene S, id string, n int) (bool, error)
+	AllowAt(ctx context.Context, scene S, id string, now time.Time) bool
+	AllowNAt(ctx context.Context, scene S, id string, n int, now time.Time) bool
+	TryAllowAt(ctx context.Context, scene S, id string, now time.Time) (bool, error)
+	TryAllowNAt(ctx context.Context, scene S, id string, n int, now time.Time) (bool, error)
 }
 
 // TokenLimiterRegistry controls how frequently events are allowed to happen with in one second.
@@ -53,6 +57,7 @@ func (c *TokenLimiterRegistry[S, B]) getParam(scene S) (*Param, error) {
 	return p, nil
 }
 
+// Allow uses Redis server time.
 func (t *TokenLimiterRegistry[S, B]) Allow(ctx context.Context, scene S, id string) bool {
 	p, err := t.getParam(scene)
 	if err != nil {
@@ -61,14 +66,16 @@ func (t *TokenLimiterRegistry[S, B]) Allow(ctx context.Context, scene S, id stri
 	return NewTokenLimiter(t.backend, p).Allow(ctx, id)
 }
 
-func (t *TokenLimiterRegistry[S, B]) AllowN(ctx context.Context, scene S, id string, now time.Time, n int) bool {
+// AllowN uses Redis server time.
+func (t *TokenLimiterRegistry[S, B]) AllowN(ctx context.Context, scene S, id string, n int) bool {
 	p, err := t.getParam(scene)
 	if err != nil {
 		return false
 	}
-	return NewTokenLimiter(t.backend, p).AllowN(ctx, id, now, n)
+	return NewTokenLimiter(t.backend, p).AllowN(ctx, id, n)
 }
 
+// TryAllow uses Redis server time.
 func (t *TokenLimiterRegistry[S, B]) TryAllow(ctx context.Context, scene S, id string) (bool, error) {
 	p, err := t.getParam(scene)
 	if err != nil {
@@ -77,10 +84,47 @@ func (t *TokenLimiterRegistry[S, B]) TryAllow(ctx context.Context, scene S, id s
 	return NewTokenLimiter(t.backend, p).TryAllow(ctx, id)
 }
 
-func (t *TokenLimiterRegistry[S, B]) TryAllowN(ctx context.Context, scene S, id string, now time.Time, n int) (bool, error) {
+// TryAllowN uses Redis server time.
+func (t *TokenLimiterRegistry[S, B]) TryAllowN(ctx context.Context, scene S, id string, n int) (bool, error) {
 	p, err := t.getParam(scene)
 	if err != nil {
 		return false, err
 	}
-	return NewTokenLimiter(t.backend, p).TryAllowN(ctx, id, now, n)
+	return NewTokenLimiter(t.backend, p).TryAllowN(ctx, id, n)
+}
+
+// AllowAt uses client-supplied time.
+func (t *TokenLimiterRegistry[S, B]) AllowAt(ctx context.Context, scene S, id string, now time.Time) bool {
+	p, err := t.getParam(scene)
+	if err != nil {
+		return false
+	}
+	return NewTokenLimiter(t.backend, p).AllowAt(ctx, id, now)
+}
+
+// AllowNAt uses client-supplied time.
+func (t *TokenLimiterRegistry[S, B]) AllowNAt(ctx context.Context, scene S, id string, n int, now time.Time) bool {
+	p, err := t.getParam(scene)
+	if err != nil {
+		return false
+	}
+	return NewTokenLimiter(t.backend, p).AllowNAt(ctx, id, n, now)
+}
+
+// TryAllowAt uses client-supplied time.
+func (t *TokenLimiterRegistry[S, B]) TryAllowAt(ctx context.Context, scene S, id string, now time.Time) (bool, error) {
+	p, err := t.getParam(scene)
+	if err != nil {
+		return false, err
+	}
+	return NewTokenLimiter(t.backend, p).TryAllowAt(ctx, id, now)
+}
+
+// TryAllowNAt uses client-supplied time.
+func (t *TokenLimiterRegistry[S, B]) TryAllowNAt(ctx context.Context, scene S, id string, n int, now time.Time) (bool, error) {
+	p, err := t.getParam(scene)
+	if err != nil {
+		return false, err
+	}
+	return NewTokenLimiter(t.backend, p).TryAllowNAt(ctx, id, n, now)
 }
