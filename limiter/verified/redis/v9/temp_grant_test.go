@@ -6,20 +6,8 @@ import (
 	"github.com/alicebob/miniredis/v2"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/thinkgos/proc-extra/limiter/verified/tests"
 )
-
-func Test_TempGrant_ImproveCoverage(t *testing.T) {
-	mr, err := miniredis.Run()
-	require.Nil(t, err)
-	defer mr.Close()
-	tests.GenericTest_TempGrant_ImproveCoverage(
-		t,
-		mr,
-		NewRedisStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
-	)
-}
 
 func Test_TempGrant_InMaxAttempts(t *testing.T) {
 	mr, err := miniredis.Run()

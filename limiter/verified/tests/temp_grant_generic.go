@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/alicebob/miniredis/v2"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/thinkgos/proc-extra/limiter/verified"
@@ -14,12 +13,9 @@ import (
 
 var _ verified.TempGrantGenerator = (*TestTempGrantProvider)(nil)
 
-var testTempGrantParams = map[string]*verified.Param{
-	testScene: {
-		KeyPrefix:   testKeyPrefix,
-		KeyExpires:  testKeyExpires,
-		MaxAttempts: testMaxAttempts_1,
-	},
+var testTempGrantSceneParam = &verified.Param{
+	KeyExpires:  testKeyExpires,
+	MaxAttempts: testMaxAttempts_1,
 }
 
 type TestTempGrantProvider struct{}
@@ -30,21 +26,10 @@ func (t TestTempGrantProvider) GenerateUniqueId() string {
 	return randString(6)
 }
 
-func GenericTest_TempGrant_ImproveCoverage[B verified.StorageBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
-	l := verified.NewTempGrantRegistry[string](new(TestTempGrantProvider), backend).
-		RegistersParams(testTempGrantParams)
-	l.Name()
-	targetId := randString(6)
-	wantAnswer, err := l.Issue(context.Background(), testInvalidScene, targetId)
-	require.ErrorIs(t, verified.ErrSceneParamNotFound, err)
-
-	_, err = l.Consume(context.Background(), testInvalidScene, targetId, wantAnswer)
-	require.ErrorIs(t, verified.ErrSceneParamNotFound, err)
-}
-
 func GenericTest_TempGrant_InMaxAttempts[B verified.StorageBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
-	l := verified.NewTempGrantRegistry[string](new(TestTempGrantProvider), backend).
-		RegistersParams(testTempGrantParams)
+	l := verified.NewTempGrant[testSceneType](new(TestTempGrantProvider), backend).
+		SetKeyPrefix(testKeyPrefix).
+		SetSceneParam(testScene, testTempGrantSceneParam)
 
 	targetId := randString(6)
 	wantAnswer, err := l.Issue(
@@ -54,7 +39,7 @@ func GenericTest_TempGrant_InMaxAttempts[B verified.StorageBackend](t *testing.T
 		verified.WithMaxAttempts(3),
 		verified.WithKeyExpires(time.Minute*5),
 	)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	badAnswer := wantAnswer + "xxx"
 	b, err := l.Consume(context.Background(), testScene, targetId, badAnswer)
@@ -72,8 +57,9 @@ func GenericTest_TempGrant_InMaxAttempts[B verified.StorageBackend](t *testing.T
 }
 
 func GenericTest_TempGrant_OverMaxAttempts[B verified.StorageBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
-	l := verified.NewTempGrantRegistry[string](new(TestTempGrantProvider), backend).
-		RegistersParams(testTempGrantParams)
+	l := verified.NewTempGrant[testSceneType](new(TestTempGrantProvider), backend).
+		SetKeyPrefix(testKeyPrefix).
+		SetSceneParam(testScene, testTempGrantSceneParam)
 	targetId := randString(6)
 	wantAnswer, err := l.Issue(
 		context.Background(),
@@ -82,7 +68,7 @@ func GenericTest_TempGrant_OverMaxAttempts[B verified.StorageBackend](t *testing
 		verified.WithKeyExpires(time.Minute*3),
 		verified.WithMaxAttempts(3),
 	)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	badAnswer := wantAnswer + "xxx"
 	for range 6 {
@@ -96,13 +82,14 @@ func GenericTest_TempGrant_OverMaxAttempts[B verified.StorageBackend](t *testing
 }
 
 func GenericTest_TempGrant_OneShot[B verified.StorageBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
-	l := verified.NewTempGrantRegistry[string](new(TestTempGrantProvider), backend).
-		RegistersParams(testTempGrantParams)
+	l := verified.NewTempGrant[testSceneType](new(TestTempGrantProvider), backend).
+		SetKeyPrefix(testKeyPrefix).
+		SetSceneParam(testScene, testTempGrantSceneParam)
 
 	targetId := randString(6)
 
 	wantAnswer, err := l.Issue(context.Background(), testScene, targetId, verified.WithKeyExpires(time.Minute*5))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	b, err := l.Consume(context.Background(), testScene, targetId, wantAnswer)
 	require.NoError(t, err)
@@ -114,11 +101,12 @@ func GenericTest_TempGrant_OneShot[B verified.StorageBackend](t *testing.T, _ *m
 }
 
 func GenericTest_TempGrant_OneShot_Timeout[B verified.StorageBackend](t *testing.T, mr *miniredis.Miniredis, backend B) {
-	l := verified.NewTempGrantRegistry[string](new(TestTempGrantProvider), backend).
-		RegistersParams(testTempGrantParams)
+	l := verified.NewTempGrant[testSceneType](new(TestTempGrantProvider), backend).
+		SetKeyPrefix(testKeyPrefix).
+		SetSceneParam(testScene, testTempGrantSceneParam)
 	targetId := randString(6)
 	wantAnswer, err := l.Issue(context.Background(), testScene, targetId, verified.WithKeyExpires(time.Second*1))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	mr.FastForward(time.Second)
 

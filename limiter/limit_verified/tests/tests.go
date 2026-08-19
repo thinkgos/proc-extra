@@ -29,7 +29,7 @@ const (
 )
 
 var (
-	testParamNormal = limit_verified.NewParam()
+	testParamNormal    = limit_verified.NewParam()
 	testParamOverQuota = &limit_verified.Param{
 		Window:          time.Hour * 24,
 		Quota:           1,
@@ -66,7 +66,7 @@ func GenericTest_Name[B limit_verified.LimitVerifiedBackend](t *testing.T, _ *mi
 
 func GenericTest_Work[B limit_verified.LimitVerifiedBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
 	l := limit_verified.NewLimitVerified[testScene](new(TestProvider), backend).
-		SetSpecialParam(testSceneNormal, testParamNormal)
+		SetSceneParam(testSceneNormal, testParamNormal)
 
 	result, err := l.SendCode(context.Background(), testSceneNormal, target, code)
 	require.NoError(t, err)
@@ -79,7 +79,7 @@ func GenericTest_Work[B limit_verified.LimitVerifiedBackend](t *testing.T, _ *mi
 
 func GenericTest_SendCode_Failure[B limit_verified.LimitVerifiedBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
 	l := limit_verified.NewLimitVerified[testScene](new(TestErrProvider), backend).
-		SetSpecialParam(testSceneNormal, testParamNormal)
+		SetSceneParam(testSceneNormal, testParamNormal)
 
 	_, err := l.SendCode(context.Background(), testSceneNormal, target, code)
 	require.Error(t, err)
@@ -90,7 +90,7 @@ func GenericTest_SendCode_OverQuota[B limit_verified.LimitVerifiedBackend](t *te
 	var failed uint32
 
 	l := limit_verified.NewLimitVerified[testScene](new(TestProvider), backend).
-		SetSpecialParam(testSceneOverQuota, testParamOverQuota)
+		SetSceneParam(testSceneOverQuota, testParamOverQuota)
 
 	wg := &sync.WaitGroup{}
 	wg.Add(15)
@@ -123,7 +123,7 @@ func GenericTest_SendCode_ResendTooFrequently[B limit_verified.LimitVerifiedBack
 	var failed uint32
 
 	l := limit_verified.NewLimitVerified[testScene](new(TestProvider), backend).
-		SetSpecialParam(testSceneTierLimit, testParamTierLimit)
+		SetSceneParam(testSceneTierLimit, testParamTierLimit)
 
 	wg := &sync.WaitGroup{}
 	wg.Add(15)
@@ -153,7 +153,7 @@ func GenericTest_SendCode_ResendTooFrequently[B limit_verified.LimitVerifiedBack
 
 func GenericTest_VerifyCode_Expired[B limit_verified.LimitVerifiedBackend](t *testing.T, mr *miniredis.Miniredis, backend B) {
 	l := limit_verified.NewLimitVerified[testScene](new(TestProvider), backend).
-		SetSpecialParam(testSceneNormal, testParamNormal)
+		SetSceneParam(testSceneNormal, testParamNormal)
 
 	// 没有验证码
 	vr, err := l.VerifyCode(context.Background(), testSceneNormal, target, code)
@@ -174,28 +174,28 @@ func GenericTest_VerifyCode_Expired[B limit_verified.LimitVerifiedBackend](t *te
 func GenericTest_SendCode_Rollback[B limit_verified.LimitVerifiedBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
 	// 先用失败 provider 发送, 触发 rollback
 	l1 := limit_verified.NewLimitVerified[testScene](new(TestErrProvider), backend).
-		SetSpecialParam(testSceneOverQuota, testParamOverQuota)
+		SetSceneParam(testSceneOverQuota, testParamOverQuota)
 	_, err := l1.SendCode(context.Background(), testSceneOverQuota, target, code)
 	require.Error(t, err)
 
 	// 再用成功 provider 发送, 如果 rollback 正常, 配额应已恢复, 不会 OverQuota
 	l2 := limit_verified.NewLimitVerified[testScene](new(TestProvider), backend).
-		SetSpecialParam(testSceneOverQuota, testParamOverQuota)
+		SetSceneParam(testSceneOverQuota, testParamOverQuota)
 	result, err := l2.SendCode(context.Background(), testSceneOverQuota, target, code)
 	require.NoError(t, err)
 	require.Equal(t, limit_verified.EvaluateStatus_Success, result.Status)
 }
 
-func GenericTest_CommonParam[B limit_verified.LimitVerifiedBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
+func GenericTest_GenericParam[B limit_verified.LimitVerifiedBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
 	// 使用通用 param
-	commonParam := &limit_verified.Param{
+	generalParam := &limit_verified.Param{
 		Window:          time.Hour * 24,
 		Quota:           100,
 		CodeExpires:     300,
 		CodeMaxAttempts: 3,
 	}
 	l := limit_verified.NewLimitVerified[testScene](new(TestProvider), backend).
-		SetParam(commonParam)
+		SetParam(generalParam)
 
 	// 未注册特殊参数的 scene 使用通用 param
 	unknownScene := testScene("unknown_scene")
@@ -213,7 +213,7 @@ func GenericTest_VerifyCode_ReachMaxAttempt[B limit_verified.LimitVerifiedBacken
 	var failedVerify uint32
 
 	l := limit_verified.NewLimitVerified[testScene](new(TestProvider), backend).
-		SetSpecialParam(testSceneNormal, testParamNormal)
+		SetSceneParam(testSceneNormal, testParamNormal)
 
 	result, err := l.SendCode(context.Background(), testSceneNormal, target, code)
 	require.NoError(t, err)

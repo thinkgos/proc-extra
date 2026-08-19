@@ -25,13 +25,51 @@ type LimitVerifier[S SceneValuer] interface {
 	VerifyCode(ctx context.Context, scene S, target, code string) (*VerifyResult, error)
 }
 
+type WindowTier struct {
+	Window time.Duration // 子窗口时间
+	Quota  int           // 子窗口内配额
+}
+
+type Param struct {
+	Window          time.Duration // 验证码最大滚动窗口时间, 24小时
+	Quota           int           // 验证码最大滚动窗口内配额, 30次
+	WindowTiers     []WindowTier  // 子窗口限制, 从小到大排列, 如 [{1min,1}, {4h,5}]
+	CodeExpires     int           // 验证码有效期, 300秒
+	CodeMaxAttempts int           // 验证码最大尝试次数, 3次
+}
+
+func NewParam() *Param {
+	return &Param{
+		Window:          time.Hour * 24,
+		Quota:           30,
+		WindowTiers:     []WindowTier{{time.Second * 60, 1}},
+		CodeExpires:     300,
+		CodeMaxAttempts: 3,
+	}
+}
+
+func (p *Param) Clone() *Param {
+	return &Param{
+		Window:          p.Window,
+		Quota:           p.Quota,
+		CodeExpires:     p.CodeExpires,
+		CodeMaxAttempts: p.CodeMaxAttempts,
+		WindowTiers:     slices.Clone(p.WindowTiers),
+	}
+}
+
+type SceneParam[S SceneValuer] struct {
+	scene S
+	param *Param
+}
+
 // LimitVerified limit verified code
 type LimitVerified[S SceneValuer, P LimitVerifiedProvider, B LimitVerifiedBackend] struct {
 	p         LimitVerifiedProvider // LimitVerifiedProvider send code
 	backend   LimitVerifiedBackend  // backend client
 	keyPrefix string                // key prefix
-	param     *Param                // wildcard param
-	specials  []SpecialParam[S]     // special params for each scene
+	param     *Param                // general param
+	scenes    []SceneParam[S]       // scene param.
 }
 
 // NewLimitVerified  new a limit verified
@@ -41,41 +79,41 @@ func NewLimitVerified[S SceneValuer, P LimitVerifiedProvider, B LimitVerifiedBac
 		backend:   backend,
 		keyPrefix: "limit:verifier:",
 		param:     NewParam(),
-		specials:  make([]SpecialParam[S], 0),
+		scenes:    make([]SceneParam[S], 0),
 	}
 }
 
-// SetKeyPrefix sets the key prefix for the limit verified registry.
+// SetKeyPrefix sets the key prefix for the limit verified.
 // NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
 func (v *LimitVerified[S, P, B]) SetKeyPrefix(keyPrefix string) *LimitVerified[S, P, B] {
 	v.keyPrefix = keyPrefix
 	return v
 }
 
-// SetParam sets the wildcard param for the limit verified registry.
+// SetParam sets the general param for the limit verified.
 // NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
 func (v *LimitVerified[S, P, B]) SetParam(p *Param) *LimitVerified[S, P, B] {
 	v.param = p
 	return v
 }
 
-// SetSpecialParam sets the param for a specific scene.
+// SetSceneParam sets the param for a specific scene.
 // NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
-func (v *LimitVerified[S, P, B]) SetSpecialParam(scene S, param *Param) *LimitVerified[S, P, B] {
-	for i := range v.specials {
-		if v.specials[i].Scene == scene {
-			v.specials[i].Param = param
+func (v *LimitVerified[S, P, B]) SetSceneParam(scene S, param *Param) *LimitVerified[S, P, B] {
+	for i := range v.scenes {
+		if v.scenes[i].scene == scene {
+			v.scenes[i].param = param
 			return v
 		}
 	}
-	v.specials = append(v.specials, SpecialParam[S]{Scene: scene, Param: param})
-	v.specials = slices.Clone(v.specials)
+	v.scenes = append(v.scenes, SceneParam[S]{scene: scene, param: param})
+	v.scenes = slices.Clone(v.scenes)
 	return v
 }
 func (v *LimitVerified[S, P, B]) useScene(scene S) *Param {
-	for _, s := range v.specials {
-		if s.Scene == scene {
-			return s.Param
+	for i := range v.scenes {
+		if v.scenes[i].scene == scene {
+			return v.scenes[i].param
 		}
 	}
 	return v.param
@@ -87,9 +125,9 @@ func (v *LimitVerified[S, P, B]) Name() string { return v.p.Name() }
 // SendCode send code and backend.
 func (v *LimitVerified[S, P, B]) SendCode(ctx context.Context, scene S, target, code string) (*EvaluateResult, error) {
 	p := v.useScene(scene)
-	uniqueId := UniqueId()
 	key := v.formatKey(target)
 	codeKey := v.formatCodeKey(target, scene.Value())
+	uniqueId := UniqueId()
 	result, err := v.backend.Evaluate(ctx, &EvaluateRequest{
 		Key:             key,
 		CodeKey:         codeKey,

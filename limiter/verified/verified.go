@@ -1,27 +1,27 @@
 package verified
 
-import (
-	"errors"
-	"time"
-)
+import "time"
 
-// ErrSceneParamNotFound is an error that scene's param not found.
-var ErrSceneParamNotFound = errors.New("verified: the scene's param not found")
+type SceneValuer interface {
+	comparable
+	Value() string
+}
 
 // Param captcha param
 type Param struct {
-	KeyPrefix   string        // 验证码key前缀
 	KeyExpires  time.Duration // 验证码key的过期时间
 	MaxAttempts int           // 验证码最大允许尝试次数
 }
 
-func (p *Param) formatKey(id string) string {
-	return p.KeyPrefix + id
+func NewParam() *Param {
+	return &Param{
+		KeyExpires:  time.Minute * 5,
+		MaxAttempts: 1,
+	}
 }
 
 func (p *Param) clone() *Param {
 	return &Param{
-		KeyPrefix:   p.KeyPrefix,
 		KeyExpires:  p.KeyExpires,
 		MaxAttempts: p.MaxAttempts,
 	}
@@ -31,6 +31,11 @@ func (p *Param) apply(opts ...Option) *Param {
 		f(p)
 	}
 	return p
+}
+
+type SceneParam[S SceneValuer] struct {
+	scene S
+	param *Param
 }
 
 // Option param option

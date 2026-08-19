@@ -26,7 +26,7 @@ func Test_LimitVerifiedCommonParam(t *testing.T) {
 	require.Nil(t, err)
 	defer mr.Close()
 
-	tests.GenericTest_CommonParam(
+	tests.GenericTest_GenericParam(
 		t,
 		mr,
 		redisV9.NewRedisStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),

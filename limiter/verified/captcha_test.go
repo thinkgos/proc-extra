@@ -11,17 +11,6 @@ import (
 	"github.com/thinkgos/proc-extra/limiter/verified/tests"
 )
 
-func Test_Captcha_ImproveCoverage(t *testing.T) {
-	mr, err := miniredis.Run()
-	require.Nil(t, err)
-	defer mr.Close()
-	tests.GenericTest_Captcha_ImproveCoverage(
-		t,
-		mr,
-		redisV9.NewRedisStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
-	)
-}
-
 func Test_Captcha_UnsupportedChallengeProvider(t *testing.T) {
 	mr, err := miniredis.Run()
 	require.Nil(t, err)
