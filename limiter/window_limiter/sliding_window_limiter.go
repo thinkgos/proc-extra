@@ -1,84 +1,105 @@
 package window_limiter
 
-import "context"
+import (
+	"context"
+)
 
-type WindowLimiter interface {
+type WindowLimiter[S SceneValuer] interface {
 	// Take 尝试获取一个请求的配额单位.
 	// 如果有可用配额, 则请求被允许, 并且增加一次配额消费.
 	// 如果没有配额, 则请求被拒绝.
-	Take(ctx context.Context, id string) (*LimiterResult, error)
+	Take(ctx context.Context, scene S, id string) (*LimiterResult, error)
 	// Check 检查下一个请求是否被允许, 不修改任何数据.
-	Check(ctx context.Context, id string) (*LimiterResult, error)
+	Check(ctx context.Context, scene S, id string) (*LimiterResult, error)
 	// Lock 锁定 key, 在滑动窗口内将拒绝所有请求.
-	Lock(ctx context.Context, id string) (*LimiterResult, error)
+	Lock(ctx context.Context, scene S, id string) (*LimiterResult, error)
 	// Reset 清除 key的所有限制.
-	Reset(ctx context.Context, id string) error
+	Reset(ctx context.Context, scene S, id string) error
 }
 
-type SlidingWindowLimiterParam struct {
-	KeyPrefix string // store key prefix
-	Window    int    // sliding window in seconds
-	MaxLimit  int    // max limit requests in the sliding window
+type SlidingWindowLimiterSceneParam[S SceneValuer] struct {
+	scene S
+	param *SlidingWindowLimiterParam
 }
 
-func (p *SlidingWindowLimiterParam) formatKey(id string) string {
-	return p.KeyPrefix + id
-}
-
-func (p *SlidingWindowLimiterParam) formatLockedKey(id string) string {
-	return p.KeyPrefix + id + ":_locked"
-}
-
-type SlidingWindowLimiter[B SlidingWindowLimiterBackend] struct {
+// SlidingWindowLimiter sliding window limiter with scene support.
+type SlidingWindowLimiter[S SceneValuer, B SlidingWindowLimiterBackend] struct {
 	backend B
-	param   *SlidingWindowLimiterParam
+	sps     SceneParamRegistry[S, SlidingWindowLimiterParam]
 }
 
 // NewSlidingWindowLimiter new sliding window limiter instance.
-func NewSlidingWindowLimiter[B SlidingWindowLimiterBackend](backend B, param *SlidingWindowLimiterParam) *SlidingWindowLimiter[B] {
-	return &SlidingWindowLimiter[B]{
+func NewSlidingWindowLimiter[S SceneValuer, B SlidingWindowLimiterBackend](backend B) *SlidingWindowLimiter[S, B] {
+	return &SlidingWindowLimiter[S, B]{
 		backend: backend,
-		param:   param,
+		sps: NewSceneParamRegistry[S]("window:limiter:", &SlidingWindowLimiterParam{
+			Window:   60,
+			MaxLimit: 10,
+		}),
 	}
+}
+
+// SetKeyPrefix sets the key prefix.
+// NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
+func (l *SlidingWindowLimiter[S, B]) SetKeyPrefix(keyPrefix string) *SlidingWindowLimiter[S, B] {
+	l.sps.SetKeyPrefix(keyPrefix)
+	return l
+}
+
+// SetParam sets the default param.
+// NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
+func (l *SlidingWindowLimiter[S, B]) SetParam(p *SlidingWindowLimiterParam) *SlidingWindowLimiter[S, B] {
+	l.sps.SetParam(p)
+	return l
+}
+
+// SetSceneParam sets the param for a specific scene.
+// NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
+func (l *SlidingWindowLimiter[S, B]) SetSceneParam(scene S, param *SlidingWindowLimiterParam) *SlidingWindowLimiter[S, B] {
+	l.sps.SetSceneParam(scene, param)
+	return l
 }
 
 // Take 尝试获取一个请求的配额单位.
 // 如果有可用配额, 则请求被允许, 并且增加一次配额消费.
 // 如果没有配额, 则请求被拒绝.
-func (l *SlidingWindowLimiter[B]) Take(ctx context.Context, id string) (*LimiterResult, error) {
+func (l *SlidingWindowLimiter[S, B]) Take(ctx context.Context, scene S, id string) (*LimiterResult, error) {
+	p := l.sps.useScene(scene)
 	return l.backend.Take(ctx, &LimiterTakeRequest{
-		Key:       l.param.formatKey(id),
-		LockedKey: l.param.formatLockedKey(id),
-		Window:    l.param.Window,
-		MaxLimit:  l.param.MaxLimit,
+		Key:       l.sps.formatKey(scene.Value(), id),
+		LockedKey: l.sps.formatLockedKey(scene.Value(), id),
+		Window:    p.Window,
+		MaxLimit:  p.MaxLimit,
 		UniqueId:  UniqueId(),
 	})
 }
 
 // Check 检查下一个请求是否被允许, 不修改任何数据.
-func (l *SlidingWindowLimiter[B]) Check(ctx context.Context, id string) (*LimiterResult, error) {
+func (l *SlidingWindowLimiter[S, B]) Check(ctx context.Context, scene S, id string) (*LimiterResult, error) {
+	p := l.sps.useScene(scene)
 	return l.backend.Check(ctx, &LimiterCheckRequest{
-		Key:       l.param.formatKey(id),
-		LockedKey: l.param.formatLockedKey(id),
-		Window:    l.param.Window,
-		MaxLimit:  l.param.MaxLimit,
+		Key:       l.sps.formatKey(scene.Value(), id),
+		LockedKey: l.sps.formatLockedKey(scene.Value(), id),
+		Window:    p.Window,
+		MaxLimit:  p.MaxLimit,
 	})
 }
 
 // Lock 锁定 key, 在滑动窗口内将拒绝所有请求.
-func (l *SlidingWindowLimiter[B]) Lock(ctx context.Context, id string) (*LimiterResult, error) {
+func (l *SlidingWindowLimiter[S, B]) Lock(ctx context.Context, scene S, id string) (*LimiterResult, error) {
+	p := l.sps.useScene(scene)
 	return l.backend.Lock(ctx, &LimiterLockRequest{
-		Key:       l.param.formatKey(id),
-		LockedKey: l.param.formatLockedKey(id),
-		Window:    l.param.Window,
-		MaxLimit:  l.param.MaxLimit,
+		Key:       l.sps.formatKey(scene.Value(), id),
+		LockedKey: l.sps.formatLockedKey(scene.Value(), id),
+		Window:    p.Window,
+		MaxLimit:  p.MaxLimit,
 	})
 }
 
 // Reset 清除 key的所有限制.
-func (l *SlidingWindowLimiter[B]) Reset(ctx context.Context, id string) error {
+func (l *SlidingWindowLimiter[S, B]) Reset(ctx context.Context, scene S, id string) error {
 	return l.backend.Reset(ctx, &LimiterResetRequest{
-		Key:       l.param.formatKey(id),
-		LockedKey: l.param.formatLockedKey(id),
+		Key:       l.sps.formatKey(scene.Value(), id),
+		LockedKey: l.sps.formatLockedKey(scene.Value(), id),
 	})
 }

@@ -11,8 +11,7 @@ import (
 	"github.com/thinkgos/proc-extra/limiter/window_limiter"
 )
 
-const testSlidingWindowFailureLimiterScene_Invalid = "invalid_scene"
-const testSlidingWindowFailureLimiterScene = "test_kind"
+const testSlidingWindowFailureLimiterScene testSceneType = "test_kind"
 
 const (
 	testSlidingWindowFailureLimiterKeyPrefix  = "period:failure:limiter:test-scene:"
@@ -24,36 +23,17 @@ const testSlidingWindowFailureLimiterId1 = "id1"
 
 var errTestSlidingWindowFailureLimiter = errors.New("a test error")
 
-var testSlidingWindowFailureLimiterParams = map[string]*window_limiter.SlidingWindowFailureLimiterParam{
-	testSlidingWindowFailureLimiterScene: {
-		KeyPrefix:   testSlidingWindowFailureLimiterKeyPrefix,
-		Window:      testSlidingWindowFailureLimiterWindow,
-		MaxFailures: testSlidingWindowFailureLimiterMaxAttempt,
-	},
-}
-
-func GenericTest_SlidingWindowFailureLimiter_InvalidScene[B window_limiter.SlidingWindowFailureLimiterBackend](t *testing.T, mr *miniredis.Miniredis, backend B) {
-	l := window_limiter.NewSlidingWindowFailureLimiterRegistry[string](backend).
-		RegistersParams(testSlidingWindowFailureLimiterParams)
-
-	_, err := l.EvaluateErr(context.Background(), testSlidingWindowFailureLimiterScene_Invalid, testSlidingWindowFailureLimiterId1, errTestSlidingWindowFailureLimiter)
-	require.ErrorIs(t, window_limiter.ErrSceneParamNotFound, err)
-
-	_, err = l.Check(context.Background(), testSlidingWindowFailureLimiterScene_Invalid, testSlidingWindowFailureLimiterId1)
-	require.ErrorIs(t, window_limiter.ErrSceneParamNotFound, err)
-
-	_, err = l.Lock(context.Background(), testSlidingWindowFailureLimiterScene_Invalid, testSlidingWindowFailureLimiterId1)
-	require.ErrorIs(t, window_limiter.ErrSceneParamNotFound, err)
-
-	err = l.Reset(context.Background(), testSlidingWindowFailureLimiterScene_Invalid, testSlidingWindowFailureLimiterId1)
-	require.ErrorIs(t, window_limiter.ErrSceneParamNotFound, err)
+var testSlidingWindowFailureLimiterParam = &window_limiter.SlidingWindowLimiterParam{
+	Window:   testSlidingWindowFailureLimiterWindow,
+	MaxLimit: testSlidingWindowFailureLimiterMaxAttempt,
 }
 
 func GenericTest_SlidingWindowFailureLimiter_Work[B window_limiter.SlidingWindowFailureLimiterBackend](t *testing.T, mr *miniredis.Miniredis, backend B) {
-	l := window_limiter.NewSlidingWindowFailureLimiterRegistry[string](backend).
-		RegistersParams(testSlidingWindowFailureLimiterParams)
+	l := window_limiter.NewSlidingWindowFailureLimiter[testSceneType](backend).
+		SetKeyPrefix(testSlidingWindowFailureLimiterKeyPrefix).
+		SetParam(testSlidingWindowFailureLimiterParam)
 
-		// check the sliding window first
+	// check the sliding window first
 	pv1, err := l.Check(context.Background(), testSlidingWindowFailureLimiterScene, testSlidingWindowFailureLimiterId1)
 	require.NoError(t, err)
 	require.True(t, pv1.Allow)
@@ -113,10 +93,11 @@ func GenericTest_SlidingWindowFailureLimiter_Work[B window_limiter.SlidingWindow
 }
 
 func GenericTest_SlidingWindowFailureLimiter_Lock[B window_limiter.SlidingWindowFailureLimiterBackend](t *testing.T, mr *miniredis.Miniredis, backend B) {
-	l := window_limiter.NewSlidingWindowFailureLimiterRegistry[string](backend).
-		RegistersParams(testSlidingWindowFailureLimiterParams)
+	l := window_limiter.NewSlidingWindowFailureLimiter[testSceneType](backend).
+		SetKeyPrefix(testSlidingWindowFailureLimiterKeyPrefix).
+		SetParam(testSlidingWindowFailureLimiterParam)
 
-		// evaluate requests
+	// evaluate requests
 	v, err := l.EvaluateErr(context.Background(), testSlidingWindowFailureLimiterScene, testSlidingWindowFailureLimiterId1, errTestSlidingWindowFailureLimiter)
 	require.NoError(t, err)
 	require.True(t, v.Allow)
