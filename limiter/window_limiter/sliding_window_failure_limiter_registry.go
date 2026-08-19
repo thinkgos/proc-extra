@@ -11,7 +11,7 @@ type WindowFailureLimiterRegistry[S comparable] interface {
 	// Evaluate  评估本次操作.
 	// - 窗口内失败次数超过 MaxFailures, 则 Allow 必定为 false. 并拒绝本次操作.(直接拒绝并提示超过最大限制)
 	// - 窗口内失败次数未超过 MaxFailures, 则 Allow 为 true. (走正常流程)
-	//   - 若 IsFailure == true, 提示业务错误
+	//   - 若 IsFailure == true, 表示业务错误
 	//   - 若 IsFailure == false, 清除所有限制, 走正常流程.
 	Evaluate(ctx context.Context, scene S, id string, isFailure bool) (*FailureLimiterResult, error)
 	// Check 检查下一个操作是否被允许, 不修改任何数据.

@@ -4,91 +4,100 @@ import (
 	"context"
 	"errors"
 	"math/rand/v2"
+	"slices"
 	"strconv"
 	"time"
 )
 
-// ErrSceneParamNotFound is an error that param scene not found.
-var ErrSceneParamNotFound = errors.New("limit: the scene's param not found")
-var ErrReachMaximumQuota = errors.New("limit: reach the maximum quota")
+// ErrReachMaximumQuota is an error that reach the maximum quota.
+var ErrReachMaximumQuota = errors.New("limit_verified: reach the maximum quota")
 
 type SendCodeResult = EvaluateResult
 
-type LimitVerifier interface {
+type SceneValuer interface {
+	comparable
+	Value() string
+}
+
+type LimitVerifier[S SceneValuer] interface {
 	Name() string
-	SendCode(ctx context.Context, target, code string) (*SendCodeResult, error)
-	VerifyCode(ctx context.Context, target, code string) (*VerifyResult, error)
-}
-
-// LimitVerifiedProvider the provider
-type LimitVerifiedProvider interface {
-	Name() string
-	SendCode(ctx context.Context, target, code string) error
-}
-
-type WindowTier struct {
-	Window time.Duration // 子窗口时间
-	Quota  int           // 子窗口内配额
-}
-
-type Param struct {
-	Scene           string        // 验证码场景
-	Window          time.Duration // 验证码最大滚动窗口时间, 24小时
-	Quota           int           // 验证码最大滚动窗口内配额, 30次
-	WindowTiers     []WindowTier  // 子窗口限制, 从小到大排列, 如 [{1min,3}, {4h,15}]
-	CodeExpires     int           // 验证码有效期, 300秒
-	CodeMaxAttempts int           // 验证码最大尝试次数, 3次
-}
-
-func NewParam(scene string) *Param {
-	return &Param{
-		Scene:           scene,
-		Window:          time.Hour * 24,
-		Quota:           30,
-		CodeExpires:     300,
-		CodeMaxAttempts: 3,
-	}
+	SendCode(ctx context.Context, scene S, target, code string) (*SendCodeResult, error)
+	VerifyCode(ctx context.Context, scene S, target, code string) (*VerifyResult, error)
 }
 
 // LimitVerified limit verified code
-type LimitVerified[P LimitVerifiedProvider, B LimitVerifiedBackend] struct {
+type LimitVerified[S SceneValuer, P LimitVerifiedProvider, B LimitVerifiedBackend] struct {
 	p         LimitVerifiedProvider // LimitVerifiedProvider send code
 	backend   LimitVerifiedBackend  // backend client
 	keyPrefix string                // key prefix
-	param     *Param
+	param     *Param                // wildcard param
+	specials  []SpecialParam[S]     // special params for each scene
 }
 
 // NewLimitVerified  new a limit verified
-func NewLimitVerified[P LimitVerifiedProvider, B LimitVerifiedBackend](p P, backend B, param *Param) *LimitVerified[P, B] {
-	return &LimitVerified[P, B]{
+func NewLimitVerified[S SceneValuer, P LimitVerifiedProvider, B LimitVerifiedBackend](p P, backend B) *LimitVerified[S, P, B] {
+	return &LimitVerified[S, P, B]{
 		p:         p,
 		backend:   backend,
-		keyPrefix: "limit:verifier:scene:",
-		param:     param,
+		keyPrefix: "limit:verifier:",
+		param:     NewParam(),
+		specials:  make([]SpecialParam[S], 0),
 	}
 }
 
 // SetKeyPrefix sets the key prefix for the limit verified registry.
 // NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
-func (v *LimitVerified[P, B]) SetKeyPrefix(keyPrefix string) *LimitVerified[P, B] {
+func (v *LimitVerified[S, P, B]) SetKeyPrefix(keyPrefix string) *LimitVerified[S, P, B] {
 	v.keyPrefix = keyPrefix
 	return v
 }
 
+// SetParam sets the wildcard param for the limit verified registry.
+// NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
+func (v *LimitVerified[S, P, B]) SetParam(p *Param) *LimitVerified[S, P, B] {
+	v.param = p
+	return v
+}
+
+// SetSpecialParam sets the param for a specific scene.
+// NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
+func (v *LimitVerified[S, P, B]) SetSpecialParam(scene S, param *Param) *LimitVerified[S, P, B] {
+	for i := range v.specials {
+		if v.specials[i].Scene == scene {
+			v.specials[i].Param = param
+			return v
+		}
+	}
+	v.specials = append(v.specials, SpecialParam[S]{Scene: scene, Param: param})
+	v.specials = slices.Clone(v.specials)
+	return v
+}
+func (v *LimitVerified[S, P, B]) useScene(scene S) *Param {
+	for _, s := range v.specials {
+		if s.Scene == scene {
+			return s.Param
+		}
+	}
+	return v.param
+}
+
 // Name the provider name
-func (v *LimitVerified[P, B]) Name() string { return v.p.Name() }
+func (v *LimitVerified[S, P, B]) Name() string { return v.p.Name() }
 
 // SendCode send code and backend.
-func (v *LimitVerified[P, B]) SendCode(ctx context.Context, target, code string) (*EvaluateResult, error) {
+func (v *LimitVerified[S, P, B]) SendCode(ctx context.Context, scene S, target, code string) (*EvaluateResult, error) {
+	p := v.useScene(scene)
 	uniqueId := UniqueId()
+	key := v.formatKey(target)
+	codeKey := v.formatCodeKey(target, scene.Value())
 	result, err := v.backend.Evaluate(ctx, &EvaluateRequest{
-		Key:             v.formatKey(target),
-		CodeKey:         v.formatCodeKey(target),
-		Window:          v.param.Window,
-		Quota:           v.param.Quota,
-		WindowTiers:     v.param.WindowTiers,
-		CodeExpires:     v.param.CodeExpires,
-		CodeMaxAttempts: v.param.CodeMaxAttempts,
+		Key:             key,
+		CodeKey:         codeKey,
+		Window:          p.Window,
+		Quota:           p.Quota,
+		WindowTiers:     p.WindowTiers,
+		CodeExpires:     p.CodeExpires,
+		CodeMaxAttempts: p.CodeMaxAttempts,
 		Code:            code,
 		UniqueId:        uniqueId,
 	})
@@ -103,8 +112,8 @@ func (v *LimitVerified[P, B]) SendCode(ctx context.Context, target, code string)
 	defer func() {
 		if err != nil && !errors.Is(err, ErrReachMaximumQuota) {
 			_ = v.backend.Rollback(ctx, &RollbackRequest{
-				Key:      v.formatKey(target),
-				CodeKey:  v.formatCodeKey(target),
+				Key:      key,
+				CodeKey:  codeKey,
 				UniqueId: uniqueId,
 			})
 		}
@@ -117,19 +126,19 @@ func (v *LimitVerified[P, B]) SendCode(ctx context.Context, target, code string)
 }
 
 // VerifyCode verify code from cache.
-func (v *LimitVerified[P, B]) VerifyCode(ctx context.Context, target, code string) (*VerifyResult, error) {
+func (v *LimitVerified[S, P, B]) VerifyCode(ctx context.Context, scene S, target, code string) (*VerifyResult, error) {
 	return v.backend.Verify(ctx, &VerifyRequest{
 		Key:     v.formatKey(target),
-		CodeKey: v.formatCodeKey(target),
+		CodeKey: v.formatCodeKey(target, scene.Value()),
 		Code:    code,
 	})
 }
 
-func (v *LimitVerified[P, B]) formatKey(target string) string {
+func (v *LimitVerified[S, P, B]) formatKey(target string) string {
 	return v.keyPrefix + target
 }
-func (v *LimitVerified[P, B]) formatCodeKey(target string) string {
-	return v.keyPrefix + target + ":_code_:" + v.param.Scene
+func (v *LimitVerified[S, P, B]) formatCodeKey(target, scene string) string {
+	return v.keyPrefix + target + ":_code_:" + scene
 }
 
 // UniqueId 生成一个唯一的id.
@@ -140,10 +149,3 @@ func UniqueId() string {
 	b = strconv.AppendUint(b, uint64(rand.Uint32()), 36)
 	return string(b)
 }
-
-var _ LimitVerifiedProvider = DummyDriver{}
-
-type DummyDriver struct{}
-
-func (DummyDriver) Name() string                                            { return "limit-verified-dummy-provider" }
-func (DummyDriver) SendCode(ctx context.Context, target, code string) error { return nil }

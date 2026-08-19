@@ -21,13 +21,14 @@ func Test_LimitVerifiedName(t *testing.T) {
 	)
 }
 
-func Test_LimitVerifiedInvalidScene(t *testing.T) {
+func Test_LimitVerifiedCommonParam(t *testing.T) {
 	mr, err := miniredis.Run()
 	require.Nil(t, err)
 	defer mr.Close()
-	tests.GenericTest_InvalidScene(
+
+	tests.GenericTest_CommonParam(
 		t,
-		nil,
+		mr,
 		redisV9.NewRedisStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
 	)
 }
