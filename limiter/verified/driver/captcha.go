@@ -1,33 +1,43 @@
 package driver
 
 import (
-	"context"
+	"image/color"
 
 	"github.com/mojocn/base64Captcha"
 	"github.com/thinkgos/proc-extra/limiter/verified"
 )
 
-var _ verified.ChallengeProvider = (*Captcha)(nil)
-
-type Captcha struct {
-	driver base64Captcha.Driver
+type CaptchaDriver struct {
+	alphaDigit verified.ChallengeProvider
+	digit      verified.ChallengeProvider
+	math       verified.ChallengeProvider
 }
 
-func NewCaptcha(d base64Captcha.Driver) *Captcha {
-	return &Captcha{driver: d}
-}
+func NewCaptchaDriver() *CaptchaDriver {
+	alphaDigitDriver := base64Captcha.NewDriverString(80, 240, 2, 2, 4, "234567890abcdefghjkmnpqrstuvwxyz",
+		&color.RGBA{240, 240, 246, 246}, nil, []string{"wqy-microhei.ttc"}).
+		ConvertFonts()
+	digitDriver := base64Captcha.NewDriverDigit(80, 240, 4, 0.7, 80)
+	mathDriver := base64Captcha.NewDriverMath(80, 240, 2, 2,
+		&color.RGBA{240, 240, 246, 246}, nil, []string{"wqy-microhei.ttc"}).
+		ConvertFonts()
 
-func (c *Captcha) Name() string { return "base64-captcha" }
-
-func (c *Captcha) GenerateChallenge(ctx context.Context) (*verified.Challenge, error) {
-	id, q, a := c.driver.GenerateIdQuestionAnswer()
-	it, err := c.driver.DrawCaptcha(q)
-	if err != nil {
-		return nil, err
+	return &CaptchaDriver{
+		alphaDigit: NewCaptchaChallenge(alphaDigitDriver),
+		digit:      NewCaptchaChallenge(digitDriver),
+		math:       NewCaptchaChallenge(mathDriver),
 	}
-	return &verified.Challenge{
-		Id:       id,
-		Question: it.EncodeB64string(),
-		Answer:   a,
-	}, nil
+}
+
+func (v *CaptchaDriver) Driver(dname string) verified.ChallengeProvider {
+	switch dname {
+	case "AlphaDigit":
+		return v.alphaDigit
+	case "Digit":
+		return v.digit
+	case "Math":
+		return v.math
+	default:
+		return new(verified.UnsupportedChallengeProvider)
+	}
 }
