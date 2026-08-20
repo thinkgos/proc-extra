@@ -45,10 +45,10 @@ func (l *SlidingWindowFailureLimiter[S, B]) SetKeyPrefix(keyPrefix string) *Slid
 	return l
 }
 
-// SetParam sets the default param.
+// SetGeneralParam sets the general param.
 // NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
-func (l *SlidingWindowFailureLimiter[S, B]) SetParam(p *SlidingWindowLimiterParam) *SlidingWindowFailureLimiter[S, B] {
-	l.sps.SetParam(p)
+func (l *SlidingWindowFailureLimiter[S, B]) SetGeneralParam(p *SlidingWindowLimiterParam) *SlidingWindowFailureLimiter[S, B] {
+	l.sps.SetGeneralParam(p)
 	return l
 }
 

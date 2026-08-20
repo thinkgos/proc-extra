@@ -17,11 +17,6 @@ type WindowLimiter[S SceneValuer] interface {
 	Reset(ctx context.Context, scene S, id string) error
 }
 
-type SlidingWindowLimiterSceneParam[S SceneValuer] struct {
-	scene S
-	param *SlidingWindowLimiterParam
-}
-
 // SlidingWindowLimiter sliding window limiter with scene support.
 type SlidingWindowLimiter[S SceneValuer, B SlidingWindowLimiterBackend] struct {
 	backend B
@@ -46,10 +41,10 @@ func (l *SlidingWindowLimiter[S, B]) SetKeyPrefix(keyPrefix string) *SlidingWind
 	return l
 }
 
-// SetParam sets the default param.
+// SetParam sets the general param.
 // NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
-func (l *SlidingWindowLimiter[S, B]) SetParam(p *SlidingWindowLimiterParam) *SlidingWindowLimiter[S, B] {
-	l.sps.SetParam(p)
+func (l *SlidingWindowLimiter[S, B]) SetGeneralParam(p *SlidingWindowLimiterParam) *SlidingWindowLimiter[S, B] {
+	l.sps.SetGeneralParam(p)
 	return l
 }
 

@@ -48,16 +48,6 @@ func NewParam() *Param {
 	}
 }
 
-func (p *Param) Clone() *Param {
-	return &Param{
-		Window:          p.Window,
-		Quota:           p.Quota,
-		CodeExpires:     p.CodeExpires,
-		CodeMaxAttempts: p.CodeMaxAttempts,
-		WindowTiers:     slices.Clone(p.WindowTiers),
-	}
-}
-
 type SceneParam[S SceneValuer] struct {
 	scene S
 	param *Param
@@ -83,16 +73,16 @@ func NewLimitVerified[S SceneValuer, P LimitVerifiedProvider, B LimitVerifiedBac
 	}
 }
 
-// SetKeyPrefix sets the key prefix for the limit verified.
+// SetKeyPrefix sets the key prefix.
 // NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
 func (v *LimitVerified[S, P, B]) SetKeyPrefix(keyPrefix string) *LimitVerified[S, P, B] {
 	v.keyPrefix = keyPrefix
 	return v
 }
 
-// SetParam sets the general param for the limit verified.
+// SetGeneralParam sets the general param.
 // NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
-func (v *LimitVerified[S, P, B]) SetParam(p *Param) *LimitVerified[S, P, B] {
+func (v *LimitVerified[S, P, B]) SetGeneralParam(p *Param) *LimitVerified[S, P, B] {
 	v.param = p
 	return v
 }

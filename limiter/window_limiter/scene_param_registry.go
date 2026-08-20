@@ -34,9 +34,9 @@ func (l *SceneParamRegistry[S, P]) SetKeyPrefix(keyPrefix string) {
 	l.keyPrefix = keyPrefix
 }
 
-// SetParam sets the default param.
+// SetGeneralParam sets the default param.
 // NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
-func (l *SceneParamRegistry[S, P]) SetParam(p *P) {
+func (l *SceneParamRegistry[S, P]) SetGeneralParam(p *P) {
 	l.param = p
 }
 

@@ -39,16 +39,16 @@ func NewTempGrant[S SceneValuer, P TempGrantGenerator, B StorageBackend](p P, s 
 // Name the provider name
 func (t *TempGrant[S, P, B]) Name() string { return t.p.Name() }
 
-// SetKeyPrefix sets the key prefix for the limit verified.
+// SetKeyPrefix sets the key prefix.
 // NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
 func (c *TempGrant[S, P, B]) SetKeyPrefix(keyPrefix string) *TempGrant[S, P, B] {
 	c.keyPrefix = keyPrefix
 	return c
 }
 
-// SetParam sets the general param for the limit verified.
+// SetGeneralParam sets the general param.
 // NOTE: This method is NOT safe for concurrent use. It should only be called during initialization.
-func (c *TempGrant[S, P, B]) SetParam(p *Param) *TempGrant[S, P, B] {
+func (c *TempGrant[S, P, B]) SetGeneralParam(p *Param) *TempGrant[S, P, B] {
 	c.param = p
 	return c
 }

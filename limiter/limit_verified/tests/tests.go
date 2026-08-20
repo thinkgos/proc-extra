@@ -195,7 +195,7 @@ func GenericTest_GenericParam[B limit_verified.LimitVerifiedBackend](t *testing.
 		CodeMaxAttempts: 3,
 	}
 	l := limit_verified.NewLimitVerified[testScene](new(TestProvider), backend).
-		SetParam(generalParam)
+		SetGeneralParam(generalParam)
 
 	// 未注册特殊参数的 scene 使用通用 param
 	unknownScene := testScene("unknown_scene")

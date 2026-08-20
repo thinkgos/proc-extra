@@ -99,7 +99,7 @@ func GenericTest_Captcha_UnsupportedChallengeProvider[B verified.StorageBackend]
 func GenericTest_Captcha_InMaxAttempts[B verified.StorageBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
 	l := verified.NewCaptcha[testSceneType](new(TestCaptchaDriver), backend).
 		SetKeyPrefix(testKeyPrefix).
-		SetParam(&verified.Param{
+		SetGeneralParam(&verified.Param{
 			KeyExpires:  testKeyExpires,
 			MaxAttempts: testMaxAttempts_3,
 		})
@@ -121,7 +121,7 @@ func GenericTest_Captcha_InMaxAttempts[B verified.StorageBackend](t *testing.T, 
 func GenericTest_Captcha_OverMaxAttempts[B verified.StorageBackend](t *testing.T, _ *miniredis.Miniredis, backend B) {
 	l := verified.NewCaptcha[testSceneType](new(TestCaptchaDriver), backend).
 		SetKeyPrefix(testKeyPrefix).
-		SetParam(&verified.Param{
+		SetGeneralParam(&verified.Param{
 			KeyExpires:  testKeyExpires,
 			MaxAttempts: 6,
 		})
