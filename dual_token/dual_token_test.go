@@ -9,9 +9,9 @@ import (
 
 // mockBackend implements DualTokenBackend for testing
 type mockBackend struct {
-	saveFn    func(ctx context.Context, r *SaveRequest) error
-	rotateFn  func(ctx context.Context, r *RotateRequest) (*RotateReply, error)
-	revokeFn  func(ctx context.Context, r *RevokeRequest) error
+	saveFn   func(ctx context.Context, r *SaveRequest) error
+	rotateFn func(ctx context.Context, r *RotateRequest) (*RotateReply, error)
+	revokeFn func(ctx context.Context, r *RevokeRequest) error
 
 	saveCalls   []*SaveRequest
 	rotateCalls []*RotateRequest
@@ -50,8 +50,8 @@ func TestNewDualToken(t *testing.T) {
 	if dt.backend != backend {
 		t.Fatal("backend 未正确赋值")
 	}
-	if dt.keyPrefix != "voucher:token:" {
-		t.Fatalf("keyPrefix 期望 'voucher:token:', 实际 '%s'", dt.keyPrefix)
+	if dt.keyPrefix != "voucher:rt:" {
+		t.Fatalf("keyPrefix 期望 'voucher:rt:', 实际 '%s'", dt.keyPrefix)
 	}
 	if dt.graceTTL != 10*time.Second {
 		t.Fatalf("graceTTL 期望 10s, 实际 %s", dt.graceTTL)
@@ -103,8 +103,8 @@ func TestSave(t *testing.T) {
 	}
 
 	req := backend.saveCalls[0]
-	if req.Key != "voucher:token:user1:sess1" {
-		t.Fatalf("Key 期望 'voucher:token:user1:sess1', 实际 '%s'", req.Key)
+	if req.Key != "voucher:rt:user1:sess1" {
+		t.Fatalf("Key 期望 'voucher:rt:user1:sess1', 实际 '%s'", req.Key)
 	}
 	if req.RefreshTokenId != "rtid1" {
 		t.Fatalf("RefreshTokenId 期望 'rtid1', 实际 '%s'", req.RefreshTokenId)
@@ -199,11 +199,11 @@ func TestRotate_Success(t *testing.T) {
 		t.Fatalf("期望调用 Rotate 1次, 实际 %d次", len(backend.rotateCalls))
 	}
 	req := backend.rotateCalls[0]
-	if req.Key != "voucher:token:user1:sess1" {
-		t.Fatalf("Key 期望 'voucher:token:user1:sess1', 实际 '%s'", req.Key)
+	if req.Key != "voucher:rt:user1:sess1" {
+		t.Fatalf("Key 期望 'voucher:rt:user1:sess1', 实际 '%s'", req.Key)
 	}
-	if req.GraceKey != "voucher:token:user1:sess1:grace" {
-		t.Fatalf("GraceKey 期望 'voucher:token:user1:sess1:grace', 实际 '%s'", req.GraceKey)
+	if req.GraceKey != "voucher:rt:user1:sess1:grace" {
+		t.Fatalf("GraceKey 期望 'voucher:rt:user1:sess1:grace', 实际 '%s'", req.GraceKey)
 	}
 	if req.NewRefreshTokenId != "new-rtid" {
 		t.Fatalf("NewRefreshTokenId 期望 'new-rtid', 实际 '%s'", req.NewRefreshTokenId)
@@ -358,11 +358,11 @@ func TestRevoke(t *testing.T) {
 		t.Fatalf("期望调用 Revoke 1次, 实际 %d次", len(backend.revokeCalls))
 	}
 	req := backend.revokeCalls[0]
-	if req.Key != "voucher:token:user1:sess1" {
-		t.Fatalf("Key 期望 'voucher:token:user1:sess1', 实际 '%s'", req.Key)
+	if req.Key != "voucher:rt:user1:sess1" {
+		t.Fatalf("Key 期望 'voucher:rt:user1:sess1', 实际 '%s'", req.Key)
 	}
-	if req.GraceKey != "voucher:token:user1:sess1:grace" {
-		t.Fatalf("GraceKey 期望 'voucher:token:user1:sess1:grace', 实际 '%s'", req.GraceKey)
+	if req.GraceKey != "voucher:rt:user1:sess1:grace" {
+		t.Fatalf("GraceKey 期望 'voucher:rt:user1:sess1:grace', 实际 '%s'", req.GraceKey)
 	}
 }
 
