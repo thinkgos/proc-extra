@@ -12,7 +12,7 @@ require (
 	github.com/spf13/cast v1.10.0
 	github.com/sqids/sqids-go v0.4.1
 	github.com/stretchr/testify v1.12.1
-	github.com/thinkgos/proc v0.0.0-20260814070301-45de25ddf7c1
+	github.com/thinkgos/proc v0.0.0-20260823080946-f6a2012d0acd
 	github.com/xuri/excelize/v2 v2.11.0
 	go.opentelemetry.io/otel/sdk v1.46.0
 	go.opentelemetry.io/otel/trace v1.46.0
