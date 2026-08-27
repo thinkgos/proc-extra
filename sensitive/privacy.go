@@ -13,11 +13,11 @@ import (
 
 // error defined
 var (
-	ErrInputNotMultipleBlocks = errors.New("decoded message length must be multiple of block size")
-	ErrIvInvalidSize          = errors.New("iv length must equal block size")
-	ErrUnPaddingOutOfRange    = errors.New("unPadding out of range")
-	ErrIvValueIllegal         = errors.New("iv value illegal")
-	ErrIvValueExpired         = errors.New("iv value has expired")
+	ErrInputIllegal        = errors.New("decoded message illegal")
+	ErrIvInvalidSize       = errors.New("iv length must equal block size")
+	ErrUnPaddingOutOfRange = errors.New("unPadding out of range")
+	ErrIvValueIllegal      = errors.New("iv value illegal")
+	ErrIvValueExpired      = errors.New("iv value has expired")
 )
 
 type Privacy struct {
@@ -55,7 +55,7 @@ func New(opts ...Option) *Privacy {
 }
 
 // Encrypt aes cbc, iv + ciphertext base64 encoded.
-// key must 16, 24, 32
+// secret must 16, 24, 32
 func (p *Privacy) Encrypt(secret, rawText []byte) (string, error) {
 	cip, err := aes.NewCipher(secret)
 	if err != nil {
@@ -80,7 +80,7 @@ func (p *Privacy) Encrypt(secret, rawText []byte) (string, error) {
 }
 
 // Decrypt aes cbc, base64 decoded iv + ciphertext.
-// key must 16, 24, 32
+// secret must 16, 24, 32
 func (p *Privacy) Decrypt(secret []byte, cipherText string) ([]byte, error) {
 	body, err := base64.StdEncoding.DecodeString(cipherText)
 	if err != nil {
@@ -92,7 +92,7 @@ func (p *Privacy) Decrypt(secret []byte, cipherText string) ([]byte, error) {
 	}
 	blockSize := cip.BlockSize()
 	if len(body) == 0 || len(body)%blockSize != 0 {
-		return nil, ErrInputNotMultipleBlocks
+		return nil, ErrInputIllegal
 	}
 	iv, msg := body[:blockSize], body[blockSize:]
 	err = p.ivChecker(iv)
