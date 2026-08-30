@@ -44,6 +44,42 @@ func Test_TempGrant_OneShot(t *testing.T) {
 		redisV9.NewRedisStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
 	)
 }
+func Test_TempGrant_Validate(t *testing.T) {
+	mr, err := miniredis.Run()
+	assert.NoError(t, err)
+	defer mr.Close()
+
+	tests.GenericTest_TempGrant_Validate(
+		t,
+		mr,
+		redisV9.NewRedisStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
+	)
+}
+
+func Test_TempGrant_Validate_Timeout(t *testing.T) {
+	mr, err := miniredis.Run()
+	assert.NoError(t, err)
+	defer mr.Close()
+
+	tests.GenericTest_TempGrant_Validate_Timeout(
+		t,
+		mr,
+		redisV9.NewRedisStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
+	)
+}
+
+func Test_TempGrant_Validate_ThenConsume(t *testing.T) {
+	mr, err := miniredis.Run()
+	assert.NoError(t, err)
+	defer mr.Close()
+
+	tests.GenericTest_TempGrant_Validate_ThenConsume(
+		t,
+		mr,
+		redisV9.NewRedisStore(redis.NewClient(&redis.Options{Addr: mr.Addr()})),
+	)
+}
+
 func Test_TempGrant_OneShot_Timeout(t *testing.T) {
 	mr, err := miniredis.Run()
 	assert.NoError(t, err)

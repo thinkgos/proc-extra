@@ -9,14 +9,8 @@ local vals = redis.call("HMGET", key, "value", "attempts", "max_attempts")
 local want_value = vals[1]
 local attempts = tonumber(vals[2])
 local max_attempts = tonumber(vals[3])
-if want_value == value then
-	redis.call("DEL", key)
+if want_value == value and attempts < max_attempts then
 	return 0 -- 成功
 else
-	if attempts + 1 >= max_attempts then
-		redis.call("DEL", key)
-	else
- 	    redis.call("HINCRBY", key, "attempts", 1)
-	end
 	return 1 -- 值不相等, 验证失败
 end

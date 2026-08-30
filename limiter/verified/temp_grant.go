@@ -8,6 +8,7 @@ import (
 type TempGranter[S SceneValuer] interface {
 	Issue(ctx context.Context, scene S, id string, opts ...Option) (string, error)
 	Consume(ctx context.Context, scene S, id, token string) (bool, error)
+	Validate(ctx context.Context, scene S, id, token string) (bool, error)
 }
 
 // TempGrantGenerator the temp grant generator
@@ -97,6 +98,13 @@ func (t *TempGrant[S, P, B]) Issue(ctx context.Context, scene S, id string, opts
 // Consume the temp grant token.
 func (t *TempGrant[S, P, B]) Consume(ctx context.Context, scene S, id, token string) (bool, error) {
 	return t.backend.Verify(ctx, &VerifyArgs{
+		Key:    t.formatKey(scene.Value(), id),
+		Answer: token,
+	})
+}
+
+func (t *TempGrant[S, P, B]) Validate(ctx context.Context, scene S, id, token string) (bool, error) {
+	return t.backend.Inspect(ctx, &VerifyArgs{
 		Key:    t.formatKey(scene.Value(), id),
 		Answer: token,
 	})

@@ -23,4 +23,5 @@ type VerifyArgs struct {
 type StorageBackend interface {
 	Save(context.Context, *SaveArgs) error
 	Verify(context.Context, *VerifyArgs) (bool, error)
+	Inspect(context.Context, *VerifyArgs) (bool, error)
 }

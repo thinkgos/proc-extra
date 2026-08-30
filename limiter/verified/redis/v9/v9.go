@@ -50,3 +50,17 @@ func (s *RedisStore) Verify(ctx context.Context, p *verified.VerifyArgs) (bool, 
 	}
 	return code == 0, nil
 }
+
+// Inspect the answer.
+func (s *RedisStore) Inspect(ctx context.Context, p *verified.VerifyArgs) (bool, error) {
+	code, err := s.client.Eval(
+		ctx,
+		redisScript.ScriptInspect,
+		[]string{p.Key},
+		[]string{p.Answer},
+	).Int64()
+	if err != nil {
+		return false, err
+	}
+	return code == 0, nil
+}
