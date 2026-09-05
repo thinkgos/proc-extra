@@ -112,7 +112,7 @@ Revoke(ctx, &RevokeParam{
 ```go
 import (
     "github.com/redis/go-redis/v9"
-    "github.com/thinkgos/admin-go/pkg/core/dual_token"
+    "github.com/thinkgos/proc-extra/dual_token"
 )
 
 // 初始化
