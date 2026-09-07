@@ -170,7 +170,7 @@ func FromError(err error) *Error {
 	if err == nil {
 		return nil
 	}
-	if te := new(Error); errors.As(err, &te) {
+	if te, ok := errors.AsType[*Error](err); ok {
 		return te
 	}
 	return NewInternalServer().WithCause(err)
@@ -194,11 +194,11 @@ func EqualCode(err error, targetCode int32) bool {
 	if err == nil {
 		return http.StatusOK == targetCode
 	}
-	if te := new(Error); errors.As(err, &te) {
+	if te, ok := errors.AsType[*Error](err); ok {
 		if te == nil {
 			return http.StatusOK == targetCode
 		} else {
-			return te != nil && te.code == targetCode
+			return te.code == targetCode
 		}
 	}
 	return http.StatusInternalServerError == targetCode
