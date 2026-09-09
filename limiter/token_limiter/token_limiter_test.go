@@ -2,6 +2,7 @@ package token_limiter_test
 
 import (
 	"context"
+	"slices"
 	"testing"
 	"time"
 
@@ -49,13 +50,7 @@ func Test_SetKeyPrefix(t *testing.T) {
 	assert.True(t, ok)
 
 	keys := mr.Keys()
-	found := false
-	for _, k := range keys {
-		if k == "custom:prefix:normal:user1" {
-			found = true
-			break
-		}
-	}
+	found := slices.Contains(keys, "custom:prefix:normal:user1")
 	assert.True(t, found, "expected key with custom prefix")
 }
 

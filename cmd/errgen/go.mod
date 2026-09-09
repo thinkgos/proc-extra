@@ -1,6 +1,6 @@
 module github.com/thinkgos/proc-extra/cmd/errgen
 
-go 1.26
+go 1.27
 
 require (
 	github.com/sourcegraph/conc v0.3.0

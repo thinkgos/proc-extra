@@ -1,6 +1,6 @@
 module github.com/thinkgos/proc-extra
 
-go 1.26
+go 1.27
 
 require (
 	github.com/alecthomas/participle/v2 v2.1.4

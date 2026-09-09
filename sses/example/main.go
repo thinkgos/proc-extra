@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"math/rand"
 	"net/http"
+	"slices"
 	"strconv"
 	"time"
 
@@ -158,8 +159,8 @@ func (p Pipeline) Handle(final http.Handler) http.Handler {
 		return final
 	}
 	handle := final
-	for i := len(p.middlewares) - 1; i >= 0; i-- {
-		handle = p.middlewares[i](handle)
+	for _, v := range slices.Backward(p.middlewares) {
+		handle = v(handle)
 	}
 	return handle
 }
