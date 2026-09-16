@@ -22,6 +22,7 @@ type serveOptions struct {
 	extractEventType   *lookup.Lookup
 	extractLastEventId *lookup.Lookup
 	errFallback        func(http.ResponseWriter, *http.Request, error)
+	onBeforeRegister   func(*http.Request, *Session) error
 	onRegister         func(*Session) // 注册时
 	onDeregister       func(*Session) // 注销时
 }
@@ -37,8 +38,9 @@ func defaultServeOptions() *serveOptions {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))
 		},
-		onRegister:   func(s *Session) {},
-		onDeregister: func(s *Session) {},
+		onBeforeRegister: func(*http.Request, *Session) error { return nil },
+		onRegister:       func(s *Session) {},
+		onDeregister:     func(s *Session) {},
 	}
 }
 
@@ -101,6 +103,13 @@ func WithErrorFallback(fn func(http.ResponseWriter, *http.Request, error)) Serve
 	}
 }
 
+// WithServeOnBeforeRegister sets the function to be called when a user session is registered.
+func WithServeOnBeforeRegister(fn func(*http.Request, *Session) error) ServeOption {
+	return func(o *serveOptions) {
+		o.onBeforeRegister = fn
+	}
+}
+
 // WithServeOnRegister sets the function to be called when a user session is registered.
 func WithServeOnRegister(fn func(*Session)) ServeOption {
 	return func(o *serveOptions) {
@@ -147,10 +156,7 @@ func (h *Hub) Serve(opts ...ServeOption) http.Handler {
 			return
 		}
 		//* 获取会话id, 如果没有, 则创建一个
-		sessionId := opt.extractSessionId.ExtractValueOr(r, "")
-		if sessionId == "" {
-			sessionId = NewSessionId()
-		}
+		sessionId := opt.extractSessionId.ExtractValueOrFunc(r, NewSessionId)
 		//* 获取请求事件类型和最后的事件id
 		eventType := opt.extractEventType.ExtractValueOr(r, DefaultEventType)
 		lastEventId := opt.extractLastEventId.ExtractValueOr(r, "")
@@ -160,6 +166,12 @@ func (h *Hub) Serve(opts ...ServeOption) http.Handler {
 			SessionId: sessionId,
 			Channel:   channel,
 			Message:   make(chan *Event, h.bufferSize),
+		}
+
+		//* 调用注册前钩子
+		if err := opt.onBeforeRegister(r, session); err != nil {
+			opt.errFallback(w, r, err)
+			return
 		}
 
 		//* 注册用户会话
