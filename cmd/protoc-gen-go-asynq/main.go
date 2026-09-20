@@ -18,7 +18,6 @@ var args = &struct {
 func init() {
 	flag.BoolVar(&args.ShowVersion, "version", false, "print the version and exit")
 	flag.BoolVar(&args.DisableValidate, "disable_validate", false, "disable client validation")
-
 }
 
 func main() {
