@@ -69,8 +69,7 @@ func generateFileContent(gen *protogen.Plugin, file *protogen.File, g *protogen.
 	g.P("var _ = ", contextPackage.Ident("TODO"))
 	g.P("var _ = ", asynqPackage.Ident("NewServeMux"))
 	g.P("var _ = new(", emptyPackage.Ident("Empty"), ")")
-	g.P("var _ = ", fmtPackage.Ident("GoStringer"))
-
+	g.P("var _ = ", fmtPackage.Ident("Errorf"))
 	g.P()
 
 	for _, service := range file.Services {
