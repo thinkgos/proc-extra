@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 
 	"google.golang.org/protobuf/compiler/protogen"
@@ -37,7 +38,7 @@ func runProtoGen(gen *protogen.Plugin) error {
 
 // generateFile generates a .gin.pb.go file.
 func generateFile(gen *protogen.Plugin, file *protogen.File) *protogen.GeneratedFile {
-	if len(file.Services) == 0 || (!hasHTTPRule(file.Services)) {
+	if len(file.Services) == 0 || (!hasAsynqRule(file.Services)) {
 		return nil
 	}
 	filename := file.GeneratedFilenamePrefix + ".asynq.pb.go"
@@ -92,7 +93,7 @@ func genService(gen *protogen.Plugin, file *protogen.File, g *protogen.Generated
 		if method.Desc.IsStreamingClient() || method.Desc.IsStreamingServer() {
 			continue
 		}
-		rule := ParserDeriveTask(method.Comments.Leading)
+		rule := ParseDeriveTask(method.Comments.Leading)
 		if rule != nil {
 			sd.Methods = append(sd.Methods, buildAsynqRule(g, method, rule))
 		}
@@ -107,18 +108,12 @@ func genService(gen *protogen.Plugin, file *protogen.File, g *protogen.Generated
 	}
 }
 
-func hasHTTPRule(services []*protogen.Service) bool {
-	for _, service := range services {
-		for _, method := range service.Methods {
-			if method.Desc.IsStreamingClient() || method.Desc.IsStreamingServer() {
-				continue
-			}
-			if ok := IsDeriveTaskEnabled(method.Comments.Leading); ok {
-				return true
-			}
-		}
-	}
-	return false
+func hasAsynqRule(services []*protogen.Service) bool {
+	return slices.ContainsFunc(services, func(service *protogen.Service) bool {
+		return slices.ContainsFunc(service.Methods, func(method *protogen.Method) bool {
+			return !method.Desc.IsStreamingClient() && !method.Desc.IsStreamingServer() && IsEnableDeriveTask(method.Comments.Leading)
+		})
+	})
 }
 
 func buildAsynqRule(g *protogen.GeneratedFile, m *protogen.Method, rule *Task) *methodDesc {

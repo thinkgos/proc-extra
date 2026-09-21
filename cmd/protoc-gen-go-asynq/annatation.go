@@ -1,6 +1,7 @@
 package main
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/thinkgos/proc-extra/proc"
@@ -17,23 +18,33 @@ type Task struct {
 	Pattern string
 }
 
-func IsDeriveTaskEnabled(s protogen.Comments) bool {
+func IsEnableDeriveTask(s protogen.Comments) bool {
 	derives, _ := proc.NewCommentLines(string(s)).FindDerives(Identity)
-	return proc.Derives(derives).ContainHeadless(Identity)
+	return slices.ContainsFunc(derives, func(p *proc.Derive) bool {
+		return p.Identity == Identity && slices.ContainsFunc(p.Attrs, func(attr *proc.NameValue) bool {
+			if attr.Name != Attribute_Name_Pattern {
+				return false
+			}
+			vv, ok := attr.Value.(proc.String)
+			return ok && strings.TrimSpace(vv.Value) != ""
+		})
+	})
 }
 
-func ParserDeriveTask(s protogen.Comments) *Task {
+func ParseDeriveTask(s protogen.Comments) *Task {
 	ret := &Task{}
 	derives, _ := proc.NewCommentLines(string(s)).FindDerives(Identity)
 	for _, annotate := range derives {
-		for _, attr := range annotate.Attrs {
-			switch attr.Name {
-			case Attribute_Name_Pattern:
-				if vv, ok := attr.Value.(proc.String); ok {
-					pattern := strings.TrimSpace(vv.Value)
-					if pattern != "" {
-						ret.Pattern = pattern
-						return ret
+		if annotate.Identity == Identity {
+			for _, attr := range annotate.Attrs {
+				switch attr.Name {
+				case Attribute_Name_Pattern:
+					if vv, ok := attr.Value.(proc.String); ok {
+						pattern := strings.TrimSpace(vv.Value)
+						if pattern != "" {
+							ret.Pattern = pattern
+							return ret
+						}
 					}
 				}
 			}
