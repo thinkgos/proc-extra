@@ -1,21 +1,21 @@
 package main
 
 import (
+	"strings"
+
 	"github.com/thinkgos/proc-extra/proc"
 	"google.golang.org/protobuf/compiler/protogen"
 )
 
 // annotation const value
 const (
-	Identity                = "asynq"
-	Attribute_Name_Pattern  = "pattern"
-	Attribute_Name_CronSpec = "cron_spec"
+	Identity               = "asynq"
+	Attribute_Name_Pattern = "pattern"
 )
 
 type Task struct {
-	Enabled  bool
-	Pattern  string
-	CronSpec string
+	Enabled bool
+	Pattern string
 }
 
 func IsDeriveTaskEnabled(s protogen.Comments) bool {
@@ -35,14 +35,13 @@ func ParserDeriveTask(s protogen.Comments) *Task {
 			switch attr.Name {
 			case Attribute_Name_Pattern:
 				if vv, ok := attr.Value.(proc.String); ok {
-					ret.Pattern = vv.Value
-				}
-			case Attribute_Name_CronSpec:
-				if vv, ok := attr.Value.(proc.String); ok {
-					ret.CronSpec = vv.Value
+					ret.Pattern = strings.TrimSpace(vv.Value)
 				}
 			}
 		}
 	}
-	return ret
+	if ret.Pattern != "" {
+		return ret
+	}
+	return nil
 }

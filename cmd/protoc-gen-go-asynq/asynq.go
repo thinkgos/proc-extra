@@ -93,13 +93,8 @@ func genService(gen *protogen.Plugin, file *protogen.File, g *protogen.Generated
 			continue
 		}
 		rule := ParserDeriveTask(method.Comments.Leading)
-		if rule.Enabled {
-			if rule.Pattern != "" {
-				sd.Methods = append(sd.Methods, buildAsynqRule(g, method, rule))
-			} else {
-				_, _ = fmt.Fprintf(os.Stderr,
-					"\u001B[31mWARN\u001B[m: [file(%v) service(%v) method(%v)] enabled asynq annotation but 'Pattern' is empty.\n", file.Desc.Path(), service.GoName, method.GoName)
-			}
+		if rule != nil {
+			sd.Methods = append(sd.Methods, buildAsynqRule(g, method, rule))
 		}
 	}
 	if len(sd.Methods) == 0 {
@@ -139,12 +134,11 @@ func buildMethodDesc(g *protogen.GeneratedFile, m *protogen.Method, rule *Task) 
 		comment = "// " + m.GoName
 	}
 	return &methodDesc{
-		Name:     m.GoName,
-		Num:      methodSets[m.GoName],
-		Request:  g.QualifiedGoIdent(m.Input.GoIdent),
-		Reply:    g.QualifiedGoIdent(m.Output.GoIdent),
-		Comment:  comment,
-		Pattern:  rule.Pattern,
-		CronSpec: rule.CronSpec,
+		Name:    m.GoName,
+		Num:     methodSets[m.GoName],
+		Request: g.QualifiedGoIdent(m.Input.GoIdent),
+		Reply:   g.QualifiedGoIdent(m.Output.GoIdent),
+		Comment: comment,
+		Pattern: rule.Pattern,
 	}
 }

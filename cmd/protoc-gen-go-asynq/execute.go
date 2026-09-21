@@ -4,14 +4,10 @@ import (
 	"google.golang.org/protobuf/compiler/protogen"
 )
 
-
 func execute(g *protogen.GeneratedFile, s *serviceDesc) error {
 	// pattern constants
 	for _, m := range s.Methods {
 		g.P("const ", patternConstant(s.ServiceType, m.Name), ` = "`, m.Pattern, `"`)
-		if m.CronSpec != "" {
-			g.P("const ", cronSpecConstant(s.ServiceType, m.Name), ` = "`, m.CronSpec, `"`)
-		}
 	}
 	g.P()
 
