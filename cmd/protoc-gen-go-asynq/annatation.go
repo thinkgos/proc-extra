@@ -14,7 +14,6 @@ const (
 )
 
 type Task struct {
-	Enabled bool
 	Pattern string
 }
 
@@ -27,21 +26,18 @@ func ParserDeriveTask(s protogen.Comments) *Task {
 	ret := &Task{}
 	derives, _ := proc.NewCommentLines(string(s)).FindDerives(Identity)
 	for _, annotate := range derives {
-		if annotate.Headless() {
-			ret.Enabled = true
-			continue
-		}
 		for _, attr := range annotate.Attrs {
 			switch attr.Name {
 			case Attribute_Name_Pattern:
 				if vv, ok := attr.Value.(proc.String); ok {
-					ret.Pattern = strings.TrimSpace(vv.Value)
+					pattern := strings.TrimSpace(vv.Value)
+					if pattern != "" {
+						ret.Pattern = pattern
+						return ret
+					}
 				}
 			}
 		}
-	}
-	if ret.Pattern != "" {
-		return ret
 	}
 	return nil
 }
