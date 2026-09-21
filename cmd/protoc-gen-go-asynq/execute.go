@@ -61,14 +61,16 @@ func execute(g *protogen.GeneratedFile, s *serviceDesc) error {
 		// client impl
 		g.P("type ", clientImplStructName(s.ServiceType), " struct {")
 		g.P("cc *", g.QualifiedGoIdent(asynqPackage.Ident("Client")))
+		g.P("opts []", g.QualifiedGoIdent(asynqPackage.Ident("Option")))
 		g.P("}")
 		g.P()
 		// client factory
 		g.P("// ", clientFactoryMethodName(s.ServiceType), " new client.")
-		g.P("func ", clientFactoryMethodName(s.ServiceType), " (client *", g.QualifiedGoIdent(asynqPackage.Ident("Client")), ") ", clientInterfaceName(s.ServiceType), " {")
+		g.P("func ", clientFactoryMethodName(s.ServiceType), " (client *", g.QualifiedGoIdent(asynqPackage.Ident("Client")), ", opts ...", asynqPackage.Ident("Option"), ") ", clientInterfaceName(s.ServiceType), " {")
 		{ // closure
 			g.P("return &", clientImplStructName(s.ServiceType), " {")
 			g.P("cc: client,")
+			g.P("opts: opts,")
 			g.P("}")
 		}
 		g.P("}")
@@ -86,8 +88,8 @@ func execute(g *protogen.GeneratedFile, s *serviceDesc) error {
 			g.P("if err != nil {")
 			g.P("return nil, err")
 			g.P("}")
-			g.P("task := ", g.QualifiedGoIdent(asynqPackage.Ident("NewTask")), "(", patternConstant(s.ServiceType, m.Name), ", payload, opts...)")
-			g.P("return c.cc.Enqueue(task)")
+			g.P("task := ", g.QualifiedGoIdent(asynqPackage.Ident("NewTask")), "(", patternConstant(s.ServiceType, m.Name), ", payload, c.opts...)")
+			g.P("return c.cc.EnqueueContext(ctx, task, opts...)")
 			g.P("}")
 			g.P()
 		}
