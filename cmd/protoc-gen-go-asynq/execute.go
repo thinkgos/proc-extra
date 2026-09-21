@@ -99,10 +99,6 @@ func patternConstant(serviceType, name string) string {
 	return "Pattern_" + serviceType + "_" + name
 }
 
-func cronSpecConstant(serviceType, name string) string {
-	return "CronSpec_" + serviceType + "_" + name
-}
-
 func serverInterfaceName(serviceType string) string {
 	return serviceType + "AsynqHandler"
 }
