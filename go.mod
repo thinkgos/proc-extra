@@ -7,7 +7,7 @@ require (
 	github.com/alicebob/miniredis/v2 v2.39.0
 	github.com/oklog/ulid/v2 v2.1.2
 	github.com/panjf2000/ants/v2 v2.12.1
-	github.com/redis/go-redis/v9 v9.22.0
+	github.com/redis/go-redis/v9 v9.23.0
 	github.com/spf13/cast v1.10.0
 	github.com/sqids/sqids-go v0.4.1
 	github.com/stretchr/testify v1.12.1
@@ -35,7 +35,7 @@ require (
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/otel v1.46.0 // indirect
 	go.opentelemetry.io/otel/metric v1.46.0 // indirect
-	go.uber.org/atomic v1.11.0 // indirect
+	go.uber.org/atomic v1.12.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/image v0.45.0 // indirect
 	golang.org/x/net v0.59.0 // indirect
