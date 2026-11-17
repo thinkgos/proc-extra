@@ -24,6 +24,14 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
+      - name: Ensure go directive unchanged
+        if: github.event_name == 'pull_request' && github.actor == 'dependabot[bot]'
+        run: |
+          if git diff origin/${{ github.base_ref }}...HEAD -- go.mod | grep -qE '^[+-](go|toolchain) '; then
+            echo "::error::go/toolchain directive changed in go.mod"
+            exit 1
+          fi
+
       - name: Set up Go ${{ matrix.go-version }}
         uses: actions/setup-go@v7
         with:
