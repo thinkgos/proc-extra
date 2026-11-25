@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go/ast"
 	"log/slog"
+	"strconv"
 	"strings"
 
 	"github.com/thinkgos/proc/enum_spec"
@@ -11,14 +12,14 @@ import (
 )
 
 type AstInspect struct {
-	Pattern []string         // 匹配路径
-	Type    []string         // 枚举类型
-	Tags    []string         // 编译标签
-	pkg     *Package         // 包
-	enums   *enum_spec.Enums // 枚举
+	Pattern []string                        // 匹配路径
+	Type    []string                        // 枚举类型
+	Tags    []string                        // 编译标签
+	pkg     *Package                        // 包
+	enums   map[string]*enum_spec.Enumerate // 枚举
 }
 
-func (g *AstInspect) Enums() *enum_spec.Enums { return g.enums }
+func (g *AstInspect) Enums() map[string]*enum_spec.Enumerate { return g.enums }
 
 func (g *AstInspect) PackageName() string { return g.pkg.Name }
 
@@ -58,7 +59,7 @@ func (g *AstInspect) Init() error {
 		}
 	}
 	if g.enums == nil {
-		g.enums = enum_spec.NewEnums()
+		g.enums = make(map[string]*enum_spec.Enumerate)
 	}
 	for _, typeName := range g.Type {
 		enums := g.findEnumerateViaTypeName(typeName)
@@ -66,11 +67,15 @@ func (g *AstInspect) Init() error {
 			slog.Error("code gen enum", slog.String("err", fmt.Sprintf("no find type defined: %s", typeName)))
 			continue
 		}
-		g.enums.Set(typeName, enums)
+		g.enums[typeName] = enums
 	}
 	return nil
 }
 
+// findEnumerateViaTypeName 从 Go 源码提取枚举定义, 复用注册表模型 enum_spec.Enumerate:
+//   - Title = 类型注释 (中文名称); 成员 Name = Go 常量名 (生成代码按此引用);
+//   - Format = 取值宽度 (词表 int8..uint64); Go 默认 int 与 string 留空 (不填 = 语言默认整数类型), uint/uintptr 等 Go 特有宽度原样存入, 仅供生成;
+//   - Const/Label = 取值/标签。
 func (g *AstInspect) findEnumerateViaTypeName(typeName string) *enum_spec.Enumerate {
 	typeComment := ""
 	typeType := ""
@@ -95,24 +100,36 @@ func (g *AstInspect) findEnumerateViaTypeName(typeName string) *enum_spec.Enumer
 	}
 	oneof := make([]*enum_spec.EnumerateValue, 0, len(values))
 	for _, v := range values {
+		var cv enum_spec.Valuer
+		if v.isInteger {
+			i, err := strconv.ParseInt(v.Const, 10, 64)
+			if err != nil {
+				slog.Error("code gen enum", slog.String("err", fmt.Sprintf("invalid integer value %q of %s", v.Const, v.OriginalName)))
+				continue
+			}
+			cv = enum_spec.IntegerValue(i)
+		} else {
+			cv = enum_spec.StringValue(v.Const)
+		}
 		oneof = append(oneof, &enum_spec.EnumerateValue{
-			GoName:   v.OriginalName,
-			Name:     strings.TrimPrefix(strings.TrimPrefix(v.OriginalName, typeName), "_"),
-			Const:    v.Const,
-			Label:    v.Label,
-			RawValue: v.RawValue,
+			Name:  v.OriginalName,
+			Const: cv,
+			Label: v.Label,
 		})
 	}
 	realType := typeType
 	if typeType != enum_spec.TypeString {
 		realType = enum_spec.TypeInteger
 	}
-	e := &enum_spec.Enumerate{
-		Type:        realType,
-		Format:      typeType,
-		Description: typeComment,
-		Explain:     enum_spec.EnumerateValueSlices(oneof).Explain(),
-		Oneof:       oneof,
+	// Format 仅存词表宽度; Go 默认 int 与 string 留空 (不填 = 语言默认整数类型), 生成签名由模板兜底。
+	format := typeType
+	if typeType == enum_spec.TypeString || typeType == "int" {
+		format = ""
 	}
-	return e
+	return &enum_spec.Enumerate{
+		Type:   realType,
+		Format: format,
+		Title:  typeComment,
+		OneOf:  oneof,
+	}
 }

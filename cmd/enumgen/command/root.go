@@ -82,7 +82,6 @@ func NewRootCmd() *RootCmd {
 	cmd.Flags().BoolVar(&root.Merge, "merge", false, "merge in a file")
 	cmd.Flags().StringVar(&root.Filename, "filename", "", "filename when merge enabled, default: enums")
 
-	cmd.AddCommand(NewTsCmd().cmd, NewDocCmd().cmd)
 	root.cmd = cmd
 	return root
 }

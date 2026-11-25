@@ -5,6 +5,7 @@ import (
 	"go/format"
 	"io"
 	"log/slog"
+	"maps"
 	"os"
 	"path"
 	"strings"
@@ -26,15 +27,15 @@ func (g *GenGo) Init() error {
 	return g.AstInspect.Init()
 }
 func (g *GenGo) Gen() error {
-	genEnumFile := func(es *enum_spec.Enums) ([]byte, error) {
+	genEnumFile := func(es map[string]*enum_spec.Enumerate) ([]byte, error) {
 		f := &GenGoFile{
 			Version:           g.Version,
 			IsDeprecated:      false,
 			Package:           g.AstInspect.PackageName(),
 			HasContainInteger: false,
-			Enums:             es.Maps(),
+			Enums:             es,
 		}
-		f.HasContainInteger = ContainAny(es.Values(), func(v *enum_spec.Enumerate) bool {
+		f.HasContainInteger = ContainAny(maps.Values(es), func(v *enum_spec.Enumerate) bool {
 			return v.Type == enum_spec.TypeInteger
 		})
 		buf := &bytes.Buffer{}
@@ -61,8 +62,8 @@ func (g *GenGo) Gen() error {
 		filename = path.Join(g.OutputDir, strings.ToLower(filename)+".enum.gen.go")
 		return os.WriteFile(filename, data, 0644)
 	} else {
-		for typeName, e := range g.AstInspect.Enums().All() {
-			data, err := genEnumFile(enum_spec.NewEnums().Set(typeName, e))
+		for typeName, e := range g.AstInspect.Enums() {
+			data, err := genEnumFile(map[string]*enum_spec.Enumerate{typeName: e})
 			if err != nil {
 				slog.Error("code gen enum", slog.Any("err", err))
 				continue

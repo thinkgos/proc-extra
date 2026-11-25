@@ -15,30 +15,31 @@ import (
 )
 
 {{- range $typeName, $e := .Enums}}
-{{- if $e.Description}}
-// {{$e.Description}}
+{{- $vt := $e.Format}}{{- if eq $e.Type "string"}}{{- $vt = "string"}}{{- else if not $vt}}{{- $vt = "int"}}{{- end}}
+{{- if $e.Title}}
+// {{$e.Title}}
 {{- end}}
-var __{{$typeName}}_Enum_Validity = []{{$typeName}} { 
-{{- range $ee := .Oneof}}
-	{{$ee.GoName}}, // {{$ee.RawValue}}: {{$ee.Label}}
+var __{{$typeName}}_Enum_Validity = []{{$typeName}} {
+{{- range $ee := .OneOf}}
+	{{$ee.Name}}, // {{$ee.Const.String}}: {{$ee.Label}}
 {{- end}}
 }
 
 // Value returns the original type value.
-// {{if $e.Description}}{{$e.Description}}: {{end}}{{$e.Explain}}
-func (x {{$typeName}}) Value() {{$e.Format}} {
-    return {{$e.Format}}(x)
+// {{if $e.Title}}{{$e.Title}}: {{end}}{{$e.Explain}}
+func (x {{$typeName}}) Value() {{$vt}} {
+    return {{$vt}}(x)
 }
 
 // ValueString returns the original type value as string.
-// {{if $e.Description}}{{$e.Description}}: {{end}}{{$e.Explain}}
+// {{if $e.Title}}{{$e.Title}}: {{end}}{{$e.Explain}}
 func (x {{$typeName}}) ValueString() string {
     return {{if eq $e.Type "string" }} x.Value() {{else}} strconv.FormatInt(int64(x), 10) {{end}}
 }
 
 // EnumCount the number of enum values.
 func ({{$typeName}}) EnumCount() int {
-	return {{len .Oneof}}
+	return {{len .OneOf}}
 }
 
 // IsZeroValue returns the enum value is valid or not.
@@ -53,11 +54,11 @@ func (x {{$typeName}}) IsValid() bool {
 }
 
 // Label returns the enum value's label.
-// {{if $e.Description}}{{$e.Description}}: {{end}}{{$e.Explain}}
+// {{if $e.Title}}{{$e.Title}}: {{end}}{{$e.Explain}}
 func (x {{$typeName}}) Label(dflt ...string) (s string) {
 	switch x {
-	{{- range $ee := .Oneof}}
-		case {{$ee.GoName}}: // {{$ee.RawValue}}
+	{{- range $ee := .OneOf}}
+		case {{$ee.Name}}: // {{$ee.Const.String}}
 			s = "{{$ee.Label}}"
 	{{- end}}
 		default:
@@ -67,12 +68,12 @@ func (x {{$typeName}}) Label(dflt ...string) (s string) {
 }
 
 // ParseLabel parse label to the enum value
-// {{if $e.Description}}{{$e.Description}}: {{end}}{{$e.Explain}}
+// {{if $e.Title}}{{$e.Title}}: {{end}}{{$e.Explain}}
 func (x *{{$typeName}}) ParseLabel(s string, dflt ...{{$typeName}}) {
 	switch s {
-	{{- range $ee := .Oneof}}
-		case "{{$ee.Label}}": // {{$ee.RawValue}}
-			*x = {{$ee.GoName}}
+	{{- range $ee := .OneOf}}
+		case "{{$ee.Label}}": // {{$ee.Const.String}}
+			*x = {{$ee.Name}}
 	{{- end}}
 		default:
 			*x = cmp.Or(dflt...)
